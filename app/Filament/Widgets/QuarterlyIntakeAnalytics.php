@@ -16,7 +16,7 @@ class QuarterlyIntakeAnalytics extends BaseWidget
         return $table
             ->query(
                 Enrollment::query()
-                    ->selectRaw('intake_month, COUNT(*) as enrollments')
+                    ->selectRaw('MIN(id) as id, intake_month, COUNT(*) as enrollments')
                     ->whereIn('intake_month', ['FEBRUARY', 'MAY', 'AUGUST', 'NOVEMBER'])
                     ->groupBy('intake_month')
             )

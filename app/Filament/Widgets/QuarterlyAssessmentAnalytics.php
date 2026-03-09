@@ -16,7 +16,7 @@ class QuarterlyAssessmentAnalytics extends BaseWidget
         return $table
             ->query(
                 Grade::query()
-                    ->selectRaw('assessment_month, COUNT(*) as assessments, ROUND(AVG(percentage), 2) as avg_percentage')
+                    ->selectRaw('MIN(id) as id, assessment_month, COUNT(*) as assessments, ROUND(AVG(percentage), 2) as avg_percentage')
                     ->whereIn('assessment_month', ['FEBRUARY', 'MAY', 'AUGUST', 'NOVEMBER'])
                     ->groupBy('assessment_month')
             )

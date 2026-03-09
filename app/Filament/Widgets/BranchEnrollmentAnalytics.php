@@ -22,7 +22,7 @@ class BranchEnrollmentAnalytics extends BaseWidget
                         $join->on('students.id', '=', 'enrollments.student_id')
                             ->where('enrollments.status', '=', 'ongoing');
                     })
-                    ->selectRaw('students.branch as branch, COUNT(DISTINCT students.id) as total_students, COUNT(DISTINCT enrollments.id) as ongoing_enrollments')
+                    ->selectRaw('MIN(students.id) as id, students.branch as branch, COUNT(DISTINCT students.id) as total_students, COUNT(DISTINCT enrollments.id) as ongoing_enrollments')
                     ->groupBy('students.branch')
             )
             ->columns([
