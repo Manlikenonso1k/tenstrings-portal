@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -122,6 +123,17 @@ class StudentResource extends Resource
     public static function canCreate(): bool
     {
         return auth()->user()?->role === 'admin';
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Filament::getCurrentPanel()?->getId() === 'portal';
+    }
+
+    public static function canAccess(): bool
+    {
+        return Filament::getCurrentPanel()?->getId() === 'portal'
+            && auth()->user()?->role === 'student';
     }
 
     public static function canEdit($record): bool
