@@ -1,59 +1,87 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tenstrings Music School Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 12 + Filament 3 based management system for Tenstrings with Admin, Instructor, and Student role support.
 
-## About Laravel
+## Implemented Modules
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Role-based authentication (`admin`, `instructor`, `student`) via `users.role`
+- Student management (profile, guardian data, status, photo upload)
+- Instructor management
+- Course catalog management
+- Enrollment management with **strict max 2 ongoing courses per student**
+- Attendance management
+- Grade management (auto percentage + letter grade)
+- Assignment management
+- Payment management with outstanding-balance validation
+- Dashboard widgets (student count, active courses, revenue, pending fees, recent enrollments)
+- Seeders for required course catalog + sample users
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Course Catalog Seeded
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The seeder includes all requested course families, including 3/6 month variants where applicable.
 
-## Learning Laravel
+## Validation Rules Implemented
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Enrollment limit: max 2 ongoing courses per student
+- Email fields use email validation and unique constraints
+- File uploads: max 10MB (images for profile uploads)
+- Payment amount cannot exceed outstanding balance
+- Date validation: expected end date must be after start date
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Quick Setup
 
-## Laravel Sponsors
+1. Install dependencies:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+npm install
+```
 
-### Premium Partners
+2. Configure environment:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+3. Set database credentials in `.env`, then run:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan migrate --seed
+php artisan storage:link
+```
 
-## Code of Conduct
+4. Run app:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan serve
+npm run dev
+```
 
-## Security Vulnerabilities
+5. Access Filament admin panel:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- URL: `/admin`
+- Admin login: `admin@tenstrings.org`
+- Password: `password`
 
-## License
+## Sample Users
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Admin: `admin@tenstrings.org` / `password`
+- Instructor: `instructor@tenstrings.org` / `password`
+- Student: `student@tenstrings.org` / `password`
+
+## Bash Command Note
+
+Use full artisan commands only:
+
+- ✅ `php artisan list | grep filament`
+- ✅ `php artisan make:filament-resource Student --generate`
+- ❌ `&& php artisan ...` (invalid at start of line)
+- ❌ `route:list` (must be `php artisan route:list`)
+
+## Next Recommended Additions
+
+- PDF/Excel exports for reports and transcripts
+- Email/SMS reminder jobs
+- Certificate PDF generation workflow
+- Student and instructor dedicated panel providers (optional)
