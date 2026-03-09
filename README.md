@@ -85,7 +85,17 @@ npm run dev
 - Submitting this form creates both:
 	- a `users` account with `role=student`
 	- a linked `students` profile record
-- Student then signs in at `/admin/login`
+- Student receives a generated matric number and signs in at `/portal/login` using matric number + password
+
+## Matric Number Customization (Super Admin)
+
+- Go to **Access Control → Portal Settings**
+- Configure `matric_pattern` with tokens:
+	- `{yyyy}` full year (e.g. `2017`)
+	- `{yy}` short year (e.g. `17`)
+	- `{ycode}` year code (e.g. `170` for 2017)
+	- `{seq:N}` padded sequence, e.g. `{seq:8}`
+- Example pattern: `{ycode}{seq:8}` gives `1700000001`
 
 ## Bash Command Note
 

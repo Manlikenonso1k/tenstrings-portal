@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MatricNumberGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,8 +38,7 @@ class Student extends Model
     {
         static::creating(function (Student $student) {
             if (! $student->student_number) {
-                $nextId = static::max('id') + 1;
-                $student->student_number = 'STU-' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
+                $student->student_number = MatricNumberGenerator::generate($student->registration_date);
             }
         });
     }

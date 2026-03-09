@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Portal\Pages\Auth\StudentLogin;
 use App\Filament\Resources\StudentResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -26,7 +27,7 @@ class StudentPanelProvider extends PanelProvider
         return $panel
             ->id('portal')
             ->path('portal')
-            ->login()
+            ->login(StudentLogin::class)
             ->colors([
                 'primary' => Color::Amber,
             ])

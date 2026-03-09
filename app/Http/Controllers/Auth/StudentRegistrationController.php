@@ -35,7 +35,7 @@ class StudentRegistrationController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $student = DB::transaction(function () use ($validated) {
             $user = User::query()->create([
                 'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
                 'email' => $validated['email'],
@@ -44,7 +44,7 @@ class StudentRegistrationController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            Student::query()->create([
+            return Student::query()->create([
                 'user_id' => $user->id,
                 'first_name' => $validated['first_name'],
                 'middle_name' => $validated['middle_name'] ?? null,
@@ -62,6 +62,6 @@ class StudentRegistrationController extends Controller
             ]);
         });
 
-        return redirect('/admin/login')->with('status', 'Registration successful. Please login.');
+        return redirect('/portal/login')->with('status', 'Registration successful. Your matric number is ' . $student->student_number . '. Please login.');
     }
 }
