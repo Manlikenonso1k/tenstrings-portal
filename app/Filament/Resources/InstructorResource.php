@@ -28,6 +28,7 @@ class InstructorResource extends Resource
             Forms\Components\TextInput::make('phone')->tel()->required(),
             Forms\Components\TextInput::make('specialization'),
             Forms\Components\FileUpload::make('photo_path')
+                ->disk('public_uploads')
                 ->directory('instructors/photos')
                 ->image()
                 ->maxSize(10240)

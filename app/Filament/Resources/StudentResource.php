@@ -42,6 +42,7 @@ class StudentResource extends Resource
                             ->required(),
                         Forms\Components\FileUpload::make('photo_path')
                             ->image()
+                            ->disk('public_uploads')
                             ->directory('students/photos')
                             ->maxSize(10240)
                             ->acceptedFileTypes(['image/jpeg', 'image/png']),

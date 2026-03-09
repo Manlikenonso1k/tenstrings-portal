@@ -262,3 +262,6 @@ Please build this system with:
 - Comprehensive testing
 
 Start with the database design, then build authentication, followed by core features. Implement the 2-course enrollment limit as a critical validation rule.
+
+
+the project is running live on https://portal.tenstrings.org/admin/login so what i do is push from local and pull on erver terminal pls note

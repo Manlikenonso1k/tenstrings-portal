@@ -48,8 +48,9 @@ php artisan key:generate
 
 ```bash
 php artisan migrate --seed
-php artisan storage:link
 ```
+
+For restricted shared hosting environments where `storage:link` fails, this project uses the `public_uploads` disk (`public/uploads`) for profile uploads, so no symlink is required.
 
 4. Run app:
 
