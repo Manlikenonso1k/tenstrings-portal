@@ -5,6 +5,7 @@ Laravel 12 + Filament 3 based management system for Tenstrings with Admin, Instr
 ## Implemented Modules
 
 - Role-based authentication (`admin`, `instructor`, `student`) via `users.role`
+- Access Control panel for assigning user roles (`super_admin`, `admin`, `instructor`, `student`)
 - Student management (profile, guardian data, status, photo upload)
 - Instructor management
 - Course catalog management
@@ -70,6 +71,21 @@ npm run dev
 - Admin: `admin@tenstrings.org` / `password`
 - Instructor: `instructor@tenstrings.org` / `password`
 - Student: `student@tenstrings.org` / `password`
+
+## Role Assignment
+
+- Login to `/admin`
+- Open **Access Control → Users**
+- Create/Edit a user and set role
+- Only `super_admin` can assign `super_admin`
+
+## Student Registration
+
+- Public registration URL: `/register/student`
+- Submitting this form creates both:
+	- a `users` account with `role=student`
+	- a linked `students` profile record
+- Student then signs in at `/admin/login`
 
 ## Bash Command Note
 

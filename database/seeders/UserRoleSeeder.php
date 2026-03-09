@@ -15,6 +15,17 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
+        User::query()->updateOrCreate(
+            ['email' => 'superadmin@tenstrings.org'],
+            [
+                'name' => 'Super Admin',
+                'phone' => '+2348000000099',
+                'role' => 'super_admin',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
         $admin = User::query()->updateOrCreate(
             ['email' => 'admin@tenstrings.org'],
             [
