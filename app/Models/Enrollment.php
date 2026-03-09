@@ -13,6 +13,7 @@ class Enrollment extends Model
         'enrollment_number',
         'student_id',
         'enrollment_date',
+        'intake_month',
         'start_date',
         'expected_end_date',
         'status',

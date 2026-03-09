@@ -31,6 +31,12 @@ class GradeResource extends Resource
                 'practical' => 'Practical',
                 'final' => 'Final',
             ])->required(),
+            Forms\Components\Select::make('assessment_month')->options([
+                'FEBRUARY' => 'FEBRUARY',
+                'MAY' => 'MAY',
+                'AUGUST' => 'AUGUST',
+                'NOVEMBER' => 'NOVEMBER',
+            ])->required(),
             Forms\Components\TextInput::make('score')->numeric()->required()->live(),
             Forms\Components\TextInput::make('maximum_score')->numeric()->required()->default(100)->live(),
             Forms\Components\TextInput::make('percentage')->numeric()->readOnly(),
@@ -46,10 +52,19 @@ class GradeResource extends Resource
                 Tables\Columns\TextColumn::make('student.student_number')->label('Student ID')->searchable(),
                 Tables\Columns\TextColumn::make('course.name')->searchable(),
                 Tables\Columns\TextColumn::make('assessment_type'),
+                Tables\Columns\TextColumn::make('assessment_month')->badge(),
                 Tables\Columns\TextColumn::make('score'),
                 Tables\Columns\TextColumn::make('maximum_score'),
                 Tables\Columns\TextColumn::make('percentage'),
                 Tables\Columns\BadgeColumn::make('grade_letter'),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('assessment_month')->options([
+                    'FEBRUARY' => 'FEBRUARY',
+                    'MAY' => 'MAY',
+                    'AUGUST' => 'AUGUST',
+                    'NOVEMBER' => 'NOVEMBER',
+                ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

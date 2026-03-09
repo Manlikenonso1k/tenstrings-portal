@@ -38,6 +38,14 @@ class EnrollmentResource extends Resource
                 ->maxItems(2)
                 ->helperText('A student can only be enrolled in maximum 2 ongoing courses.'),
             Forms\Components\DatePicker::make('enrollment_date')->required()->default(now()),
+            Forms\Components\Select::make('intake_month')
+                ->options([
+                    'FEBRUARY' => 'FEBRUARY',
+                    'MAY' => 'MAY',
+                    'AUGUST' => 'AUGUST',
+                    'NOVEMBER' => 'NOVEMBER',
+                ])
+                ->required(),
             Forms\Components\DatePicker::make('start_date')->required(),
             Forms\Components\DatePicker::make('expected_end_date')
                 ->required()
@@ -60,6 +68,7 @@ class EnrollmentResource extends Resource
                 Tables\Columns\TextColumn::make('enrollment_number')->searchable(),
                 Tables\Columns\TextColumn::make('student.student_number')->label('Student ID')->searchable(),
                 Tables\Columns\TextColumn::make('student.first_name')->label('Student')->searchable(),
+                Tables\Columns\TextColumn::make('intake_month')->badge(),
                 Tables\Columns\TextColumn::make('courses.name')->badge()->separator(', '),
                 Tables\Columns\TextColumn::make('start_date')->date(),
                 Tables\Columns\TextColumn::make('expected_end_date')->date(),
@@ -71,6 +80,14 @@ class EnrollmentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('intake_month')->options([
+                    'FEBRUARY' => 'FEBRUARY',
+                    'MAY' => 'MAY',
+                    'AUGUST' => 'AUGUST',
+                    'NOVEMBER' => 'NOVEMBER',
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

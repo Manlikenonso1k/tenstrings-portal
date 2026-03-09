@@ -11,7 +11,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .full { grid-column: 1 / -1; }
         label { display:block; font-size: 14px; margin-bottom: 4px; color: #333; }
-        input, textarea, button { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        input, textarea, select, button { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { background: #111827; color: #fff; border: none; cursor: pointer; }
         .errors { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px; border-radius: 8px; margin-bottom: 12px; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
@@ -40,6 +40,16 @@
             <div><label>Last Name</label><input type="text" name="last_name" value="{{ old('last_name') }}" required></div>
             <div><label>Email</label><input type="email" name="email" value="{{ old('email') }}" required></div>
             <div><label>Phone</label><input type="text" name="phone" value="{{ old('phone') }}" required></div>
+            <div>
+                <label>Branch</label>
+                <select name="branch" required>
+                    <option value="">Select Branch</option>
+                    <option value="AJAH BRANCH" @selected(old('branch') === 'AJAH BRANCH')>AJAH BRANCH</option>
+                    <option value="AGEGE BRANCH" @selected(old('branch') === 'AGEGE BRANCH')>AGEGE BRANCH</option>
+                    <option value="IKEJA BRANCH" @selected(old('branch') === 'IKEJA BRANCH')>IKEJA BRANCH</option>
+                    <option value="FESTAC BRANCH" @selected(old('branch') === 'FESTAC BRANCH')>FESTAC BRANCH</option>
+                </select>
+            </div>
             <div><label>Date of Birth</label><input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}"></div>
             <div class="full"><label>Address</label><textarea name="address">{{ old('address') }}</textarea></div>
             <div><label>Guardian Name</label><input type="text" name="guardian_name" value="{{ old('guardian_name') }}"></div>

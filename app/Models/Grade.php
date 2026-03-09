@@ -14,6 +14,7 @@ class Grade extends Model
         'course_id',
         'instructor_id',
         'assessment_type',
+        'assessment_month',
         'score',
         'maximum_score',
         'percentage',

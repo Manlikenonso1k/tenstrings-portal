@@ -21,6 +21,8 @@ class RecentEnrollmentsTable extends BaseWidget
                 Tables\Columns\TextColumn::make('enrollment_number')->label('Enrollment ID'),
                 Tables\Columns\TextColumn::make('student.student_number')->label('Student ID'),
                 Tables\Columns\TextColumn::make('student.first_name')->label('Student'),
+                Tables\Columns\TextColumn::make('student.branch')->label('Branch')->badge(),
+                Tables\Columns\TextColumn::make('intake_month')->label('Intake')->badge(),
                 Tables\Columns\TextColumn::make('enrollment_date')->date(),
                 Tables\Columns\BadgeColumn::make('status'),
             ]);

@@ -32,6 +32,14 @@ class StudentResource extends Resource
                         Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
                         Forms\Components\TextInput::make('phone')->tel()->required()->maxLength(30),
                         Forms\Components\Textarea::make('address')->columnSpanFull(),
+                        Forms\Components\Select::make('branch')
+                            ->options([
+                                'AJAH BRANCH' => 'AJAH BRANCH',
+                                'AGEGE BRANCH' => 'AGEGE BRANCH',
+                                'IKEJA BRANCH' => 'IKEJA BRANCH',
+                                'FESTAC BRANCH' => 'FESTAC BRANCH',
+                            ])
+                            ->required(),
                         Forms\Components\DatePicker::make('date_of_birth'),
                         Forms\Components\DatePicker::make('registration_date')->required()->default(now()),
                         Forms\Components\Select::make('status')
@@ -67,6 +75,9 @@ class StudentResource extends Resource
                 Tables\Columns\TextColumn::make('last_name')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('phone'),
+                Tables\Columns\TextColumn::make('branch')->badge(),
+                Tables\Columns\TextColumn::make('address')->limit(40)->tooltip(fn ($record) => $record->address),
+                Tables\Columns\TextColumn::make('guardian_phone')->label('Guardian Phone'),
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors([
                         'success' => 'active',
@@ -80,6 +91,12 @@ class StudentResource extends Resource
                     'active' => 'Active',
                     'inactive' => 'Inactive',
                     'graduated' => 'Graduated',
+                ]),
+                Tables\Filters\SelectFilter::make('branch')->options([
+                    'AJAH BRANCH' => 'AJAH BRANCH',
+                    'AGEGE BRANCH' => 'AGEGE BRANCH',
+                    'IKEJA BRANCH' => 'IKEJA BRANCH',
+                    'FESTAC BRANCH' => 'FESTAC BRANCH',
                 ]),
             ])
             ->actions([
@@ -122,27 +139,27 @@ class StudentResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->role === 'admin';
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Filament::getCurrentPanel()?->getId() === 'portal';
+        return Filament::getCurrentPanel()?->getId() === 'admin';
     }
 
     public static function canAccess(): bool
     {
-        return Filament::getCurrentPanel()?->getId() === 'portal'
-            && auth()->user()?->role === 'student';
+        return Filament::getCurrentPanel()?->getId() === 'admin'
+            && (auth()->user()?->isAdmin() ?? false);
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->role === 'admin';
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->role === 'admin';
+        return auth()->user()?->isAdmin() ?? false;
     }
 }

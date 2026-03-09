@@ -86,6 +86,36 @@ npm run dev
 	- a `users` account with `role=student`
 	- a linked `students` profile record
 - Student receives a generated matric number and signs in at `/portal/login` using matric number + password
+- Student registration includes branch selection:
+	- `AJAH BRANCH`
+	- `AGEGE BRANCH`
+	- `IKEJA BRANCH`
+	- `FESTAC BRANCH`
+
+## Quarterly Tracking Months
+
+- Enrollment intake and assessments are structured and filterable by:
+	- `FEBRUARY`
+	- `MAY`
+	- `AUGUST`
+	- `NOVEMBER`
+
+## Admin Analytics
+
+- Branch enrollment analytics (students + ongoing enrollments per branch)
+- Quarterly intake analytics (FEB/MAY/AUG/NOV)
+- Quarterly assessment analytics (assessment volume + average percentage by month)
+
+## Student Portal Sidebar
+
+`/portal` shows only:
+
+- DASHBOARD
+- STUDENT DATA
+- PAYMENTS
+- COURSE REGISTRATION
+- RESULTS
+- ACCOMMODATION
 
 ## Matric Number Customization (Super Admin)
 
