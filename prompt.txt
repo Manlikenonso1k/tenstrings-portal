@@ -1,0 +1,264 @@
+Build a comprehensive Music School Management System with the following specifications:
+
+## SYSTEM REQUIREMENTS:
+
+### USER ROLES & PERMISSIONS:
+1. **Admin** - Full access to all features (manage students, instructors, courses, payments, reports)
+2. **Instructor** - View assigned students, update grades, attendance, assignments
+3. **Student** - View own profile, courses, grades, attendance, payment history
+
+### ENROLLMENT RULE:
+- Each student can enroll in MAXIMUM 2 courses simultaneously
+- System must prevent enrollment beyond this limit
+
+---
+
+## DATABASE SCHEMA:
+
+### 1. STUDENT INFORMATION:
+- Student ID (auto-generated, sequential, format: STU-XXXX)
+- Full Name (First, Middle, Last)
+- Email Address (unique, validated)
+- Phone Number
+- Physical Address
+- Profile Photo/Passport (upload feature)
+- Date of Birth
+- Registration Date
+- Status (Active/Inactive/Graduated)
+
+### 2. PARENT/GUARDIAN INFORMATION:
+- Guardian Name
+- Guardian Phone Number
+- Guardian Email
+- Relationship to Student
+
+### 3. COURSE CATALOG:
+Create these 15 courses with exact details:
+
+1. Advanced Diploma in Music Performance - 18 months
+2. Advanced Diploma in Music Production - 18 months
+3. Diploma in Music Performance - 1 year
+4. Diploma in Music Production - 1 year
+5. Certificate in Music Performance - 6 months
+6. Certificate in Music Production - 6 months
+7. Certificate in Gospel Music Performance - 3 months
+8. Certificate in Gospel Music Performance - 6 months
+9. Diploma in Gospel Music Performance - 1 year
+10. Certificate in Songwriting - 3/6 months (offer both durations)
+11. Certificate in Piano - 3/6 months (offer both durations)
+12. Certificate in Music Business - 3/6 months (offer both durations)
+13. Certificate in Guitar - 3/6 months (offer both durations)
+14. Certificate in Drums - 3/6 months (offer both durations)
+15. Certificate in Voice - 3/6 months (offer both durations)
+
+Each course should have:
+- Course Code (auto-generated)
+- Course Name
+- Duration
+- Course Fee
+- Description
+- Assigned Instructor(s)
+- Max Students per Class
+
+### 4. ENROLLMENT RECORDS:
+- Enrollment ID
+- Student ID
+- Course(s) Enrolled (max 2)
+- Enrollment Date
+- Start Date
+- Expected End Date
+- Current Status (Ongoing/Completed/Dropped)
+
+### 5. ACADEMIC RECORDS:
+**Attendance:**
+- Date
+- Course
+- Status (Present/Absent/Late/Excused)
+- Instructor Notes
+
+**Grades/Scores:**
+- Assessment Type (Quiz/Exam/Practical/Final)
+- Score
+- Maximum Score
+- Percentage
+- Grade Letter (A-F)
+- Date Recorded
+
+**Assignments/Assessments:**
+- Assignment Title
+- Course
+- Due Date
+- Submission Date
+- File Upload (PDF, DOC, Audio, Video)
+- Score
+- Feedback
+
+### 6. PAYMENT INFORMATION:
+**Payment Records:**
+- Payment ID
+- Student ID
+- Course
+- Amount Paid
+- Payment Date
+- Payment Method (Cash/Card/Transfer/Cheque)
+- Receipt Number
+- Payment Status (Paid/Partial/Pending)
+
+**Fee Structure:**
+- Total Course Fee
+- Amount Paid
+- Outstanding Balance
+- Payment Plan (if applicable)
+- Due Dates
+
+### 7. INSTRUCTOR INFORMATION:
+- Instructor ID
+- Full Name
+- Email
+- Phone Number
+- Specialization/Instruments
+- Courses Teaching
+- Profile Photo
+
+---
+
+## CORE FEATURES TO BUILD:
+
+### ADMIN DASHBOARD:
+1. Overview statistics (total students, active courses, revenue, pending payments)
+2. Recent enrollments
+3. Attendance summary
+4. Payment alerts (overdue fees)
+
+### STUDENT MANAGEMENT:
+1. Register new student (with photo upload)
+2. Edit student details
+3. View student profile (all information in one place)
+4. Enrollment management (max 2 courses validation)
+5. Generate Student ID cards
+6. Student search and filtering
+
+### COURSE MANAGEMENT:
+1. Create/Edit/Delete courses
+2. Assign instructors to courses
+3. Set course fees and schedules
+4. View enrolled students per course
+5. Course completion tracking
+
+### ACADEMIC MANAGEMENT:
+1. **Attendance:**
+   - Mark attendance by course/date
+   - Bulk attendance entry
+   - Attendance reports and analytics
+   - Export attendance sheets
+
+2. **Grading:**
+   - Record grades per student/course
+   - Grade calculation (weighted averages)
+   - Progress reports
+   - Transcript generation
+
+3. **Assignments:**
+   - Create assignments per course
+   - Student file upload portal
+   - Grade submissions
+   - Feedback system
+
+### PAYMENT MANAGEMENT:
+1. Record payments
+2. Generate invoices/receipts
+3. Payment history per student
+4. Outstanding fees report
+5. Payment reminders (email/SMS)
+6. Revenue reports
+
+### REPORTS & ANALYTICS:
+1. Student performance reports
+2. Attendance reports
+3. Financial reports (revenue, outstanding fees)
+4. Course enrollment statistics
+5. Export to PDF/Excel
+
+---
+
+## TECHNICAL REQUIREMENTS:
+
+### TECH STACK:
+- **Backend:** Laravel (PHP) 
+- filament already installed
+- **Database:** MySQL or PostgreSQL
+- **Authentication:** Laravel Sanctum or JWT
+- **File Storage:** myphp admin
+
+### SECURITY:
+- Role-based access control (RBAC)
+- Password encryption
+- CSRF protection
+- Input validation and sanitization
+- Secure file uploads
+
+### UI/UX:
+- Responsive design (mobile-friendly)
+- Clean, modern interface
+- Dashboard with widgets
+- Easy navigation
+- Search and filter functionality
+- Data tables with sorting/pagination
+
+---
+
+## VALIDATION RULES:
+
+1. **Enrollment Limit:** Prevent students from enrolling in more than 2 courses
+2. **Email Validation:** Unique and valid format
+3. **Phone Validation:** Valid format
+4. **File Upload:** Max size 10MB, allowed types (PDF, DOC, DOCX, JPG, PNG, MP3, MP4)
+5. **Payment:** Amount cannot exceed outstanding balance
+6. **Date Validation:** Start date before end date
+
+---
+
+## ADDITIONAL FEATURES:
+
+1. **Email Notifications:**
+   - Welcome email on registration
+   - Payment confirmation
+   - Assignment reminders
+   - Grade notifications
+
+2. **Certificate Generation:**
+   - Auto-generate certificates on course completion
+   - PDF download
+
+3. **Calendar Integration:**
+   - Class schedules
+   - Assignment deadlines
+   - Payment due dates
+
+4. **Communication:**
+   - Messaging between students and instructors
+   - Announcements
+
+---
+
+## DELIVERABLES:
+
+1. Complete source code with comments
+2. Database schema and migrations
+3. Seeder data (sample students, courses, instructors)
+4. Admin panel with all CRUD operations
+5. Student and Instructor portals
+6. README with installation instructions
+7. API documentation (if building API)
+
+---
+
+Please build this system with:
+- Clean, maintainable code
+- Proper error handling
+- Input validation
+- Responsive design
+- User-friendly interface
+- Comprehensive testing
+
+Start with the database design, then build authentication, followed by core features. Implement the 2-course enrollment limit as a critical validation rule.
