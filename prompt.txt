@@ -1,267 +1,134 @@
-Build a comprehensive Music School Management System with the following specifications:
+# TypeError - Internal Server Error
 
-## SYSTEM REQUIREMENTS:
+Filament\Tables\Table::query(): Argument #1 ($query) must be of type Illuminate\Database\Eloquent\Builder|Closure|null, Illuminate\Database\Query\Builder given, called in /home/u519226541/domains/tenstrings.org/public_html/portal_app/app/Filament/Widgets/QuarterlyAssessmentAnalytics.php on line 17
 
-### USER ROLES & PERMISSIONS:
-1. **Admin** - Full access to all features (manage students, instructors, courses, payments, reports)
-2. **Instructor** - View assigned students, update grades, attendance, assignments
-3. **Student** - View own profile, courses, grades, attendance, payment history
+PHP 8.3.19
+Laravel 12.53.0
+portal.tenstrings.org
 
-### ENROLLMENT RULE:
-- Each student can enroll in MAXIMUM 2 courses simultaneously
-- System must prevent enrollment beyond this limit
+## Stack Trace
 
----
+0 - vendor/filament/tables/src/Table/Concerns/HasQuery.php:30
+1 - app/Filament/Widgets/QuarterlyAssessmentAnalytics.php:17
+2 - vendor/filament/tables/src/Concerns/InteractsWithTable.php:54
+3 - vendor/filament/support/src/Components/ComponentManager.php:80
+4 - vendor/filament/support/src/Concerns/Configurable.php:12
+5 - vendor/filament/tables/src/Concerns/InteractsWithTable.php:52
+6 - vendor/filament/support/src/Components/ComponentManager.php:80
+7 - vendor/filament/support/src/Concerns/Configurable.php:12
+8 - vendor/filament/tables/src/Concerns/InteractsWithTable.php:50
+9 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+10 - vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+11 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+12 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+13 - vendor/livewire/livewire/src/Wrapped.php:23
+14 - vendor/livewire/livewire/src/Features/SupportLifecycleHooks/SupportLifecycleHooks.php:144
+15 - vendor/livewire/livewire/src/Features/SupportLifecycleHooks/SupportLifecycleHooks.php:24
+16 - vendor/livewire/livewire/src/Features/SupportLazyLoading/SupportLazyLoading.php:180
+17 - vendor/livewire/livewire/src/Features/SupportLazyLoading/SupportLazyLoading.php:101
+18 - vendor/livewire/livewire/src/ComponentHook.php:41
+19 - vendor/livewire/livewire/src/ComponentHookRegistry.php:110
+20 - vendor/livewire/livewire/src/ComponentHookRegistry.php:65
+21 - vendor/livewire/livewire/src/EventBus.php:60
+22 - vendor/livewire/livewire/src/helpers.php:98
+23 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:471
+24 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:101
+25 - vendor/livewire/livewire/src/LivewireManager.php:102
+26 - vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:131
+27 - vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php:46
+28 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:265
+29 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:211
+30 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:822
+31 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+32 - vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php:50
+33 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+34 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php:87
+35 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+36 - vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php:48
+37 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+38 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:120
+39 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:63
+40 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+41 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php:36
+42 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+43 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php:74
+44 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+45 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+46 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
+47 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:800
+48 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:764
+49 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:753
+50 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:200
+51 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+52 - vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php:19
+53 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+54 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php:27
+55 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+56 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php:47
+57 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+58 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php:27
+59 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+60 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php:109
+61 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+62 - vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php:61
+63 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+64 - vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php:58
+65 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+66 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php:22
+67 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+68 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php:26
+69 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+70 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+71 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:175
+72 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:144
+73 - vendor/laravel/framework/src/Illuminate/Foundation/Application.php:1220
+74 - public/index.php:20
 
-## DATABASE SCHEMA:
+## Request
 
-### 1. STUDENT INFORMATION:
-- Student ID (auto-generated, sequential, format: STU-XXXX)
-- Full Name (First, Middle, Last)
-- Email Address (unique, validated)
-- Phone Number
-- Physical Address
-- Profile Photo/Passport (upload feature)
-- Date of Birth
-- Registration Date
-- Status (Active/Inactive/Graduated)
+POST /livewire/update
 
-### 2. PARENT/GUARDIAN INFORMATION:
-- Guardian Name
-- Guardian Phone Number
-- Guardian Email
-- Relationship to Student
+## Headers
 
-### 3. COURSE CATALOG:
-Create these 15 courses with exact details:
+* **accept**: */*
+* **accept-encoding**: br
+* **accept-language**: en-GB,en-US;q=0.9,en;q=0.8
+* **connection**: close
+* **content-type**: application/json
+* **content-length**: 2354
+* **cookie**: _ga=GA1.2.2125740300.1762264473; twk_uuid_5c686cfc77e0730ce04347e0=%7B%22uuid%22%3A%221.7xaf1zW9JzvcjBKXSDOWkgdyleRKJE3gL32DvTHp1XjHWJAxLsTN0vmH6nOFJT3K9FIIC52OQdI2q7GOm21HmkineVpCWaRcZ8QCQ8owxcQL9YycDDIZd4zG%22%2C%22version%22%3A3%2C%22domain%22%3A%22tenstrings.org%22%2C%22ts%22%3A1768572744154%7D; XSRF-TOKEN=eyJpdiI6IkNwUGJzd0V4WkJ4eTY2eFQxMXNQeFE9PSIsInZhbHVlIjoiZ0NiKytBY2ZEeWFHSmlKUDczb3Z6OHNZdHhQOTZPMnZ2cE1hRHVNWE91Mnd5YmRBSVU4S25RLzhIRW01RjA5U1dRa2dkMmpmbEMzdEtvOURmd2FJOWl1NEUzRnRWSzh3SFhlaXRtNDFPVVRzQ0pGQ3piMFQ4OUh0b21nbE5VdUoiLCJtYWMiOiI4MjQ3ZDA5ZGNkZDMwNzM2Mjk3YjgxMWRlMmYzNzQxM2I3YjFjMTIzY2ExMmU2MjMzZmQ2MDE1ZTc2YTFlNDJkIiwidGFnIjoiIn0%3D; laravel-session=eyJpdiI6IllkQTk5NWFXMUpyb2h4WUk2WkRjV3c9PSIsInZhbHVlIjoiL3ducnh1blo4L2E0Z0l6UGduakRMQk9BVmZQU05CMWZKaG1wcnpxYkxLSHNSZFNUTkF2V2JXVzc0R2xNbjNkSmlkVGRNN0E4dGVKQktlSGtQV3ZlNWVUM2tKbWlXZmxoc3lwY0FlOGNBSkUyS2doZU1GMVg1NmZmQnpmd0xQNWwiLCJtYWMiOiJjZTQ5OTMxZTdiYzU0OTRlNjQ5OTNlNDlmYWI0MGUyMTcyY2IwNjhhMWMxZmI4ZmJhZGMyYTljYWYwMzUwNzMxIiwidGFnIjoiIn0%3D
+* **host**: portal.tenstrings.org
+* **referer**: https://portal.tenstrings.org/admin
+* **user-agent**: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+* **x-forwarded-for**: 102.89.69.191
+* **x-forwarded-proto**: https
+* **x-real-ip**: 102.89.69.191
+* **x-real-port**: 18832
+* **x-forwarded-port**: 443
+* **x-port**: 443
+* **x-lscache**: 1
+* **sec-ch-ua-platform**: "Windows"
+* **sec-ch-ua**: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"
+* **x-livewire**: 
+* **sec-ch-ua-mobile**: ?0
+* **origin**: https://portal.tenstrings.org
+* **sec-fetch-site**: same-origin
+* **sec-fetch-mode**: cors
+* **sec-fetch-dest**: empty
+* **priority**: u=1, i
 
-1. Advanced Diploma in Music Performance - 18 months
-2. Advanced Diploma in Music Production - 18 months
-3. Diploma in Music Performance - 1 year
-4. Diploma in Music Production - 1 year
-5. Certificate in Music Performance - 6 months
-6. Certificate in Music Production - 6 months
-7. Certificate in Gospel Music Performance - 3 months
-8. Certificate in Gospel Music Performance - 6 months
-9. Diploma in Gospel Music Performance - 1 year
-10. Certificate in Songwriting - 3/6 months (offer both durations)
-11. Certificate in Piano - 3/6 months (offer both durations)
-12. Certificate in Music Business - 3/6 months (offer both durations)
-13. Certificate in Guitar - 3/6 months (offer both durations)
-14. Certificate in Drums - 3/6 months (offer both durations)
-15. Certificate in Voice - 3/6 months (offer both durations)
+## Route Context
 
-Each course should have:
-- Course Code (auto-generated)
-- Course Name
-- Duration
-- Course Fee
-- Description
-- Assigned Instructor(s)
-- Max Students per Class
+controller: Livewire\Mechanisms\HandleRequests\HandleRequests@handleUpdate
+route name: default.livewire.update
+middleware: web
 
-### 4. ENROLLMENT RECORDS:
-- Enrollment ID
-- Student ID
-- Course(s) Enrolled (max 2)
-- Enrollment Date
-- Start Date
-- Expected End Date
-- Current Status (Ongoing/Completed/Dropped)
+## Route Parameters
 
-### 5. ACADEMIC RECORDS:
-**Attendance:**
-- Date
-- Course
-- Status (Present/Absent/Late/Excused)
-- Instructor Notes
+No route parameter data available.
 
-**Grades/Scores:**
-- Assessment Type (Quiz/Exam/Practical/Final)
-- Score
-- Maximum Score
-- Percentage
-- Grade Letter (A-F)
-- Date Recorded
+## Database Queries
 
-**Assignments/Assessments:**
-- Assignment Title
-- Course
-- Due Date
-- Submission Date
-- File Upload (PDF, DOC, Audio, Video)
-- Score
-- Feedback
-
-### 6. PAYMENT INFORMATION:
-**Payment Records:**
-- Payment ID
-- Student ID
-- Course
-- Amount Paid
-- Payment Date
-- Payment Method (Cash/Card/Transfer/Cheque)
-- Receipt Number
-- Payment Status (Paid/Partial/Pending)
-
-**Fee Structure:**
-- Total Course Fee
-- Amount Paid
-- Outstanding Balance
-- Payment Plan (if applicable)
-- Due Dates
-
-### 7. INSTRUCTOR INFORMATION:
-- Instructor ID
-- Full Name
-- Email
-- Phone Number
-- Specialization/Instruments
-- Courses Teaching
-- Profile Photo
-
----
-
-## CORE FEATURES TO BUILD:
-
-### ADMIN DASHBOARD:
-1. Overview statistics (total students, active courses, revenue, pending payments)
-2. Recent enrollments
-3. Attendance summary
-4. Payment alerts (overdue fees)
-
-### STUDENT MANAGEMENT:
-1. Register new student (with photo upload)
-2. Edit student details
-3. View student profile (all information in one place)
-4. Enrollment management (max 2 courses validation)
-5. Generate Student ID cards
-6. Student search and filtering
-
-### COURSE MANAGEMENT:
-1. Create/Edit/Delete courses
-2. Assign instructors to courses
-3. Set course fees and schedules
-4. View enrolled students per course
-5. Course completion tracking
-
-### ACADEMIC MANAGEMENT:
-1. **Attendance:**
-   - Mark attendance by course/date
-   - Bulk attendance entry
-   - Attendance reports and analytics
-   - Export attendance sheets
-
-2. **Grading:**
-   - Record grades per student/course
-   - Grade calculation (weighted averages)
-   - Progress reports
-   - Transcript generation
-
-3. **Assignments:**
-   - Create assignments per course
-   - Student file upload portal
-   - Grade submissions
-   - Feedback system
-
-### PAYMENT MANAGEMENT:
-1. Record payments
-2. Generate invoices/receipts
-3. Payment history per student
-4. Outstanding fees report
-5. Payment reminders (email/SMS)
-6. Revenue reports
-
-### REPORTS & ANALYTICS:
-1. Student performance reports
-2. Attendance reports
-3. Financial reports (revenue, outstanding fees)
-4. Course enrollment statistics
-5. Export to PDF/Excel
-
----
-
-## TECHNICAL REQUIREMENTS:
-
-### TECH STACK:
-- **Backend:** Laravel (PHP) 
-- filament already installed
-- **Database:** MySQL or PostgreSQL
-- **Authentication:** Laravel Sanctum or JWT
-- **File Storage:** myphp admin
-
-### SECURITY:
-- Role-based access control (RBAC)
-- Password encryption
-- CSRF protection
-- Input validation and sanitization
-- Secure file uploads
-
-### UI/UX:
-- Responsive design (mobile-friendly)
-- Clean, modern interface
-- Dashboard with widgets
-- Easy navigation
-- Search and filter functionality
-- Data tables with sorting/pagination
-
----
-
-## VALIDATION RULES:
-
-1. **Enrollment Limit:** Prevent students from enrolling in more than 2 courses
-2. **Email Validation:** Unique and valid format
-3. **Phone Validation:** Valid format
-4. **File Upload:** Max size 10MB, allowed types (PDF, DOC, DOCX, JPG, PNG, MP3, MP4)
-5. **Payment:** Amount cannot exceed outstanding balance
-6. **Date Validation:** Start date before end date
-
----
-
-## ADDITIONAL FEATURES:
-
-1. **Email Notifications:**
-   - Welcome email on registration
-   - Payment confirmation
-   - Assignment reminders
-   - Grade notifications
-
-2. **Certificate Generation:**
-   - Auto-generate certificates on course completion
-   - PDF download
-
-3. **Calendar Integration:**
-   - Class schedules
-   - Assignment deadlines
-   - Payment due dates
-
-4. **Communication:**
-   - Messaging between students and instructors
-   - Announcements
-
----
-
-## DELIVERABLES:
-
-1. Complete source code with comments
-2. Database schema and migrations
-3. Seeder data (sample students, courses, instructors)
-4. Admin panel with all CRUD operations
-5. Student and Instructor portals
-6. README with installation instructions
-7. API documentation (if building API)
-
----
-
-Please build this system with:
-- Clean, maintainable code
-- Proper error handling
-- Input validation
-- Responsive design
-- User-friendly interface
-- Comprehensive testing
-
-Start with the database design, then build authentication, followed by core features. Implement the 2-course enrollment limit as a critical validation rule.
-
-
-the project is running live on https://portal.tenstrings.org/admin/login so what i do is push from local and pull on erver terminal pls note
+* sqlite - select * from "sessions" where "id" = 'BRo6LYAdWQvJubBlA2hqcplwNNKMbkFdXcuXSeum' limit 1 (1.26 ms)
+* sqlite - delete from "sessions" where "last_activity" <= 1773059587 (16.86 ms)
+* sqlite - select * from "users" where "id" = 2 limit 1 (0.09 ms)

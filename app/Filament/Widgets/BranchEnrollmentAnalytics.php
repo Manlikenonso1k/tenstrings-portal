@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Student;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -17,7 +17,7 @@ class BranchEnrollmentAnalytics extends BaseWidget
     {
         return $table
             ->query(
-                DB::table('students')
+                Student::query()
                     ->leftJoin('enrollments', function ($join) {
                         $join->on('students.id', '=', 'enrollments.student_id')
                             ->where('enrollments.status', '=', 'ongoing');

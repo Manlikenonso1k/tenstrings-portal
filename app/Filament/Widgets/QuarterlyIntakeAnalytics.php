@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Enrollment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -15,7 +15,7 @@ class QuarterlyIntakeAnalytics extends BaseWidget
     {
         return $table
             ->query(
-                DB::table('enrollments')
+                Enrollment::query()
                     ->selectRaw('intake_month, COUNT(*) as enrollments')
                     ->whereIn('intake_month', ['FEBRUARY', 'MAY', 'AUGUST', 'NOVEMBER'])
                     ->groupBy('intake_month')

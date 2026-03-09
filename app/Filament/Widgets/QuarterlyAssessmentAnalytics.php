@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Grade;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -15,7 +15,7 @@ class QuarterlyAssessmentAnalytics extends BaseWidget
     {
         return $table
             ->query(
-                DB::table('grades')
+                Grade::query()
                     ->selectRaw('assessment_month, COUNT(*) as assessments, ROUND(AVG(percentage), 2) as avg_percentage')
                     ->whereIn('assessment_month', ['FEBRUARY', 'MAY', 'AUGUST', 'NOVEMBER'])
                     ->groupBy('assessment_month')
