@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\StudentMatricMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class StudentRegistrationController extends Controller
 {
@@ -63,6 +66,16 @@ class StudentRegistrationController extends Controller
                 'guardian_relationship' => $validated['guardian_relationship'] ?? null,
             ]);
         });
+
+        try {
+            StudentMatricMailer::send($student);
+        } catch (Throwable $exception) {
+            Log::warning('Student matric email could not be sent.', [
+                'student_id' => $student->id,
+                'email' => $student->email,
+                'error' => $exception->getMessage(),
+            ]);
+        }
 
         return redirect('/portal/login')->with('status', 'Registration successful. Your matric number is ' . $student->student_number . '. Please login.');
     }

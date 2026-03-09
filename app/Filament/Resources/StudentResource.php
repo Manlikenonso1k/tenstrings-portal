@@ -4,13 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
+use App\Support\StudentMatricMailer;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class StudentResource extends Resource
 {
@@ -100,6 +104,33 @@ class StudentResource extends Resource
                 ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('resend_matric_email')
+                    ->label('Resend Matric')
+                    ->icon('heroicon-o-envelope')
+                    ->visible(fn () => auth()->user()?->isAdmin() ?? false)
+                    ->action(function (Student $record): void {
+                        try {
+                            StudentMatricMailer::send($record);
+
+                            Notification::make()
+                                ->title('Matric email sent')
+                                ->body('Matric number has been emailed to ' . $record->email)
+                                ->success()
+                                ->send();
+                        } catch (Throwable $exception) {
+                            Log::warning('Failed to resend student matric email.', [
+                                'student_id' => $record->id,
+                                'email' => $record->email,
+                                'error' => $exception->getMessage(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Email failed')
+                                ->body('Unable to send matric email right now.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])

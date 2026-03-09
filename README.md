@@ -86,6 +86,7 @@ npm run dev
 	- a `users` account with `role=student`
 	- a linked `students` profile record
 - Student receives a generated matric number and signs in at `/portal/login` using matric number + password
+- System also emails the matric number to the registered student email (requires valid `MAIL_*` environment settings)
 - Student registration includes branch selection:
 	- `AJAH BRANCH`
 	- `AGEGE BRANCH`
