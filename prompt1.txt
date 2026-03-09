@@ -1,53 +1,43 @@
-THE MATRIC NUMBER LOGIN AND REGISTRATION FLOW IS COMPLETE AND WORKING. WE NOW NEED TO EXPAND THE SYSTEM TO HANDLE MULTIPLE CAMPUSES, DETAILED ADMIN TRACKING, QUARTERLY ASSESSMENTS, AND A FULLY POPULATED STUDENT PORTAL.
+CONTEXT: I am building the "Tenstrings Portal". We need to refine the registration flow and create a high-end, organized Student Data dashboard in Filament.
 
-TASK 1: BRANCH SELECTION
-UPDATE THE /REGISTER/STUDENT FORM, STUDENT MODEL, AND DATABASE MIGRATION TO INCLUDE A "BRANCH" SELECTION. THE FOUR EXACT OPTIONS MUST BE:
+TASK 1: SMART MATRIC GENERATION & COURSE SELECTION
 
-AJAH BRANCH
+Update the register/student form to include a Course Selection dropdown using the 15 specific courses provided (e.g., "Advance Diploma in Music Performance - 18 months").
 
-AGEGE BRANCH
+Matric Logic: Rewrite the MatricNumberGenerator to follow this pattern: [YEAR][MONTH][COURSE_CODE][SEQUENCE].
 
-IKEJA BRANCH
+Example: 202603ADMP001.
 
-FESTAC BRANCH
+Ensure each of the 15 courses has a unique shortcode (ADMP, ADPD, DMP, etc.) mapped for the matric number.
 
-TASK 2: STUDENT DATA TRACKING FOR ADMINS
-THE CORE ADMIN USE CASE IS TRACKING STUDENT DATA. ENSURE THE ADMIN STUDENTRESOURCE AND THE UNDERLYING DATABASE CAN CAPTURE, STORE, AND DISPLAY THE FOLLOWING CRITICAL CONTACT POINTS:
+TASK 2: STUDENT DATA UI REFACTOR (GRID LAYOUT)
+The current student data view is cluttered. Refactor the StudentResource (and the Student Portal View) into a clean, 4-column grid layout with the following specific sections:
 
-STUDENT RESIDENTIAL ADDRESS
+COLUMN 1: IDENTITY & PASSPORT
 
-STUDENT PHONE NUMBER
+Update Passport: A dedicated FileUpload component that updates the avatar_url for the dashboard.
 
-GUARDIAN PHONE NUMBER
+COLUMN 2: CORE INFORMATION
 
-TASK 3: ENROLLMENT AND QUARTERLY ASSESSMENTS
-IMPLEMENT A PERFORMANCE TRACKING AND ASSESSMENT MODULE. THE SYSTEM MUST BE ABLE TO RECORD AND FILTER ENROLLMENTS AND QUARTERLY ASSESSMENTS SPECIFICALLY STRUCTURED AROUND THESE FOUR MONTHS:
+Basic Data: A Section containing: Full Name, Address, Email, Phone Number, and Guardian Phone Number.
 
-FEBRUARY
+COLUMN 3: ACADEMIC & PROGRESS
 
-MAY
+Education History: A Section displaying "Quarterly Assessment Stats" (Feb, May, Aug, Nov).
 
-AUGUST
+Print Center: Two Action buttons:
 
-NOVEMBER
+Print Admission Letter (Generates a PDF).
 
-TASK 4: STUDENT PORTAL SIDEBAR NAVIGATION
-UPDATE THE STUDENT FILAMENT PANEL (/PORTAL). THE SIDEBAR MUST EXCLUSIVELY FEATURE THE FOLLOWING MENU ITEMS, EACH PAIRED WITH AN APPROPRIATE HEROICON:
+Print Bio-data (Generates a PDF summary of the user's profile).
 
-DASHBOARD
+COLUMN 4: DOCUMENT VAULT
 
-STUDENT DATA
+Document Upload: A FileUpload for Birth Certificate, JAMB, NECO, and WAEC.
 
-PAYMENTS
+Constraints: Allowed: pdf, png, jpg, jpeg. Max size: 2mb.
 
-COURSE REGISTRATION
+TASK 3: PDF GENERATION LOGIC
+Provide a simple Laravel controller or Filament action logic to handle the PDF generation for the Admission Letter and Bio-data using barryvdh/laravel-dompdf.
 
-RESULTS
-
-ACCOMMODATION
-
-TASK 5: COURSE REGISTRATION FUNCTIONALITY
-IMPLEMENT THE ACTUAL LOGIC AND INTERFACE FOR THE "COURSE REGISTRATION" MENU ITEM. STUDENTS MUST BE ABLE TO SELECT AND REGISTER FOR THEIR SPECIFIC COURSES DIRECTLY FROM THIS SECTION IN THEIR PORTAL.
-
-OUTPUT INSTRUCTIONS
-PROVIDE THE NECESSARY LARAVEL MIGRATIONS, FILAMENT RESOURCE UPDATES, AND PANEL CONFIGURATION CODE TO IMPLEMENT THESE EXACT REQUIREMENTS EFFICIENTLY END-TO-END.
+OUTPUT: Provide the updated Register.php form schema, the MatricNumberGenerator logic, and the refactored StudentResource schema.

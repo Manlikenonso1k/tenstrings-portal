@@ -128,6 +128,13 @@ npm run dev
 	- `{seq:N}` padded sequence, e.g. `{seq:8}`
 - Example pattern: `{ycode}{seq:8}` gives `1700000001`
 
+## Course Shortcode Customization (Super Admin Only)
+
+- Go to **Access Control → Course Shortcodes**
+- Edit `short_code` for each of the 15 registration courses
+- Only `super_admin` can access this section
+- Students cannot access or change shortcode mappings
+
 ## Bash Command Note
 
 Use full artisan commands only:

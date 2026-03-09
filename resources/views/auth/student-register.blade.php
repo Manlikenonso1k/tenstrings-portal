@@ -50,6 +50,17 @@
                     <option value="FESTAC BRANCH" @selected(old('branch') === 'FESTAC BRANCH')>FESTAC BRANCH</option>
                 </select>
             </div>
+            <div class="full">
+                <label>Course Selection</label>
+                <select name="selected_course_name" required>
+                    <option value="">Select Course</option>
+                    @foreach (\App\Support\CourseCatalog::options() as $courseName => $courseCode)
+                        <option value="{{ $courseName }}" @selected(old('selected_course_name') === $courseName)>
+                            {{ $courseName }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div><label>Date of Birth</label><input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}"></div>
             <div class="full"><label>Address</label><textarea name="address">{{ old('address') }}</textarea></div>
             <div><label>Guardian Name</label><input type="text" name="guardian_name" value="{{ old('guardian_name') }}"></div>

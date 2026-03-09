@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\CourseCatalog;
 use App\Support\StudentMatricMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class StudentRegistrationController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'branch' => ['required', 'in:AJAH BRANCH,AGEGE BRANCH,IKEJA BRANCH,FESTAC BRANCH'],
+            'selected_course_name' => ['required', 'in:' . implode(',', array_keys(CourseCatalog::options()))],
             'date_of_birth' => ['nullable', 'date'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
             'guardian_phone' => ['nullable', 'string', 'max:30'],
@@ -53,6 +55,8 @@ class StudentRegistrationController extends Controller
                 'first_name' => $validated['first_name'],
                 'middle_name' => $validated['middle_name'] ?? null,
                 'last_name' => $validated['last_name'],
+                'selected_course_name' => $validated['selected_course_name'],
+                'selected_course_code' => CourseCatalog::codeFor($validated['selected_course_name']),
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'address' => $validated['address'] ?? null,

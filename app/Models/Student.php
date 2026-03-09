@@ -13,6 +13,8 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'student_number',
+        'selected_course_name',
+        'selected_course_code',
         'first_name',
         'middle_name',
         'last_name',
@@ -39,7 +41,10 @@ class Student extends Model
     {
         static::creating(function (Student $student) {
             if (! $student->student_number) {
-                $student->student_number = MatricNumberGenerator::generate($student->registration_date);
+                $student->student_number = MatricNumberGenerator::generate(
+                    $student->registration_date,
+                    $student->selected_course_code
+                );
             }
         });
     }
