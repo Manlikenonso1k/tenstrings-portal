@@ -1,40 +1,30 @@
-TASK: Refactor the custom Filament login page to resolve layout conflicts, fix dark mode visibility issues, and apply strict dimension constraints.
+TASK: Optimize the Tailwind classes and custom CSS for the Tenstrings Portal login and logo components to match exact design specifications.
 
-1. LAYOUT & RESPONSIVENESS:
+1. CSS OVERRIDE:
 
-Implement a two-column layout for desktop: Logo Div on the LEFT, Form Div on the RIGHT.
+Update the global or component-level CSS so that .h-screen is explicitly set to height: 45vh;.
 
-MOBILE VIEW: Hide the Logo Div entirely; the Form Div should take up the full width.
+2. DIMENSION CONSTRAINTS (THE MIRROR EFFECT):
 
-DIMENSIONS: The parent container must have a fixed height of 489.594px and a width of 1024px (centered on desktop).
+The Login Div and the Logo Div must have identical dimensions on desktop (md breakpoint and above).
 
-2. TEMPLATE CLEANUP:
+Height: Fixed at 348px.
 
-Remove all non-essential render hooks and vendor boilerplate.
+Width: Fixed at 416.922px.
 
-Reduce the Blade template to a minimal single-root variant to prevent "div soup" and styling inheritance bugs.
+3. TAILWIND CLASS OPTIMIZATION:
+Refactor the current class string: w-full md:w-1/2 h-screen md:h-full overflow-y-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex items-center
 
-3. DARK MODE & COLOR RESOLUTION:
+NEW REQUIREMENTS:
 
-The Issue: There is a conflict between the custom page styling and Filament's vendor dark mode, causing white text to appear on white backgrounds.
+Width: Use w-full for mobile, but on desktop, use the specific pixel width md:w-[416.922px].
 
-The Fix: Explicitly set the Form Div background to bg-white dark:bg-gray-900 and text to text-gray-900 dark:text-white.
+Height: Use h-[45vh] for mobile and md:h-[348px] for desktop.
 
-Ensure the parent background is consistent and does not "leak" into the form fields.
+Centering: Ensure the parent container uses justify-center and items-center so these specific pixel divs sit perfectly in the middle of the screen.
 
-4. FINAL CHECKLIST (TO-DO):
-Please provide a status report once finished confirming the following:
+Responsive Fix: For the width issue, use max-w-full on mobile to prevent horizontal scrolling, and ensure the flex-basis or width doesn't collapse on smaller screens.
 
-[ ] Logo is on the Left, Form is on the Right (Desktop).
+4. LOGO SYNC:
 
-[ ] Logo is hidden on Mobile.
-
-[ ] Container Height is exactly 489.594px.
-
-[ ] Container Width is exactly 1024px.
-
-[ ] Template is reduced to a single-root variant.
-
-[ ] Dark mode contrast verified (No white-on-white text in form fields).
-
-[ ] Non-essential render hooks removed.
+Ensure the Logo container uses the exact same w-[416.922px] and h-[348px] as the form div. Use object-contain for the logo image inside to prevent stretching.
