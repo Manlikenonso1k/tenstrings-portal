@@ -4,12 +4,11 @@
     <section class="rounded-md shadow-lg w-full overflow-hidden lg:max-w-screen-lg">
         <div class="rounded-md w-full justify-center overflow-hidden md:flex">
             <aside class="bg-gray-50 bg-opacity-50 text-primary p-8 hidden justify-center items-center md:flex md:w-1/3 lg:w-1/2">
-                <div
-                    class="bg-contain bg-center bg-no-repeat bg-opacity-50 h-64 w-64"
-                    style="background-image: url('{{ asset('images/tenstrings-logo.png') }}');"
-                    role="img"
-                    aria-label="Tenstrings Music Institute"
-                ></div>
+                <img
+                    src="{{ asset('images/tenstrings-logo.png') }}"
+                    alt="Tenstrings Music Institute"
+                    class="h-64 w-64 object-contain"
+                />
             </aside>
 
             <section class="bg-white flex-grow h-screen overflow-y-auto md:h-full">
