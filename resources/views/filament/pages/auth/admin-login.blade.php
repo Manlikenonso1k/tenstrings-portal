@@ -1,8 +1,8 @@
 <x-filament-panels::page.simple class="min-h-screen bg-gradient-to-b from-white to-blue-100">
     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
-    <div class="grid grid-cols-1 overflow-hidden rounded-2xl shadow-2xl ring-1 ring-gray-950/5 lg:grid-cols-2">
-        <div class="flex min-h-80 items-center justify-center bg-white p-10 shadow-sm">
+    <div class="grid grid-cols-1 overflow-hidden rounded-2xl shadow-2xl ring-1 ring-gray-950/5 lg:grid-cols-2 lg:min-h-[32rem]">
+        <div class="flex min-h-72 items-center justify-center bg-white p-10 shadow-sm lg:min-h-full">
             <img
                 src="{{ asset('images/tenstrings-logo.png') }}"
                 alt="Tenstrings Music Institute"
@@ -10,7 +10,7 @@
             />
         </div>
 
-        <div class="flex items-center bg-white p-6 shadow-sm sm:p-10">
+        <div class="flex items-center bg-white p-6 shadow-sm sm:p-10 lg:min-h-full">
             <div class="w-full">
                 @if (filament()->hasRegistration())
                     <p class="mb-4 text-sm text-gray-600">
