@@ -28,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(AdminLogin::class)
+            ->favicon(asset('images/tenstrings-logo.png'))
             ->simplePageMaxContentWidth('7xl')
             ->colors([
                 'primary' => Color::Blue,
