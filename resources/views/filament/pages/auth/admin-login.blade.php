@@ -31,7 +31,6 @@
                 </x-filament-panels::form>
                 </div>
             </section>
-            </div>
         </div>
     </section>
 

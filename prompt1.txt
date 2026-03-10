@@ -1,43 +1,123 @@
-CONTEXT: I am building the "Tenstrings Portal". We need to refine the registration flow and create a high-end, organized Student Data dashboard in Filament.
+# Livewire\Features\SupportMultipleRootElementDetection\MultipleRootElementsDetectedException - Internal Server Error
 
-TASK 1: SMART MATRIC GENERATION & COURSE SELECTION
+Livewire only supports one HTML element per component. Multiple root elements detected for component: [app.filament.pages.auth.admin-login]
 
-Update the register/student form to include a Course Selection dropdown using the 15 specific courses provided (e.g., "Advance Diploma in Music Performance - 18 months").
+PHP 8.3.19
+Laravel 12.53.0
+portal.tenstrings.org
 
-Matric Logic: Rewrite the MatricNumberGenerator to follow this pattern: [YEAR][MONTH][COURSE_CODE][SEQUENCE].
+## Stack Trace
 
-Example: 202603ADMP001.
+0 - vendor/livewire/livewire/src/Features/SupportMultipleRootElementDetection/SupportMultipleRootElementDetection.php:27
+1 - vendor/livewire/livewire/src/Features/SupportMultipleRootElementDetection/SupportMultipleRootElementDetection.php:16
+2 - vendor/livewire/livewire/src/EventBus.php:73
+3 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:72
+4 - vendor/livewire/livewire/src/LivewireManager.php:73
+5 - vendor/livewire/livewire/src/Features/SupportPageComponents/HandlesPageComponents.php:17
+6 - vendor/livewire/livewire/src/Features/SupportPageComponents/SupportPageComponents.php:117
+7 - vendor/livewire/livewire/src/Features/SupportPageComponents/HandlesPageComponents.php:14
+8 - vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php:46
+9 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:265
+10 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:211
+11 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:822
+12 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+13 - vendor/filament/filament/src/Http/Middleware/DispatchServingFilamentEvent.php:15
+14 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+15 - vendor/filament/filament/src/Http/Middleware/DisableBladeIconComponents.php:14
+16 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+17 - vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php:50
+18 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+19 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php:87
+20 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+21 - vendor/laravel/framework/src/Illuminate/Session/Middleware/AuthenticateSession.php:48
+22 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+23 - vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php:48
+24 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+25 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:120
+26 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:63
+27 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+28 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php:36
+29 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+30 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php:74
+31 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+32 - vendor/filament/filament/src/Http/Middleware/SetUpPanel.php:19
+33 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+34 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+35 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
+36 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:800
+37 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:764
+38 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:753
+39 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:200
+40 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+41 - vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php:19
+42 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+43 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php:21
+44 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php:31
+45 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+46 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php:21
+47 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php:51
+48 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+49 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php:27
+50 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+51 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php:109
+52 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+53 - vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php:61
+54 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+55 - vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php:58
+56 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+57 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php:22
+58 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+59 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php:26
+60 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+61 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+62 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:175
+63 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:144
+64 - vendor/laravel/framework/src/Illuminate/Foundation/Application.php:1220
+65 - public/index.php:20
 
-Ensure each of the 15 courses has a unique shortcode (ADMP, ADPD, DMP, etc.) mapped for the matric number.
+## Request
 
-TASK 2: STUDENT DATA UI REFACTOR (GRID LAYOUT)
-The current student data view is cluttered. Refactor the StudentResource (and the Student Portal View) into a clean, 4-column grid layout with the following specific sections:
+GET /admin/login
 
-COLUMN 1: IDENTITY & PASSPORT
+## Headers
 
-Update Passport: A dedicated FileUpload component that updates the avatar_url for the dashboard.
+* **accept**: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+* **accept-encoding**: br
+* **accept-language**: en-GB,en-US;q=0.9,en;q=0.8
+* **connection**: close
+* **cookie**: _ga=GA1.2.2125740300.1762264473; twk_uuid_5c686cfc77e0730ce04347e0=%7B%22uuid%22%3A%221.7xaf1zW9JzvcjBKXSDOWkgdyleRKJE3gL32DvTHp1XjHWJAxLsTN0vmH6nOFJT3K9FIIC52OQdI2q7GOm21HmkineVpCWaRcZ8QCQ8owxcQL9YycDDIZd4zG%22%2C%22version%22%3A3%2C%22domain%22%3A%22tenstrings.org%22%2C%22ts%22%3A1768572744154%7D; XSRF-TOKEN=eyJpdiI6Im9HcVpRR0NxTnM4Q25ORjJsTmo4aXc9PSIsInZhbHVlIjoiUENhaTRjRU54VFhzZmIwS0Zyb2VaSlNlQlRGdGZmZldDY1VLMitpT2Jnem1ab2NKbWVCVGg5dVFXS1FIUE5BWnQrSXZBVDBpMW9KQWhqb0d1WUZheUM3VlFXWFA2ekttaGJkUDVSZjdueURYeUhKOVVReXFCREFscUZpSlVVb1YiLCJtYWMiOiI1NDJlZGE0NTZiMDU2NjVhYWE5ZjQwMDRlNzc1NWM4N2EwNmQxNjdlOThhMjEzMGZjYTk1YTMyNTcwMWRkZGI5IiwidGFnIjoiIn0%3D; tenstrings-institute-session=eyJpdiI6IjlUS2dwaFZSb05RSG1DVnU0ckhsYWc9PSIsInZhbHVlIjoiVlhIRGhYTWovb2FRaThyS0ZkVHBjQkpuRENYYWpLSk9IQS9JcTVDYVk4OHhmclp2ZWp6MmpmdDArVFV4UngrbnkyUzVzZFYyVG9lcXc5S1o5OTNRN1lXMGp1NWpMbzhWVDRBQkxxdmRhOFlyMlF3akN6T3g1T0pBTWNXYkRwVHYiLCJtYWMiOiJmMTc5MzkyNjYxMDJhOTkyNWM2OTM4NWM2NDljZjY4YmMwOWM2MzlhYWYxNDE2M2ZlMWU3ZWNlZGQxNGIzMjA5IiwidGFnIjoiIn0%3D
+* **host**: portal.tenstrings.org
+* **pragma**: no-cache
+* **referer**: https://portal.tenstrings.org/admin
+* **user-agent**: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+* **cache-control**: no-cache
+* **x-forwarded-for**: 102.88.115.77
+* **x-forwarded-proto**: https
+* **x-real-ip**: 102.88.115.77
+* **x-real-port**: 14730
+* **x-forwarded-port**: 443
+* **x-port**: 443
+* **x-lscache**: 1
+* **sec-ch-ua**: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"
+* **sec-ch-ua-mobile**: ?1
+* **sec-ch-ua-platform**: "Android"
+* **upgrade-insecure-requests**: 1
+* **sec-fetch-site**: same-origin
+* **sec-fetch-mode**: navigate
+* **sec-fetch-user**: ?1
+* **sec-fetch-dest**: document
+* **priority**: u=0, i
 
-COLUMN 2: CORE INFORMATION
+## Route Context
 
-Basic Data: A Section containing: Full Name, Address, Email, Phone Number, and Guardian Phone Number.
+controller: App\Filament\Pages\Auth\AdminLogin
+route name: filament.admin.auth.login
+middleware: panel:admin, Illuminate\Cookie\Middleware\EncryptCookies, Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse, Illuminate\Session\Middleware\StartSession, Filament\Http\Middleware\AuthenticateSession, Illuminate\View\Middleware\ShareErrorsFromSession, Illuminate\Foundation\Http\Middleware\VerifyCsrfToken, Illuminate\Routing\Middleware\SubstituteBindings, Filament\Http\Middleware\DisableBladeIconComponents, Filament\Http\Middleware\DispatchServingFilamentEvent
 
-COLUMN 3: ACADEMIC & PROGRESS
+## Route Parameters
 
-Education History: A Section displaying "Quarterly Assessment Stats" (Feb, May, Aug, Nov).
+No route parameter data available.
 
-Print Center: Two Action buttons:
+## Database Queries
 
-Print Admission Letter (Generates a PDF).
-
-Print Bio-data (Generates a PDF summary of the user's profile).
-
-COLUMN 4: DOCUMENT VAULT
-
-Document Upload: A FileUpload for Birth Certificate, JAMB, NECO, and WAEC.
-
-Constraints: Allowed: pdf, png, jpg, jpeg. Max size: 2mb.
-
-TASK 3: PDF GENERATION LOGIC
-Provide a simple Laravel controller or Filament action logic to handle the PDF generation for the Admission Letter and Bio-data using barryvdh/laravel-dompdf.
-
-OUTPUT: Provide the updated Register.php form schema, the MatricNumberGenerator logic, and the refactored StudentResource schema.
+* sqlite - select * from "sessions" where "id" = 'tt3FZO59WafobBX8h0jVOaRIHBdKyS2oPfMomP7Y' limit 1 (1.68 ms)
