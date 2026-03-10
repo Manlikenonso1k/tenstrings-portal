@@ -8,6 +8,8 @@ use Filament\Pages\Auth\Login;
 
 class StudentLogin extends Login
 {
+    protected static string $view = 'filament.portal.pages.auth.student-login';
+
     protected function getEmailFormComponent(): TextInput
     {
         return TextInput::make('email')

@@ -31,6 +31,7 @@ class StudentPanelProvider extends PanelProvider
             ->id('portal')
             ->path('portal')
             ->login(StudentLogin::class)
+            ->simplePageMaxContentWidth('7xl')
             ->colors([
                 'primary' => Color::Amber,
             ])
