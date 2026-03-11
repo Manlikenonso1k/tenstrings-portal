@@ -10,6 +10,8 @@ class ViewStudent extends ViewRecord
 {
     protected static string $resource = StudentResource::class;
 
+    protected static string $view = 'filament.resources.student-resource.pages.view-student-hub';
+
     protected function getHeaderActions(): array
     {
         return [

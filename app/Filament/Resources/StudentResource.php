@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -199,7 +200,7 @@ class StudentResource extends Resource
                 Tables\Actions\Action::make('resend_matric_email')
                     ->label('Resend Matric')
                     ->icon('heroicon-o-envelope')
-                    ->visible(fn () => auth()->user()?->isAdmin() ?? false)
+                    ->visible(fn () => in_array(Auth::user()?->role, ['super_admin', 'admin'], true))
                     ->action(function (Student $record): void {
                         try {
                             StudentMatricMailer::send($record);
@@ -244,6 +245,10 @@ class StudentResource extends Resource
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
             'view' => Pages\ViewStudent::route('/{record}'),
+            'identity' => Pages\EditStudentIdentity::route('/{record}/identity'),
+            'core' => Pages\EditStudentCore::route('/{record}/core-information'),
+            'academic' => Pages\ViewStudentAcademic::route('/{record}/academic-progress'),
+            'documents' => Pages\EditStudentDocuments::route('/{record}/documents'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
     }
@@ -251,7 +256,7 @@ class StudentResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user?->role === 'student' && $user->student) {
             return $query->where('id', $user->student->id);
@@ -262,7 +267,7 @@ class StudentResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
     }
 
     public static function shouldRegisterNavigation(): bool
@@ -273,16 +278,16 @@ class StudentResource extends Resource
     public static function canAccess(): bool
     {
         return Filament::getCurrentPanel()?->getId() === 'admin'
-            && (auth()->user()?->isAdmin() ?? false);
+            && in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
     }
 }

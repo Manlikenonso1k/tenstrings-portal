@@ -1,21 +1,46 @@
-Advanced Diploma in Music Performance | is 18 months
-2 | Advanced Diploma in Music Production | is 18 months
-3 | Diploma in Music Performance | is 1 year
-4 | Diploma in Music Production | is 1 year
-5 | Certificate in Music Performance | can be either 3 months or 6 months
-6 | Certificate in Music Production | can be either 3 months or 6 months
-7 | Certificate in Gospel Music Performance | can be either 3 months or 6 months
-8 | Certificate in Gospel Music Performance | can be either 3 months or 6 months
-9 | Diploma in Gospel Music Performance | is 1 year
-10 | Certificate in Songwriting | can be either 3 months or 6 months
-11 | Certificate in Songwriting | can be either 3 months or 6 months
-12 | Certificate in Piano | can be either 3 months or 6 months
-13 | Certificate in Piano | can be either 3 months or 6 months
-14 | Certificate in Music Business | can be either 3 months or 6 months
-15 | Certificate in Music Business | can be either 3 months or 6 months
-16 | Certificate in Guitar | can be either 3 months or 6 months
-17 | Certificate in Guitar | can be either 3 months or 6 months
-18 | Certificate in Drums | can be either 3 months or 6 months
-19 | Certificate in Drums | can be either 3 months or 6 months
-20 | Certificate in Voice | can be either 3 months or 6 months
-21 | Certificate in Voice | can be either 3 months or 6 months
+CONTEXT: I am refactoring the Tenstrings Portal (Laravel 11 + Filament). Currently, the "Student Data" page displays all information at once, which is overwhelming. I want a "Hub" interface where each section is its own isolated page.
+
+TASK 1: THE HUB MENU (STUDENT PORTAL)
+
+Transform the main StudentData page (/portal/student-data-page) into a Grid of Action Buttons/Cards.
+
+Each card must represent one of the 4 sections:
+
+IDENTITY & PASSPORT
+
+CORE INFORMATION
+
+ACADEMIC & PROGRESS
+
+DOCUMENT VAULT
+
+Clicking a button must navigate to a dedicated sub-page that only shows that specific data. No other sections should be visible on that page.
+
+Add a clear "Back to Student Data Hub" button on every sub-page.
+
+TASK 2: ADMIN SIDE MIRRORING
+
+Refactor the ViewStudent page in the Admin Resource (/admin/students/{record}).
+
+Instead of the standard Infolist with all sections, implement the same 4-Button Grid Hub.
+
+Ensure the Admin can navigate to these isolated pages to view/edit student details one section at a time.
+
+TASK 3: TECHNICAL IMPLEMENTATION
+
+Use Filament Sub-Navigation or Custom Resource Pages to handle the routing.
+
+For the Hub, create a custom Blade component or Stat Widget that functions as a menu.
+
+Ensure the layout is responsive (Grid: 1 column on mobile, 2 or 4 on desktop).
+
+Use Heroicons on each button to make them visually distinct (e.g., user for Identity, identification for Core, academic-cap for Progress, folder for Documents).
+
+OUTPUT: Provide the code for the Hub Page, the sub-page registration in the Panel Provider, and the navigation logic between them.
+
+UI Navigation Flow
+The Hub: A clean screen with 4 large cards.
+
+The Sub-Page: A focused form or view containing only the relevant fields (e.g., just the passport upload).
+
+The Return: A prominent "Back" button to return to the 4-choice menu.

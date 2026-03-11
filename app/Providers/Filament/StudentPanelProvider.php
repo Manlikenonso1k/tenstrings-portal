@@ -9,6 +9,10 @@ use App\Filament\Portal\Pages\DashboardPage;
 use App\Filament\Portal\Pages\PaymentsPage;
 use App\Filament\Portal\Pages\ResultsPage;
 use App\Filament\Portal\Pages\StudentDataPage;
+use App\Filament\Portal\Pages\StudentIdentityPage;
+use App\Filament\Portal\Pages\StudentCoreInfoPage;
+use App\Filament\Portal\Pages\StudentAcademicPage;
+use App\Filament\Portal\Pages\StudentDocumentsPage;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -40,6 +44,10 @@ class StudentPanelProvider extends PanelProvider
             ->pages([
                 DashboardPage::class,
                 StudentDataPage::class,
+                StudentIdentityPage::class,
+                StudentCoreInfoPage::class,
+                StudentAcademicPage::class,
+                StudentDocumentsPage::class,
                 PaymentsPage::class,
                 CourseRegistrationPage::class,
                 ResultsPage::class,
