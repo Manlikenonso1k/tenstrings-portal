@@ -30,7 +30,23 @@ class StudentRegistrationController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'middle_name' => ['nullable', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email', 'unique:students,email'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:students,email',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $existingUser = User::query()->where('email', $value)->first();
+
+                    if (! $existingUser) {
+                        return;
+                    }
+
+                    if ($existingUser->role !== 'student' || $existingUser->student()->exists()) {
+                        $fail('The email has already been taken.');
+                    }
+                },
+            ],
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'branch' => ['required', 'in:AJAH BRANCH,AGEGE BRANCH,IKEJA BRANCH,FESTAC BRANCH'],
@@ -52,13 +68,24 @@ class StudentRegistrationController extends Controller
         }
 
         $student = DB::transaction(function () use ($validated) {
-            $user = User::query()->create([
-                'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-                'role' => 'student',
-                'password' => Hash::make($validated['password']),
-            ]);
+            $user = User::query()->where('email', $validated['email'])->first();
+
+            if ($user) {
+                $user->forceFill([
+                    'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
+                    'phone' => $validated['phone'],
+                    'role' => 'student',
+                    'password' => Hash::make($validated['password']),
+                ])->save();
+            } else {
+                $user = User::query()->create([
+                    'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
+                    'role' => 'student',
+                    'password' => Hash::make($validated['password']),
+                ]);
+            }
 
             return Student::query()->create([
                 'user_id' => $user->id,

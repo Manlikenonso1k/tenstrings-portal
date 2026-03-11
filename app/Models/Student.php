@@ -50,6 +50,10 @@ class Student extends Model
                 );
             }
         });
+
+        static::deleting(function (Student $student): void {
+            $student->user()?->delete();
+        });
     }
 
     public function user()
