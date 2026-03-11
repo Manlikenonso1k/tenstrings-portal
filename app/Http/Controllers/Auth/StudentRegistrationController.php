@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
+use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\CourseCatalog;
 use App\Support\StudentMatricMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -87,7 +90,7 @@ class StudentRegistrationController extends Controller
                 ]);
             }
 
-            return Student::query()->create([
+            $student = Student::query()->create([
                 'user_id' => $user->id,
                 'first_name' => $validated['first_name'],
                 'middle_name' => $validated['middle_name'] ?? null,
@@ -108,6 +111,39 @@ class StudentRegistrationController extends Controller
                 'guardian_email' => $validated['guardian_email'] ?? null,
                 'guardian_relationship' => $validated['guardian_relationship'] ?? null,
             ]);
+
+            // Derive intake month from start_date
+            $startCarbon = Carbon::parse($validated['start_date']);
+            $intakeMonth = strtoupper($startCarbon->format('F'));
+
+            // Calculate expected end date from duration string (e.g. "3 months", "1 year", "18 months")
+            $endDate = $startCarbon->copy();
+            preg_match('/^(\d+)\s*(month|year)/i', $validated['duration'], $m);
+            if (! empty($m)) {
+                $unit = strtolower($m[2]);
+                $amount = (int) $m[1];
+                $endDate = $unit === 'year' ? $endDate->addYears($amount) : $endDate->addMonths($amount);
+            } else {
+                $endDate->addMonths(3); // safe fallback
+            }
+
+            // Create the enrollment record
+            $enrollment = Enrollment::query()->create([
+                'student_id' => $student->id,
+                'enrollment_date' => now()->toDateString(),
+                'intake_month' => $intakeMonth,
+                'start_date' => $validated['start_date'],
+                'expected_end_date' => $endDate->toDateString(),
+                'status' => 'ongoing',
+            ]);
+
+            // Link the course to the enrollment if it exists in the courses table
+            $course = Course::query()->where('name', $validated['selected_course_name'])->first();
+            if ($course) {
+                $enrollment->courses()->attach($course->id);
+            }
+
+            return $student;
         });
 
         try {
