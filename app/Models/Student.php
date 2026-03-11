@@ -67,6 +67,16 @@ class Student extends Model
 
     public function scopeMainIntakeMonths(Builder $query): Builder
     {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $padded = array_map(fn ($m) => str_pad((string) $m, 2, '0', STR_PAD_LEFT), self::MAIN_INTAKE_MONTHS);
+
+            return $query
+                ->whereNotNull('start_date')
+                ->whereIn(DB::raw("strftime('%m', start_date)"), $padded);
+        }
+
         return $query
             ->whereNotNull('start_date')
             ->whereIn(DB::raw('MONTH(start_date)'), self::MAIN_INTAKE_MONTHS);
