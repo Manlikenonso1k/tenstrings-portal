@@ -1,46 +1,50 @@
-CONTEXT: I am refactoring the Tenstrings Portal (Laravel 11 + Filament). Currently, the "Student Data" page displays all information at once, which is overwhelming. I want a "Hub" interface where each section is its own isolated page.
+CONTEXT: I am refining the mobile user interface for the Tenstrings Portal (Laravel/Filament). The navigation sidebar on mobile is currently buggy and visually inconsistent.
 
-TASK 1: THE HUB MENU (STUDENT PORTAL)
+TASK 1: MOBILE SIDEBAR TOGGLE & VISIBILITY
 
-Transform the main StudentData page (/portal/student-data-page) into a Grid of Action Buttons/Cards.
+Fix the "Close" Icon: Currently, the hamburger icon disappears when the menu is open, leaving no "X" or "Close" button. Ensure the toggle icon switches from a hamburger to an 'X' (Close icon) when the sidebar is active on mobile.
 
-Each card must represent one of the 4 sections:
+Adjust Sidebar Width: On mobile devices, set the sidebar width to exactly 60% of the screen width (w-[60vw]). The goal is to ensure the page content remains partially visible behind the menu overlay.
 
-IDENTITY & PASSPORT
+Overlay Logic: Ensure clicking the darkened overlay (the area outside the 60% menu) also closes the sidebar.
 
-CORE INFORMATION
+TASK 2: THEME & COLOR SYNCHRONIZATION
 
-ACADEMIC & PROGRESS
+Color Matching: The Admin portal styling is the gold standard. Copy the Blue Primary Color configuration from the AdminPanelProvider to the StudentPanelProvider.
 
-DOCUMENT VAULT
+Hover & Active States: >    - Force all sidebar menu items and buttons in the Student Portal to use the same Blue color for Hover and Active states as the Admin portal.
 
-Clicking a button must navigate to a dedicated sub-page that only shows that specific data. No other sections should be visible on that page.
+Ensure the text contrast is sharp (e.g., white text on blue background) to avoid any dark mode visibility issues.
 
-Add a clear "Back to Student Data Hub" button on every sub-page.
+TASK 3: CSS OVERRIDES (IF NECESSARY)
 
-TASK 2: ADMIN SIDE MIRRORING
+If Filament's default configuration doesn't allow for the 60% width, inject a custom FilamentView::renderHook or a css file to target .fi-sidebar on mobile screens (@media (max-width: 768px)).
 
-Refactor the ViewStudent page in the Admin Resource (/admin/students/{record}).
+CHECKLIST FOR COMPLETION:
 
-Instead of the standard Infolist with all sections, implement the same 4-Button Grid Hub.
+[ ] Hamburger switches to 'X' when open on mobile.
 
-Ensure the Admin can navigate to these isolated pages to view/edit student details one section at a time.
+[ ] Mobile sidebar width is exactly 60%.
 
-TASK 3: TECHNICAL IMPLEMENTATION
+[ ] Student portal hover/active states are Blue (Matching Admin).
 
-Use Filament Sub-Navigation or Custom Resource Pages to handle the routing.
+[ ] No white-on-white text issues in Dark Mode.
 
-For the Hub, create a custom Blade component or Stat Widget that functions as a menu.
+Implementation Guide: Syncing the Blue Theme
+To make sure the "Admin Blue" carries over to the Student side immediately, your agent should update the StudentPanelProvider.php like this:
 
-Ensure the layout is responsive (Grid: 1 column on mobile, 2 or 4 on desktop).
+PHP
+use Filament\Support\Colors\Color;
 
-Use Heroicons on each button to make them visually distinct (e.g., user for Identity, identification for Core, academic-cap for Progress, folder for Documents).
-
-OUTPUT: Provide the code for the Hub Page, the sub-page registration in the Panel Provider, and the navigation logic between them.
-
-UI Navigation Flow
-The Hub: A clean screen with 4 large cards.
-
-The Sub-Page: A focused form or view containing only the relevant fields (e.g., just the passport upload).
-
-The Return: A prominent "Back" button to return to the 4-choice menu.
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->id('student')
+        ->path('portal')
+        ->colors([
+            'primary' => Color::Blue, // This syncs the Admin Blue
+        ])
+        // ... other config
+}
+Documentation: Mobile Optimization Tiers
+Since you track 6 price ranges, here is how you can document the value of Mobile UI/UX
