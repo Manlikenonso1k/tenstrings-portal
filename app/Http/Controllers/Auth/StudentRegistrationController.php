@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
@@ -32,7 +34,9 @@ class StudentRegistrationController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
             'branch' => ['required', 'in:AJAH BRANCH,AGEGE BRANCH,IKEJA BRANCH,FESTAC BRANCH'],
-            'selected_course_name' => ['required', 'in:' . implode(',', array_keys(CourseCatalog::options()))],
+            'selected_course_name' => ['required', Rule::in(array_keys(CourseCatalog::courseOptions()))],
+            'duration' => ['required', 'string'],
+            'start_date' => ['required', 'date'],
             'date_of_birth' => ['nullable', 'date'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
             'guardian_phone' => ['nullable', 'string', 'max:30'],
@@ -40,6 +44,12 @@ class StudentRegistrationController extends Controller
             'guardian_relationship' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
+
+        if (! CourseCatalog::isValidDurationFor($validated['selected_course_name'], $validated['duration'])) {
+            throw ValidationException::withMessages([
+                'duration' => 'Selected duration is invalid for the selected course.',
+            ]);
+        }
 
         $student = DB::transaction(function () use ($validated) {
             $user = User::query()->create([
@@ -57,11 +67,13 @@ class StudentRegistrationController extends Controller
                 'last_name' => $validated['last_name'],
                 'selected_course_name' => $validated['selected_course_name'],
                 'selected_course_code' => CourseCatalog::codeFor($validated['selected_course_name']),
+                'duration' => $validated['duration'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'address' => $validated['address'] ?? null,
                 'branch' => $validated['branch'],
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
+                'start_date' => $validated['start_date'],
                 'registration_date' => now()->toDateString(),
                 'status' => 'active',
                 'guardian_name' => $validated['guardian_name'] ?? null,

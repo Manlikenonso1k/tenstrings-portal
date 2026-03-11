@@ -15,6 +15,7 @@ class Student extends Model
         'student_number',
         'selected_course_name',
         'selected_course_code',
+        'duration',
         'first_name',
         'middle_name',
         'last_name',
@@ -24,6 +25,7 @@ class Student extends Model
         'branch',
         'photo_path',
         'date_of_birth',
+        'start_date',
         'registration_date',
         'status',
         'guardian_name',
@@ -34,6 +36,7 @@ class Student extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'start_date' => 'date',
         'registration_date' => 'date',
     ];
 
@@ -42,7 +45,7 @@ class Student extends Model
         static::creating(function (Student $student) {
             if (! $student->student_number) {
                 $student->student_number = MatricNumberGenerator::generate(
-                    $student->registration_date,
+                    $student->start_date ?? $student->registration_date,
                     $student->selected_course_code
                 );
             }

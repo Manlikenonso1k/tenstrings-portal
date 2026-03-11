@@ -52,15 +52,22 @@
             </div>
             <div class="full">
                 <label>Course Selection</label>
-                <select name="selected_course_name" required>
+                <select name="selected_course_name" id="selected_course_name" required>
                     <option value="">Select Course</option>
-                    @foreach (\App\Support\CourseCatalog::options() as $courseName => $courseCode)
+                    @foreach (\App\Support\CourseCatalog::courseOptions() as $courseName => $label)
                         <option value="{{ $courseName }}" @selected(old('selected_course_name') === $courseName)>
                             {{ $courseName }}
                         </option>
                     @endforeach
                 </select>
             </div>
+            <div>
+                <label>Course Duration</label>
+                <select name="duration" id="duration" required>
+                    <option value="">Select Duration</option>
+                </select>
+            </div>
+            <div><label>Start Date</label><input type="date" name="start_date" value="{{ old('start_date') }}" required></div>
             <div><label>Date of Birth</label><input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}"></div>
             <div class="full"><label>Address</label><textarea name="address">{{ old('address') }}</textarea></div>
             <div><label>Guardian Name</label><input type="text" name="guardian_name" value="{{ old('guardian_name') }}"></div>
@@ -73,5 +80,34 @@
         </div>
     </form>
 </div>
+<script>
+    const durationsByCourse = @json(collect(\App\Support\CourseCatalog::courseOptions())->mapWithKeys(fn ($_, $course) => [$course => array_values(\App\Support\CourseCatalog::durationOptionsFor($course))]));
+    const selectedCourseInput = document.getElementById('selected_course_name');
+    const durationInput = document.getElementById('duration');
+    const previousDuration = @json(old('duration'));
+
+    function setDurationOptions() {
+        const course = selectedCourseInput.value;
+        const durations = durationsByCourse[course] || [];
+
+        durationInput.innerHTML = '<option value="">Select Duration</option>';
+
+        durations.forEach((duration) => {
+            const option = document.createElement('option');
+            option.value = duration;
+            option.textContent = duration;
+            durationInput.appendChild(option);
+        });
+
+        if (durations.length === 1) {
+            durationInput.value = durations[0];
+        } else if (previousDuration && durations.includes(previousDuration)) {
+            durationInput.value = previousDuration;
+        }
+    }
+
+    selectedCourseInput.addEventListener('change', setDurationOptions);
+    setDurationOptions();
+</script>
 </body>
 </html>

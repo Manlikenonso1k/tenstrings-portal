@@ -5,9 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
 use App\Models\Grade;
+use App\Support\CourseCatalog;
 use App\Support\StudentMatricMailer;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -39,7 +42,6 @@ class StudentResource extends Resource
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg']),
                         Forms\Components\TextInput::make('student_number')->disabled(),
-                        Forms\Components\TextInput::make('selected_course_name')->label('Selected Course')->disabled(),
                     ]),
                 Forms\Components\Section::make('CORE INFORMATION')
                     ->schema([
@@ -58,6 +60,33 @@ class StudentResource extends Resource
                                 'FESTAC BRANCH' => 'FESTAC BRANCH',
                             ])
                             ->required(),
+                        Forms\Components\Select::make('selected_course_name')
+                            ->label('Course Selection')
+                            ->options(CourseCatalog::courseOptions())
+                            ->searchable()
+                            ->live()
+                            ->required()
+                            ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                $set('selected_course_code', CourseCatalog::codeFor((string) $state));
+
+                                $defaultDuration = CourseCatalog::defaultDurationFor($state);
+                                if ($defaultDuration) {
+                                    $set('duration', $defaultDuration);
+                                } else {
+                                    $set('duration', null);
+                                }
+                            }),
+                        Forms\Components\Select::make('duration')
+                            ->label('Course Duration')
+                            ->options(fn (Get $get): array => CourseCatalog::durationOptionsFor($get('selected_course_name')))
+                            ->required()
+                            ->disabled(fn (Get $get): bool => CourseCatalog::hasSingleDuration($get('selected_course_name')))
+                            ->dehydrated(),
+                        Forms\Components\DatePicker::make('start_date')
+                            ->required()
+                            ->default(now()->toDateString()),
+                        Forms\Components\Hidden::make('selected_course_code')
+                            ->dehydrateStateUsing(fn ($state, Get $get): string => CourseCatalog::codeFor((string) $get('selected_course_name'))),
                     ]),
                 Forms\Components\Section::make('ACADEMIC & PROGRESS')
                     ->schema([

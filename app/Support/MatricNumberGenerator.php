@@ -7,9 +7,9 @@ use Carbon\Carbon;
 
 class MatricNumberGenerator
 {
-    public static function generate(?string $registrationDate = null, ?string $courseCode = null): string
+    public static function generate(?string $startDate = null, ?string $courseCode = null): string
     {
-        $date = Carbon::parse($registrationDate ?? now());
+        $date = Carbon::parse($startDate ?? now());
         $year = $date->format('Y');
         $month = $date->format('m');
         $code = strtoupper($courseCode ?: 'GEN');

@@ -1,30 +1,21 @@
-TASK: Optimize the Tailwind classes and custom CSS for the Tenstrings Portal login and logo components to match exact design specifications.
-
-1. CSS OVERRIDE:
-
-Update the global or component-level CSS so that .h-screen is explicitly set to height: 45vh;.
-
-2. DIMENSION CONSTRAINTS (THE MIRROR EFFECT):
-
-The Login Div and the Logo Div must have identical dimensions on desktop (md breakpoint and above).
-
-Height: Fixed at 348px.
-
-Width: Fixed at 416.922px.
-
-3. TAILWIND CLASS OPTIMIZATION:
-Refactor the current class string: w-full md:w-1/2 h-screen md:h-full overflow-y-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex items-center
-
-NEW REQUIREMENTS:
-
-Width: Use w-full for mobile, but on desktop, use the specific pixel width md:w-[416.922px].
-
-Height: Use h-[45vh] for mobile and md:h-[348px] for desktop.
-
-Centering: Ensure the parent container uses justify-center and items-center so these specific pixel divs sit perfectly in the middle of the screen.
-
-Responsive Fix: For the width issue, use max-w-full on mobile to prevent horizontal scrolling, and ensure the flex-basis or width doesn't collapse on smaller screens.
-
-4. LOGO SYNC:
-
-Ensure the Logo container uses the exact same w-[416.922px] and h-[348px] as the form div. Use object-contain for the logo image inside to prevent stretching.
+Advanced Diploma in Music Performance | is 18 months
+2 | Advanced Diploma in Music Production | is 18 months
+3 | Diploma in Music Performance | is 1 year
+4 | Diploma in Music Production | is 1 year
+5 | Certificate in Music Performance | can be either 3 months or 6 months
+6 | Certificate in Music Production | can be either 3 months or 6 months
+7 | Certificate in Gospel Music Performance | can be either 3 months or 6 months
+8 | Certificate in Gospel Music Performance | can be either 3 months or 6 months
+9 | Diploma in Gospel Music Performance | is 1 year
+10 | Certificate in Songwriting | can be either 3 months or 6 months
+11 | Certificate in Songwriting | can be either 3 months or 6 months
+12 | Certificate in Piano | can be either 3 months or 6 months
+13 | Certificate in Piano | can be either 3 months or 6 months
+14 | Certificate in Music Business | can be either 3 months or 6 months
+15 | Certificate in Music Business | can be either 3 months or 6 months
+16 | Certificate in Guitar | can be either 3 months or 6 months
+17 | Certificate in Guitar | can be either 3 months or 6 months
+18 | Certificate in Drums | can be either 3 months or 6 months
+19 | Certificate in Drums | can be either 3 months or 6 months
+20 | Certificate in Voice | can be either 3 months or 6 months
+21 | Certificate in Voice | can be either 3 months or 6 months
