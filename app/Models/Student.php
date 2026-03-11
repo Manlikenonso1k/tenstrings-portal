@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use App\Support\MatricNumberGenerator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Student extends Model
 {
     use HasFactory;
+
+    public const MAIN_INTAKE_MONTHS = [2, 5, 8, 11];
 
     protected $fillable = [
         'user_id',
@@ -59,6 +63,13 @@ class Student extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeMainIntakeMonths(Builder $query): Builder
+    {
+        return $query
+            ->whereNotNull('start_date')
+            ->whereIn(DB::raw('MONTH(start_date)'), self::MAIN_INTAKE_MONTHS);
     }
 
     public function enrollments()
