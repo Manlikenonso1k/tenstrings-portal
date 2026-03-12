@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\DB;
 
 class CopySqliteToMysql extends Command
 {
+    /**
+     * Track seen emails per table using lowercase keys to mirror MySQL unique behavior.
+     *
+     * @var array<string, array<string, bool>>
+     */
+    private array $seenEmailsByTable = [];
+
     protected $signature = 'portal:sqlite-to-mysql
         {--sqlite= : Absolute path to the sqlite file. Defaults to database/database.sqlite}
         {--sqlite-connection=sqlite : Source connection name}
@@ -92,6 +99,8 @@ class CopySqliteToMysql extends Command
 
         $target->statement("TRUNCATE TABLE `{$table}`");
 
+        $this->seenEmailsByTable[$table] = [];
+
         $stmt = $source->getPdo()->query('SELECT * FROM "' . str_replace('"', '""', $table) . '"');
 
         if ($stmt === false) {
@@ -105,6 +114,7 @@ class CopySqliteToMysql extends Command
         $batchSize = 500;
 
         while (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
+            $row = $this->normalizeRowForMysql($table, $row);
             $batch[] = $row;
 
             if (count($batch) >= $batchSize) {
@@ -120,5 +130,78 @@ class CopySqliteToMysql extends Command
         }
 
         $this->line("  - rows copied: {$copied}");
+    }
+
+    /**
+     * Normalize row values to avoid SQLite/MySQL collation collisions.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function normalizeRowForMysql(string $table, array $row): array
+    {
+        if (! array_key_exists('email', $row) || ! is_string($row['email'])) {
+            return $row;
+        }
+
+        $email = trim($row['email']);
+        if ($email === '') {
+            return $row;
+        }
+
+        $seen = &$this->seenEmailsByTable[$table];
+        $key = strtolower($email);
+
+        if (! isset($seen[$key])) {
+            $seen[$key] = true;
+
+            return $row;
+        }
+
+        $idPart = isset($row['id']) ? (string) $row['id'] : uniqid('row', false);
+        $replacement = $this->buildUniqueReplacementEmail($email, $seen, $idPart);
+
+        $this->warn("  - duplicate email collision on {$table}: {$email} => {$replacement}");
+
+        $row['email'] = $replacement;
+
+        return $row;
+    }
+
+    /**
+     * Build a deterministic fallback email that remains unique in lowercase form.
+     *
+     * @param array<string, bool> $seen
+     */
+    private function buildUniqueReplacementEmail(string $email, array &$seen, string $idPart): string
+    {
+        if (str_contains($email, '@')) {
+            [$local, $domain] = explode('@', $email, 2);
+            $base = $local . '+dup' . $idPart;
+            $candidate = $base . '@' . $domain;
+            $counter = 1;
+
+            while (isset($seen[strtolower($candidate)])) {
+                $candidate = $base . '_' . $counter . '@' . $domain;
+                $counter++;
+            }
+
+            $seen[strtolower($candidate)] = true;
+
+            return $candidate;
+        }
+
+        $base = $email . '.dup' . $idPart;
+        $candidate = $base;
+        $counter = 1;
+
+        while (isset($seen[strtolower($candidate)])) {
+            $candidate = $base . '_' . $counter;
+            $counter++;
+        }
+
+        $seen[strtolower($candidate)] = true;
+
+        return $candidate;
     }
 }
