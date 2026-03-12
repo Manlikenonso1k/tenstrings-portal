@@ -1,0 +1,436 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Course;
+use App\Models\Enrollment;
+use App\Models\Student;
+use App\Models\User;
+use App\Support\CourseCatalog;
+use App\Support\StudentMatricMailer;
+use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Throwable;
+
+class ImportStudentsFromCsv extends Command
+{
+    protected $signature = 'students:import-csv
+        {file : Absolute or relative path to CSV file}
+        {--no-email : Do not send generated credentials email}';
+
+    protected $description = 'Import students from a CSV, create portal accounts, and email generated passwords.';
+
+    public function handle(): int
+    {
+        $file = (string) $this->argument('file');
+        $sendEmail = ! (bool) $this->option('no-email');
+
+        if (! is_file($file) || ! is_readable($file)) {
+            $this->error("CSV file is not readable: {$file}");
+
+            return self::FAILURE;
+        }
+
+        $handle = fopen($file, 'rb');
+        if (! $handle) {
+            $this->error("Unable to open CSV file: {$file}");
+
+            return self::FAILURE;
+        }
+
+        $header = fgetcsv($handle) ?: [];
+        $headerMap = $this->buildHeaderMap($header);
+
+        if (! isset($headerMap['first_name'], $headerMap['last_name'], $headerMap['email'])) {
+            fclose($handle);
+            $this->error('CSV header is invalid. Expected FIRST NAME, LAST NAME, and EMAIL columns.');
+
+            return self::FAILURE;
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $emailed = 0;
+        $line = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $line++;
+
+            if ($this->isSkippableRow($row)) {
+                continue;
+            }
+
+            $firstName = $this->cleanText($this->value($row, $headerMap, 'first_name'));
+            $lastName = $this->cleanText($this->value($row, $headerMap, 'last_name'));
+            $middleName = $this->cleanText($this->value($row, $headerMap, 'middle_name'));
+            $email = strtolower($this->cleanText($this->value($row, $headerMap, 'email')));
+
+            if ($firstName === '' || $lastName === '' || $email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $skipped++;
+                $this->warn("Line {$line}: skipped due to missing/invalid name or email.");
+
+                continue;
+            }
+
+            try {
+                $result = DB::transaction(function () use ($row, $headerMap, $firstName, $middleName, $lastName, $email): array {
+                    if (Student::query()->where('email', $email)->exists()) {
+                        return ['status' => 'exists'];
+                    }
+
+                    $existingUser = User::query()->where('email', $email)->first();
+                    if ($existingUser && $existingUser->role !== 'student') {
+                        return ['status' => 'conflict'];
+                    }
+
+                    $programRaw = $this->cleanText($this->value($row, $headerMap, 'program'));
+                    $intakeRaw = $this->cleanText($this->value($row, $headerMap, 'duration_program'));
+                    $phoneRaw = $this->cleanText($this->value($row, $headerMap, 'phone'));
+                    $addressRaw = $this->cleanText($this->value($row, $headerMap, 'address'));
+                    $dobRaw = $this->cleanText($this->value($row, $headerMap, 'date_of_birth'));
+                    $remarkRaw = $this->cleanText($this->value($row, $headerMap, 'remark'));
+
+                    $courseName = $this->mapCourseName($programRaw);
+                    $duration = $this->resolveDuration($programRaw, $courseName);
+                    $startDate = $this->resolveStartDate($intakeRaw);
+                    $dob = $this->parseOptionalDate($dobRaw);
+                    $branch = $this->mapBranch($remarkRaw);
+                    $phone = $this->normalizePhone($phoneRaw);
+
+                    $plainPassword = $this->generatePassword();
+
+                    if ($existingUser) {
+                        $user = $existingUser;
+                        $user->forceFill([
+                            'name' => trim("{$firstName} {$lastName}"),
+                            'phone' => $phone,
+                            'role' => 'student',
+                            'password' => Hash::make($plainPassword),
+                        ])->save();
+                    } else {
+                        $user = User::query()->create([
+                            'name' => trim("{$firstName} {$lastName}"),
+                            'email' => $email,
+                            'phone' => $phone,
+                            'role' => 'student',
+                            'password' => Hash::make($plainPassword),
+                        ]);
+                    }
+
+                    $student = Student::query()->create([
+                        'user_id' => $user->id,
+                        'first_name' => $firstName,
+                        'middle_name' => $middleName !== '' ? $middleName : null,
+                        'last_name' => $lastName,
+                        'selected_course_name' => $courseName,
+                        'selected_course_code' => CourseCatalog::codeFor($courseName),
+                        'duration' => $duration,
+                        'email' => $email,
+                        'phone' => $phone,
+                        'address' => $addressRaw !== '' ? $addressRaw : null,
+                        'branch' => $branch,
+                        'date_of_birth' => $dob?->toDateString(),
+                        'start_date' => $startDate->toDateString(),
+                        'registration_date' => now()->toDateString(),
+                        'status' => 'active',
+                    ]);
+
+                    $enrollment = Enrollment::query()->create([
+                        'student_id' => $student->id,
+                        'enrollment_date' => now()->toDateString(),
+                        'intake_month' => strtoupper($startDate->format('F')),
+                        'start_date' => $startDate->toDateString(),
+                        'expected_end_date' => $this->expectedEndDate($startDate, $duration)->toDateString(),
+                        'status' => 'ongoing',
+                    ]);
+
+                    $course = Course::query()->where('name', $courseName)->first();
+                    if ($course) {
+                        $enrollment->courses()->attach($course->id);
+                    }
+
+                    return [
+                        'status' => 'created',
+                        'student' => $student,
+                        'password' => $plainPassword,
+                    ];
+                });
+
+                if ($result['status'] === 'exists') {
+                    $skipped++;
+                    $this->line("Line {$line}: skipped, student with email {$email} already exists.");
+
+                    continue;
+                }
+
+                if ($result['status'] === 'conflict') {
+                    $skipped++;
+                    $this->warn("Line {$line}: skipped, user {$email} exists with a non-student role.");
+
+                    continue;
+                }
+
+                $created++;
+
+                /** @var Student $student */
+                $student = $result['student'];
+                $this->info("Created {$student->student_number} for {$student->email}");
+
+                if ($sendEmail) {
+                    try {
+                        StudentMatricMailer::sendWithCredentials($student, (string) $result['password']);
+                        $emailed++;
+                    } catch (Throwable $exception) {
+                        Log::warning('Student credentials email could not be sent during CSV import.', [
+                            'student_id' => $student->id,
+                            'email' => $student->email,
+                            'error' => $exception->getMessage(),
+                        ]);
+
+                        $this->warn("Email failed for {$student->email}: {$exception->getMessage()}");
+                    }
+                }
+            } catch (Throwable $exception) {
+                $skipped++;
+                Log::error('CSV student import failed for a row.', [
+                    'line' => $line,
+                    'error' => $exception->getMessage(),
+                ]);
+
+                $this->error("Line {$line}: import failed - {$exception->getMessage()}");
+            }
+        }
+
+        fclose($handle);
+
+        $this->newLine();
+        $this->info("Import completed. Created: {$created}, Skipped: {$skipped}, Emails sent: {$emailed}");
+
+        return self::SUCCESS;
+    }
+
+    private function buildHeaderMap(array $header): array
+    {
+        $normalized = [];
+        foreach ($header as $index => $label) {
+            $normalized[$this->normalizeHeader((string) $label)] = $index;
+        }
+
+        return [
+            'first_name' => $normalized['first_name'] ?? null,
+            'last_name' => $normalized['last_name'] ?? null,
+            'middle_name' => $normalized['middle_name'] ?? null,
+            'email' => $normalized['email'] ?? null,
+            'date_of_birth' => $normalized['date_of_birth'] ?? null,
+            'address' => $normalized['address'] ?? null,
+            'phone' => $normalized['phone_no'] ?? ($normalized['phone'] ?? null),
+            'program' => $normalized['program'] ?? null,
+            'duration_program' => $normalized['duration_of_program'] ?? null,
+            'remark' => $normalized['remark'] ?? null,
+        ];
+    }
+
+    private function normalizeHeader(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = str_replace(['.', '/', '-', '(', ')'], ' ', $value);
+        $value = preg_replace('/\s+/', '_', $value) ?? $value;
+
+        return trim((string) $value, '_');
+    }
+
+    private function value(array $row, array $map, string $key): string
+    {
+        $index = $map[$key] ?? null;
+
+        if ($index === null) {
+            return '';
+        }
+
+        return (string) ($row[$index] ?? '');
+    }
+
+    private function isSkippableRow(array $row): bool
+    {
+        $joined = trim(implode('', array_map(fn ($item) => trim((string) $item), $row)));
+
+        return $joined === '';
+    }
+
+    private function cleanText(?string $value): string
+    {
+        $value = trim((string) $value);
+
+        return preg_replace('/\s+/', ' ', $value) ?? $value;
+    }
+
+    private function normalizePhone(string $value): string
+    {
+        $cleaned = preg_replace('/[^0-9+,]/', '', $value) ?? $value;
+
+        return trim($cleaned) !== '' ? trim($cleaned) : 'N/A';
+    }
+
+    private function mapBranch(string $remark): string
+    {
+        $value = strtoupper($remark);
+
+        if (Str::contains($value, 'AJAH')) {
+            return 'AJAH BRANCH';
+        }
+
+        if (Str::contains($value, 'FESTAC')) {
+            return 'FESTAC BRANCH';
+        }
+
+        if (Str::contains($value, 'AGEGE')) {
+            return 'AGEGE BRANCH';
+        }
+
+        return 'IKEJA BRANCH';
+    }
+
+    private function mapCourseName(string $program): string
+    {
+        $value = strtolower($program);
+
+        if (str_contains($value, 'advanced diploma') && str_contains($value, 'production')) {
+            return 'Advanced Diploma in Music Production';
+        }
+
+        if (str_contains($value, 'advanced diploma') && str_contains($value, 'performance')) {
+            return 'Advanced Diploma in Music Performance';
+        }
+
+        if (str_contains($value, 'diploma') && str_contains($value, 'gospel')) {
+            return 'Diploma in Gospel Music Performance';
+        }
+
+        if (str_contains($value, 'diploma') && (str_contains($value, 'audio') || str_contains($value, 'production'))) {
+            return 'Diploma in Music Production';
+        }
+
+        if (str_contains($value, 'diploma') && str_contains($value, 'performance')) {
+            return 'Diploma in Music Performance';
+        }
+
+        if (str_contains($value, 'guitar')) {
+            return 'Certificate in Guitar';
+        }
+
+        if (str_contains($value, 'piano')) {
+            return 'Certificate in Piano';
+        }
+
+        if (str_contains($value, 'voice') || str_contains($value, 'vocal')) {
+            return 'Certificate in Voice';
+        }
+
+        if (str_contains($value, 'gospel')) {
+            return 'Certificate in Gospel Music Performance';
+        }
+
+        if (str_contains($value, 'production') || str_contains($value, 'audio')) {
+            return 'Certificate in Music Production';
+        }
+
+        return 'Certificate in Music Performance';
+    }
+
+    private function resolveDuration(string $program, string $courseName): string
+    {
+        $value = strtolower($program);
+
+        if (preg_match('/18\s*month/', $value)) {
+            return '18 months';
+        }
+
+        if (preg_match('/1\s*year|12\s*month/', $value)) {
+            return '1 year';
+        }
+
+        if (preg_match('/6\s*month/', $value)) {
+            return '6 months';
+        }
+
+        if (preg_match('/3\s*month/', $value)) {
+            return '3 months';
+        }
+
+        $default = CourseCatalog::defaultDurationFor($courseName);
+        if ($default !== null) {
+            return $default;
+        }
+
+        // Certificate tracks can be either 3 or 6 months; defaulting to 6 months for safer scheduling.
+        return '6 months';
+    }
+
+    private function resolveStartDate(string $durationOfProgram): Carbon
+    {
+        $value = strtoupper(trim($durationOfProgram));
+
+        if (preg_match('/([A-Z]{3,9})\s*[-\/]?\s*(\d{2,4})/', $value, $matches)) {
+            $month = ucfirst(strtolower($matches[1]));
+            $year = (int) $matches[2];
+            if ($year < 100) {
+                $year += 2000;
+            }
+
+            try {
+                return Carbon::parse("1 {$month} {$year}")->startOfDay();
+            } catch (Throwable) {
+                // Fall through to default below.
+            }
+        }
+
+        return Carbon::now()->startOfMonth();
+    }
+
+    private function parseOptionalDate(string $value): ?Carbon
+    {
+        if (trim($value) === '' || is_numeric($value) && (int) $value < 1900) {
+            return null;
+        }
+
+        $normalized = preg_replace('/(\d+)(st|nd|rd|th)/i', '$1', $value) ?? $value;
+
+        try {
+            return Carbon::parse($normalized)->startOfDay();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function expectedEndDate(Carbon $startDate, string $duration): Carbon
+    {
+        $endDate = $startDate->copy();
+
+        if (str_contains($duration, '18')) {
+            return $endDate->addMonths(18);
+        }
+
+        if (str_contains($duration, 'year')) {
+            return $endDate->addYear();
+        }
+
+        if (str_contains($duration, '3')) {
+            return $endDate->addMonths(3);
+        }
+
+        return $endDate->addMonths(6);
+    }
+
+    private function generatePassword(): string
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+
+        return Str::of(str_repeat('x', 10))
+            ->replaceMatches('/x/', fn () => $alphabet[random_int(0, strlen($alphabet) - 1)])
+            ->toString();
+    }
+}
