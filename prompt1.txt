@@ -1,110 +1,20 @@
-[u519226541@us-phx-web940 portal_app]$ # 1) Backup current SQLite
-[u519226541@us-phx-web940 portal_app]$ cp database/database.sqlite database/database.sqlite.bak_$(date +%F_%H%M%S)
-[u519226541@us-phx-web940 portal_app]$
-[u519226541@us-phx-web940 portal_app]$ # 2) Point Laravel to MySQL in .env (values below), then clear config cache
-[u519226541@us-phx-web940 portal_app]$ php artisan config:clear
+THE "CLEAN-PATH LARAVEL REDIRECT" PROMPT
+CONTEXT: I am finalizing the routing for the Tenstrings Portal (Laravel 11). The application is hosted on the portal.tenstrings.org subdomain, which shares a root directory with a WordPress installation.
 
-   INFO  Configuration cache cleared successfully.  
+TASK: Implement a clean, code-based redirect in the Laravel application to handle root-level traffic.
 
-[u519226541@us-phx-web940 portal_app]$ php artisan cache:clear
+TECHNICAL REQUIREMENTS:
 
-In Connection.php line 838:
-                                                                                                                                                      
-  SQLSTATE[42S02]: Base table or view not found: 1146 Table 'u519226541_portal_tenstri.cache' doesn't exist (Connection: mysql, Host: 127.0.0.1, Po   
-  rt: 3306, Database: u519226541_portal_tenstri, SQL: delete from `cache`)                                                                            
-                                                                                                                                                      
+File Location: Update the routes/web.php file at the very top of the route definitions.
 
-In Connection.php line 605:
+Redirect Logic: When a user visits the base URL (/), they must be immediately redirected to the Filament login page at /portal/login.
 
-  SQLSTATE[42S02]: Base table or view not found: 1146 Table 'u519226541_portal_tenstri.cache' doesn't exist  
+Authentication Awareness: >     - If a user is already logged in, they should be redirected to the main portal dashboard (/portal) instead of the login screen.
 
+If a user is a guest, they should be sent to /portal/login.
 
-[u519226541@us-phx-web940 portal_app]$ 
-[u519226541@us-phx-web940 portal_app]$ # 3) Create fresh MySQL schema from migrations
-[u519226541@us-phx-web940 portal_app]$ php artisan migrate --force
+Performance: Use Laravel's built-in redirect() helper or Route::redirect() for the fastest execution.
 
-   INFO  Preparing database.  
+Clean-up: Ensure no other "welcome" or default Laravel landing page routes are active that might interfere with this redirect.
 
-  Creating migration table ............................................................................................................ 60.60ms DONE
-
-   INFO  Running migrations.
-
-  0001_01_01_000000_create_users_table ............................................................................................... 265.41ms DONE
-  0001_01_01_000001_create_cache_table ............................................................................................... 199.75ms DONE
-  0001_01_01_000002_create_jobs_table ................................................................................................. 91.63ms DONE
-  2026_03_09_000003_create_music_school_tables ............................................................................................. 4s DONE
-  2026_03_09_000004_add_missing_columns_to_users_table ................................................................................. 6.18ms DONE
-  2026_03_09_000005_create_portal_settings_table ...................................................................................... 12.16ms DONE
-  2026_03_09_000006_add_branch_and_quarterly_fields ................................................................................... 57.93ms DONE
-  2026_03_09_000007_add_student_profile_dashboard_fields ............................................................................. 221.55ms DONE
-  2026_03_09_000008_create_course_shortcode_mappings_table ............................................................................ 38.59ms DONE
-  2026_03_11_000020_add_start_date_and_duration_to_students_table ..................................................................... 28.68ms DONE
-
-[u519226541@us-phx-web940 portal_app]$
-[u519226541@us-phx-web940 portal_app]$ # 4) Copy data from SQLite to MySQL preserving IDs and keys
-[u519226541@us-phx-web940 portal_app]$ php artisan portal:sqlite-to-mysql --sqlite="$(pwd)/database/database.sqlite" --mysql-connection=mysql --exclude-migrations
-Source sqlite: /home/u519226541/domains/tenstrings.org/public_html/portal_app/database/database.sqlite
-Target mysql database: u519226541_portal_tenstri
-
-Copy order:
- - users
- - password_reset_tokens
- - sessions
- - jobs
- - job_batches
- - failed_jobs
- - students
- - instructors
- - courses
- - course_instructor
- - enrollments
- - enrollment_course
- - attendances
- - grades
- - assignments
- - assignment_submissions
- - student_course_fees
- - payments
- - announcements
- - messages
- - calendar_events
- - certificates
- - portal_settings
- - course_shortcode_mappings
-
-Copying users...
-
-In Connection.php line 838:
-                                                                                                                                                      
-  SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'victorynonso9@gmail.com' for key 'users_email_unique' (Connection: mysql,    
-  Host: 127.0.0.1, Port: 3306, Database: u519226541_portal_tenstri, SQL: insert into `users` (`avatar_path`, `created_at`, `email`, `email_verified   
-  _at`, `id`, `name`, `password`, `phone`, `remember_token`, `role`, `updated_at`) values (?, 2026-03-06 14:28:14, Victorynonso9@gmail.com, ?, 1, n   
-  onso, $2y$12$VYjszKt3W3QmXfCPtB7jHufDYDwy8flsMFMjE.n/LEEOQUzVn2OHG, ?, ?, student, 2026-03-06 14:28:14), (?, 2026-03-09 11:42:51, info@tenstrings   
-  .org, ?, 2, Portal Admin, $2y$12$07yJ07HnqTb/.lAWH8WnV.V1Hza0E4e6Lvjgtq.ueCvNCgzb92m3u, 08000000000, NTvIfYgiPerXVvneNwgTXO0AB8eAShQlGfntYh29VFeT   
-  kr5gWmMxw33C9W15, admin, 2026-03-09 11:42:51), (?, 2026-03-09 11:53:00, victorynonso9@gmail.com, ?, 3, Victory Nonso, $2y$12$85lgxANW//3NSMYpGLtQ   
-  8.91AV5et6bG5BHxN8KVJovJ3CBPFtemK, 08000000000, ?, super_admin, 2026-03-09 11:53:00), (?, 2026-03-11 17:29:01, oceanovarestaurant@gmail.com, ?, 8   
-  , John Nwabali, $2y$12$nn5eNfh/onkTwgOaqVRq9ufTB2S9K.ZS1nb4avaJ..D2ovvrARUrS, 08033126402, ?, student, 2026-03-11 17:29:01))
-                                                                                                                                                      
-
-In MySqlConnection.php line 53:
-
-  SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'victorynonso9@gmail.com' for key 'users_email_unique'  
-
-
-[u519226541@us-phx-web940 portal_app]$ 
-[u519226541@us-phx-web940 portal_app]$ # 5) Rebuild caches
-[u519226541@us-phx-web940 portal_app]$ php artisan optimize:clear
-
-   INFO  Clearing cached bootstrap files.  
-
-  config ............................................................................................................................... 2.51ms DONE
-  cache ............................................................................................................................... 31.31ms DONE
-  compiled ............................................................................................................................. 1.57ms DONE
-  events ............................................................................................................................... 0.68ms DONE
-  routes ............................................................................................................................... 0.73ms DONE
-  views ............................................................................................................................... 44.45ms DONE
-  blade-icons .......................................................................................................................... 0.33ms DONE
-  filament ............................................................................................................................. 1.36ms DONE
-
-[u519226541@us-phx-web940 portal_app]$
-[u519226541@us-phx-web940 portal_app]$
+OUTPUT: Provide the updated routes/web.php code snippet with the necessary imports and logic.

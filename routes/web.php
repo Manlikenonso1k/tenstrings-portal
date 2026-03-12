@@ -2,10 +2,11 @@
 
 use App\Http\Controllers\Auth\StudentRegistrationController;
 use App\Http\Controllers\Student\StudentPdfController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect(Auth::check() ? '/portal' : '/portal/login');
 });
 
 Route::get('/register/student', [StudentRegistrationController::class, 'create'])
