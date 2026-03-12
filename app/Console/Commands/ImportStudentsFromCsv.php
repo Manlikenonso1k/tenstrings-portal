@@ -20,7 +20,8 @@ class ImportStudentsFromCsv extends Command
 {
     protected $signature = 'students:import-csv
         {file : Absolute or relative path to CSV file}
-        {--no-email : Do not send generated credentials email}';
+        {--no-email : Do not send generated credentials email}
+        {--only-branch= : Restrict import to one branch: AJAH, FESTAC, IKEJA, AGEGE}';
 
     protected $description = 'Import students from a CSV, create portal accounts, and email generated passwords.';
 
@@ -28,6 +29,13 @@ class ImportStudentsFromCsv extends Command
     {
         $file = (string) $this->argument('file');
         $sendEmail = ! (bool) $this->option('no-email');
+        $onlyBranchOption = $this->resolveOnlyBranchOption();
+
+        if ($onlyBranchOption === false) {
+            return self::FAILURE;
+        }
+
+        $onlyBranch = is_string($onlyBranchOption) ? $onlyBranchOption : null;
 
         if (! is_file($file) || ! is_readable($file)) {
             $this->error("CSV file is not readable: {$file}");
@@ -77,7 +85,7 @@ class ImportStudentsFromCsv extends Command
             }
 
             try {
-                $result = DB::transaction(function () use ($row, $headerMap, $firstName, $middleName, $lastName, $email): array {
+                $result = DB::transaction(function () use ($row, $headerMap, $firstName, $middleName, $lastName, $email, $onlyBranch): array {
                     if (Student::query()->where('email', $email)->exists()) {
                         return ['status' => 'exists'];
                     }
@@ -99,6 +107,11 @@ class ImportStudentsFromCsv extends Command
                     $startDate = $this->resolveStartDate($intakeRaw);
                     $dob = $this->parseOptionalDate($dobRaw);
                     $branch = $this->mapBranch($remarkRaw);
+
+                    if (is_string($onlyBranch) && $branch !== $onlyBranch) {
+                        return ['status' => 'branch_filtered'];
+                    }
+
                     $phone = $this->normalizePhone($phoneRaw);
 
                     $plainPassword = $this->generatePassword();
@@ -163,6 +176,12 @@ class ImportStudentsFromCsv extends Command
                 if ($result['status'] === 'exists') {
                     $skipped++;
                     $this->line("Line {$line}: skipped, student with email {$email} already exists.");
+
+                    continue;
+                }
+
+                if ($result['status'] === 'branch_filtered') {
+                    $skipped++;
 
                     continue;
                 }
@@ -292,6 +311,33 @@ class ImportStudentsFromCsv extends Command
         }
 
         return 'IKEJA BRANCH';
+    }
+
+    /**
+     * @return string|false|null
+     */
+    private function resolveOnlyBranchOption(): string|false|null
+    {
+        $value = strtoupper(trim((string) $this->option('only-branch')));
+
+        if ($value === '') {
+            return null;
+        }
+
+        $allowed = [
+            'AJAH' => 'AJAH BRANCH',
+            'FESTAC' => 'FESTAC BRANCH',
+            'IKEJA' => 'IKEJA BRANCH',
+            'AGEGE' => 'AGEGE BRANCH',
+        ];
+
+        if (! isset($allowed[$value])) {
+            $this->error('Invalid --only-branch value. Use one of: AJAH, FESTAC, IKEJA, AGEGE.');
+
+            return false;
+        }
+
+        return $allowed[$value];
     }
 
     private function mapCourseName(string $program): string
