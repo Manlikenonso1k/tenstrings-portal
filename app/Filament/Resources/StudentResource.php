@@ -167,6 +167,13 @@ class StudentResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('avatar_url')
+                    ->label('Photo')
+                    ->disk('public_uploads')
+                    ->circular()
+                    ->defaultImageUrl(fn () => 'https://ui-avatars.com/api/?name=Student&background=3b82f6&color=fff&size=64')
+                    ->width(48)
+                    ->height(48),
                 Tables\Columns\TextColumn::make('student_number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('first_name')->searchable(),
                 Tables\Columns\TextColumn::make('last_name')->searchable(),

@@ -8,6 +8,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\HtmlString;
 
 class EditStudentIdentity extends EditRecord
 {
@@ -18,11 +19,33 @@ class EditStudentIdentity extends EditRecord
     public function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\Placeholder::make('current_passport_preview')
+                ->label('Current Passport Photo')
+                ->content(function (): HtmlString {
+                    $path = $this->record?->avatar_url;
+                    if ($path) {
+                        $url = asset('uploads/' . ltrim($path, '/'));
+
+                        return new HtmlString(
+                            '<img src="' . e($url) . '" alt="Passport Photo"
+                                  style="width:160px;height:160px;object-fit:cover;border-radius:50%;border:3px solid #3b82f6;box-shadow:0 2px 8px rgba(0,0,0,0.15);">'
+                        );
+                    }
+
+                    return new HtmlString(
+                        '<div style="width:160px;height:160px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;border:3px solid #d1d5db;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="#9ca3af" style="width:80px;height:80px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+                            </svg>
+                        </div>'
+                    );
+                }),
             Forms\Components\FileUpload::make('avatar_url')
-                ->label('Passport Photo')
+                ->label('Upload New Passport Photo')
                 ->image()
                 ->disk('public_uploads')
                 ->directory('students/passport')
+                ->imagePreviewHeight('200')
                 ->maxSize(2048)
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg']),
             Forms\Components\TextInput::make('student_number')

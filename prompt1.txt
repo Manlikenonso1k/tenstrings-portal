@@ -1,50 +1,31 @@
-CONTEXT: I am refining the mobile user interface for the Tenstrings Portal (Laravel/Filament). The navigation sidebar on mobile is currently buggy and visually inconsistent.
+CONTEXT: I am migrating the "Tenstrings Portal" from an SQLite database to a MySQL database on a production server (Hostinger). I have two applications: a Laravel 11 Dashboard and a WordPress main site.
 
-TASK 1: MOBILE SIDEBAR TOGGLE & VISIBILITY
+TASK 1: DATABASE ARCHITECTURE
 
-Fix the "Close" Icon: Currently, the hamburger icon disappears when the menu is open, leaving no "X" or "Close" button. Ensure the toggle icon switches from a hamburger to an 'X' (Close icon) when the sidebar is active on mobile.
+Prepare the MySQL database structure to hold all tables for both Laravel and WordPress.
 
-Adjust Sidebar Width: On mobile devices, set the sidebar width to exactly 60% of the screen width (w-[60vw]). The goal is to ensure the page content remains partially visible behind the menu overlay.
+For Laravel: Use the existing migration files to recreate all tables (users, students, courses, matric_settings, etc.) in the new MySQL database.
 
-Overlay Logic: Ensure clicking the darkened overlay (the area outside the 60% menu) also closes the sidebar.
+For WordPress: Ensure the table prefix (e.g., wp_) is respected so it doesn't conflict with Laravel tables if they share a database.
 
-TASK 2: THEME & COLOR SYNCHRONIZATION
+TASK 2: DATA MIGRATION LOGIC
 
-Color Matching: The Admin portal styling is the gold standard. Copy the Blue Primary Color configuration from the AdminPanelProvider to the StudentPanelProvider.
+Provide a strategy or script to export data from the current database.sqlite file and import it into the new MySQL tables without losing student records or matriculation numbers.
 
-Hover & Active States: >    - Force all sidebar menu items and buttons in the Student Portal to use the same Blue color for Hover and Active states as the Admin portal.
+Fix any syntax differences between SQLite and MySQL (e.g., boolean types, auto-increments, and foreign key constraints).
 
-Ensure the text contrast is sharp (e.g., white text on blue background) to avoid any dark mode visibility issues.
+TASK 3: CONNECTION CONFIGURATIONS
 
-TASK 3: CSS OVERRIDES (IF NECESSARY)
+Provide the exact .env configuration for Laravel.
 
-If Filament's default configuration doesn't allow for the 60% width, inject a custom FilamentView::renderHook or a css file to target .fi-sidebar on mobile screens (@media (max-width: 768px)).
+Provide the exact wp-config.php database constants for WordPress.
 
-CHECKLIST FOR COMPLETION:
+Ensure both applications are pointing to the same DB Host (usually localhost or a specific IP provided by Hostinger).
 
-[ ] Hamburger switches to 'X' when open on mobile.
+TASK 4: OPTIMIZATION
 
-[ ] Mobile sidebar width is exactly 60%.
+Set up proper indexing on the student_number (matric) and email columns in MySQL for faster login.
 
-[ ] Student portal hover/active states are Blue (Matching Admin).
+Verify that the storage:link and file paths for student passports are still valid after the database move.
 
-[ ] No white-on-white text issues in Dark Mode.
-
-Implementation Guide: Syncing the Blue Theme
-To make sure the "Admin Blue" carries over to the Student side immediately, your agent should update the StudentPanelProvider.php like this:
-
-PHP
-use Filament\Support\Colors\Color;
-
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        ->id('student')
-        ->path('portal')
-        ->colors([
-            'primary' => Color::Blue, // This syncs the Admin Blue
-        ])
-        // ... other config
-}
-Documentation: Mobile Optimization Tiers
-Since you track 6 price ranges, here is how you can document the value of Mobile UI/UX
+OUTPUT: Provide the .env settings, the wp-config.php settings, and the commands to run the migrations.

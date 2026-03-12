@@ -1,10 +1,25 @@
 <x-filament-panels::page>
-    <div class="mb-2">
-        <div class="text-base font-semibold text-gray-900 dark:text-white">
-            {{ $this->record->first_name }} {{ $this->record->last_name }}
-            <span class="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">{{ $this->record->student_number }}</span>
+    <div class="mb-2 flex items-center gap-4">
+        @php
+        $passportUrl = $this->record->avatar_url
+            ? asset('uploads/' . ltrim($this->record->avatar_url, '/'))
+            : null;
+        @endphp
+        @if ($passportUrl)
+            <img src="{{ $passportUrl }}" alt="Passport"
+                 class="w-16 h-16 rounded-full object-cover border-2 border-primary-500 shadow">
+        @else
+            <div class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+                <x-heroicon-o-user class="w-8 h-8 text-gray-400"/>
+            </div>
+        @endif
+        <div>
+            <div class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ $this->record->first_name }} {{ $this->record->last_name }}
+                <span class="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">{{ $this->record->student_number }}</span>
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Select a section to view or edit student details.</div>
         </div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Select a section to view or edit student details.</div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
