@@ -6,7 +6,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect(Auth::check() ? '/portal' : '/portal/login');
+    if (! Auth::check()) {
+        return redirect('/portal/login');
+    }
+
+    $user = Auth::user();
+
+    return redirect(match ($user?->role) {
+        'student' => '/portal',
+        'super_admin', 'admin', 'instructor' => '/admin',
+        default => '/portal/login',
+    });
 });
 
 Route::get('/register/student', [StudentRegistrationController::class, 'create'])

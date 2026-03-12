@@ -1,20 +1,15 @@
-THE "CLEAN-PATH LARAVEL REDIRECT" PROMPT
-CONTEXT: I am finalizing the routing for the Tenstrings Portal (Laravel 11). The application is hosted on the portal.tenstrings.org subdomain, which shares a root directory with a WordPress installation.
-
-TASK: Implement a clean, code-based redirect in the Laravel application to handle root-level traffic.
-
-TECHNICAL REQUIREMENTS:
-
-File Location: Update the routes/web.php file at the very top of the route definitions.
-
-Redirect Logic: When a user visits the base URL (/), they must be immediately redirected to the Filament login page at /portal/login.
-
-Authentication Awareness: >     - If a user is already logged in, they should be redirected to the main portal dashboard (/portal) instead of the login screen.
-
-If a user is a guest, they should be sent to /portal/login.
-
-Performance: Use Laravel's built-in redirect() helper or Route::redirect() for the fastest execution.
-
-Clean-up: Ensure no other "welcome" or default Laravel landing page routes are active that might interfere with this redirect.
-
-OUTPUT: Provide the updated routes/web.php code snippet with the necessary imports and logic.
+Last failed login: Fri Mar  6 13:33:23 UTC 2026 from 102.88.109.113 on ssh:notty
+There were 5 failed login attempts since the last successful login.
+[u519226541@us-phx-web940 ~]$ cd ~/domains/tenstrings.org/public_html/portal_app
+[u519226541@us-phx-web940 portal_app]$ tail -50 ~/logs/tenstrings.org.error.log
+tail: cannot open '/home/u519226541/logs/tenstrings.org.error.log' for reading: No such file or directory
+[u519226541@us-phx-web940 portal_app]$ tail -50 ~/logs/portal.tenstrings.org.error.log
+tail: cannot open '/home/u519226541/logs/portal.tenstrings.org.error.log' for reading: No such file or directory
+[u519226541@us-phx-web940 portal_app]$ 
+[u519226541@us-phx-web940 portal_app]$ cat ~/domains/tenstrings.org/public_html/portal_app/.htaccess
+[u519226541@us-phx-web940 portal_app]$ ls -la ~/domains/tenstrings.org/public_html/ | grep portal_app
+drwxr-xr-x 13 u519226541 o201339234     4096 Mar 12 12:25 portal_app
+drwxr-xr-x 14 u519226541 o201339234     4096 Mar  6 13:59 portal_app_backup
+[u519226541@us-phx-web940 portal_app]$ ls -la ~/domains/tenstrings.org/public_html/portal_app/ | grep public
+drwxr-xr-x  6 u519226541 o201339234   4096 Mar 11 17:52 public
+[u519226541@us-phx-web940 portal_app]$ 
