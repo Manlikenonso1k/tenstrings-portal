@@ -42,6 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+                \App\Filament\Widgets\ActiveImportTracker::class,
                 \App\Filament\Widgets\StudentImportQuickAction::class,
                 \App\Filament\Widgets\SchoolStatsOverview::class,
                 \App\Filament\Widgets\BranchEnrollmentAnalytics::class,
