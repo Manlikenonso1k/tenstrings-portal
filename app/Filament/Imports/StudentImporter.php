@@ -81,7 +81,8 @@ class StudentImporter extends Importer
                     $year = (int) trim((string) $state);
 
                     return ($year >= 1990 && $year <= 2100) ? $year : null;
-                }),
+                })
+                ->fillRecordUsing(fn (): null => null),
             ImportColumn::make('date_of_birth')
                 ->rules(['nullable', 'string', 'max:255'])
                 ->castStateUsing(function (mixed $state): ?string {
@@ -225,25 +226,34 @@ class StudentImporter extends Importer
         $hostelFee = (float) ($this->data['hostel_fee'] ?? 0);
         $totalBalance = (float) ($this->data['total_balance'] ?? 0);
         $year = isset($this->data['year']) ? (int) $this->data['year'] : null;
+        $startDate = Carbon::parse((string) ($this->data['start_date'] ?? now()->toDateString()));
 
         if ($year !== null && $year >= 1990 && $year <= 2100) {
-            $startDate = Carbon::parse((string) ($this->data['start_date'] ?? now()->toDateString()));
-            $this->data['start_date'] = $startDate->setYear($year)->toDateString();
+            $startDate = $startDate->setYear($year);
         }
 
-        $this->data['duration'] = $duration;
-        $this->data['selected_course_code'] = CourseCatalog::codeFor($courseName);
-        $this->data['branch'] = (string) ($this->data['branch'] ?? 'AGEGE BRANCH');
-        $this->data['registration_date'] = now()->toDateString();
-        $this->data['status'] = 'active';
-        $this->data['user_id'] = $user->id;
-        $this->data['fees_paid'] = $feesPaid;
-        $this->data['balance_due'] = $balanceDue;
-        $this->data['hostel_fee'] = $hostelFee;
-        $this->data['total_balance'] = $totalBalance;
+        $this->record->forceFill([
+            'email' => $email,
+            'phone' => (string) ($this->data['phone'] ?? 'N/A'),
+            'duration' => $duration,
+            'selected_course_code' => CourseCatalog::codeFor($courseName),
+            'branch' => (string) ($this->data['branch'] ?? 'AGEGE BRANCH'),
+            'start_date' => $startDate->toDateString(),
+            'registration_date' => $startDate->toDateString(),
+            'status' => 'active',
+            'user_id' => $user->id,
+            'fees_paid' => $feesPaid,
+            'balance_due' => $balanceDue,
+            'hostel_fee' => $hostelFee,
+            'total_balance' => $totalBalance,
+            'date_of_birth' => blank($this->data['date_of_birth'] ?? null) ? null : $this->data['date_of_birth'],
+            'sex' => blank($this->data['sex'] ?? null) ? null : $this->data['sex'],
+        ]);
+
+        unset($this->record->year);
 
         if (blank($this->data['student_number'] ?? null)) {
-            unset($this->data['student_number']);
+            $this->record->student_number = null;
         }
 
         if (blank($this->data['date_of_birth'] ?? null)) {

@@ -1,18 +1,262 @@
-[u519226541@us-phx-web940 portal_app]$ php artisan tinker --execute='$raw = ["emmanuelehimetalor@gmail.com","chuksabel234@gmail.com","ajimichael399@gmail.com.","opeyemiismail@gmail.com","favour775david@gmail.com","dannytubec7066@yahoo.com","emmanuelojih31@gmail.com"]; $emails = collect($raw)->map(fn($e) => strtolower(trim(rtrim($e, "."))))->unique()->values()->all(); $students = App\Models\Student::query()->whereIn(\Illuminate\Support\Facades\DB::raw("LOWER(email)"), $emails)->get(); echo "Found: ".$students->count().PHP_EOL; foreach ($students as $s) { $old = trim((string) $s->student_number); $needsFix = ($old === "" || preg_match("/^[0-9]{10,15}$/", $old)); if (! $needsFix) { echo "SKIP {$s->email} => {$s->student_number}".PHP_EOL; continue; } $date = $s->start_date ?: $s->registration_date ?: now(); $s->student_number = App\Support\MatricNumberGenerator::generate(\Illuminate\Support\Carbon::parse($date)->toDateString(), $s->selected_course_code); $s->save(); echo "FIXED {$s->email} => {$old} -> {$s->student_number}".PHP_EOL; }'   
-Found: 7
-SKIP emmanuelehimetalor@gmail.com => 811,938,727,309,073,000,000
-SKIP chuksabel234@gmail.com => 09161618307,+22879134748
-SKIP ajimichael399@gmail.com => 905,653,726,009,017,000,000
-SKIP opeyemiismail@gmail.com => 08107722051, 08037075794
-SKIP favour775david@gmail.com => 09135155159, 09110373357
-FIXED dannytubec7066@yahoo.com =>  -> 202602DPD009
-SKIP emmanuelojih31@gmail.com => 904582116
-[u519226541@us-phx-web940 portal_app]$ php artisan tinker --execute='$raw = ["emmanuelehimetalor@gmail.com","chuksabel234@gmail.com","ajimichael399@gmail.com.","opeyemiismail@gmail.com","favour775david@gmail.com","dannytubec7066@yahoo.com","emmanuelojih31@gmail.com"]; $emails = collect($raw)->map(fn($e) => strtolower(trim(rtrim($e, "."))))->unique()->values()->all(); App\Models\Student::query()->whereIn(\Illuminate\Support\Facades\DB::raw("LOWER(email)"), $emails)->get(["email","student_number"])->each(fn($s) => print($s->email." => ".$s->student_number.PHP_EOL));'
-emmanuelehimetalor@gmail.com => 811,938,727,309,073,000,000
-chuksabel234@gmail.com => 09161618307,+22879134748
-ajimichael399@gmail.com => 905,653,726,009,017,000,000
-opeyemiismail@gmail.com => 08107722051, 08037075794
-favour775david@gmail.com => 09135155159, 09110373357
-dannytubec7066@yahoo.com => 202602DPD009
-emmanuelojih31@gmail.com => 904582116
-[u519226541@us-phx-web940 portal_app]$ 
+# Illuminate\Database\QueryException - Internal Server Error
+
+SQLSTATE[42S22]: Column not found: 1054 Unknown column 'year' in 'INSERT INTO' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: u519226541_portal_tenstri, SQL: insert into `students` (`first_name`, `middle_name`, `last_name`, `email`, `phone`, `address`, `branch`, `selected_course_name`, `duration`, `start_date`, `year`, `date_of_birth`, `sex`, `fees_paid`, `balance_due`, `hostel_fee`, `total_balance`, `registration_date`, `student_number`, `updated_at`, `created_at`) values (JACOB, GODDAY, CHUKWUDI, jacobgoddayy@gmail.com, 8080501994, HOUSE B4 WEALTHLAND ESTATE LAKOWE, AJAH BRANCH, Certificate in Music Production, ?, 2026-05-01 00:00:00, 2025, ?, Male, 420000, 0, 0, 0, 2026-05-01 00:00:00, 202605GEN001, 2026-03-13 16:45:00, 2026-03-13 16:45:00))
+
+PHP 8.3.19
+Laravel 12.53.0
+portal.tenstrings.org
+
+## Stack Trace
+
+0 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+1 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:794
+2 - vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php:42
+3 - vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php:35
+4 - vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4140
+5 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2235
+6 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436
+7 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401
+8 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240
+9 - vendor/filament/actions/src/Imports/Importer.php:251
+10 - vendor/filament/actions/src/Imports/Importer.php:75
+11 - vendor/filament/actions/src/Imports/Jobs/ImportCsv.php:86
+12 - vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+13 - vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:491
+14 - vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363
+15 - vendor/filament/actions/src/Imports/Jobs/ImportCsv.php:86
+16 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+17 - vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+18 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+19 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+20 - vendor/laravel/framework/src/Illuminate/Container/Container.php:799
+21 - vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:129
+22 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+23 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+24 - vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:133
+25 - vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php:136
+26 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+27 - vendor/laravel/framework/src/Illuminate/Queue/Middleware/WithoutOverlapping.php:77
+28 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+29 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+30 - vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php:129
+31 - vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php:70
+32 - vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php:102
+33 - vendor/laravel/framework/src/Illuminate/Queue/SyncQueue.php:131
+34 - vendor/laravel/framework/src/Illuminate/Queue/SyncQueue.php:111
+35 - vendor/laravel/framework/src/Illuminate/Queue/Queue.php:100
+36 - vendor/laravel/framework/src/Illuminate/Bus/Batch.php:180
+37 - vendor/laravel/framework/src/Illuminate/Bus/DatabaseBatchRepository.php:312
+38 - vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+39 - vendor/laravel/framework/src/Illuminate/Bus/DatabaseBatchRepository.php:312
+40 - vendor/laravel/framework/src/Illuminate/Bus/Batch.php:177
+41 - vendor/laravel/framework/src/Illuminate/Bus/PendingBatch.php:374
+42 - vendor/filament/actions/src/Concerns/CanImportRecords.php:318
+43 - vendor/filament/support/src/Concerns/EvaluatesClosures.php:35
+44 - vendor/filament/actions/src/MountableAction.php:41
+45 - vendor/filament/actions/src/Concerns/InteractsWithActions.php:98
+46 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+47 - vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+48 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+49 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+50 - vendor/livewire/livewire/src/Wrapped.php:23
+51 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:492
+52 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:101
+53 - vendor/livewire/livewire/src/LivewireManager.php:102
+54 - vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:131
+55 - vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php:46
+56 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:265
+57 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:211
+58 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:822
+59 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+60 - vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php:50
+61 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+62 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php:87
+63 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+64 - vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php:48
+65 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+66 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:120
+67 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:63
+68 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+69 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php:36
+70 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+71 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php:74
+72 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+73 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+74 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
+75 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:800
+76 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:764
+77 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:753
+78 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:200
+79 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+80 - vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php:19
+81 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+82 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php:27
+83 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+84 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php:47
+85 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+86 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php:27
+87 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+88 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php:109
+89 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+90 - vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php:61
+91 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+92 - vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php:58
+93 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+94 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php:22
+95 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+96 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php:26
+97 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+98 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+99 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:175
+100 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:144
+101 - vendor/laravel/framework/src/Illuminate/Foundation/Application.php:1220
+102 - public/index.php:20
+
+## Request
+
+POST /livewire/update
+
+## Headers
+
+* **accept**: */*
+* **accept-encoding**: br
+* **accept-language**: en-GB,en-US;q=0.9,en;q=0.8
+* **connection**: close
+* **content-type**: application/json
+* **content-length**: 3561
+* **cookie**: _ga=GA1.2.2125740300.1762264473; twk_uuid_5c686cfc77e0730ce04347e0=%7B%22uuid%22%3A%221.7xaf1zW9JzvcjBKXSDOWkgdyleRKJE3gL32DvTHp1XjHWJAxLsTN0vmH6nOFJT3K9FIIC52OQdI2q7GOm21HmkineVpCWaRcZ8QCQ8owxcQL9YycDDIZd4zG%22%2C%22version%22%3A3%2C%22domain%22%3A%22tenstrings.org%22%2C%22ts%22%3A1768572744154%7D; XSRF-TOKEN=eyJpdiI6IjJ2bnREMjlNL1JpUlA5ZzZRZWJOSlE9PSIsInZhbHVlIjoiRTYrSlFlcEVWb2VwQU5qNVhtREtMQUF2M0k3aThGbGhFVFNBVXJHNkYxanU4dnAwMDE3QVVOYm5tVStjTEVvQVhLd2hBdjFkSUQwWmlpcm5zUXREY2V3dXkvL3Z2NTFrdlVNM2NxS3pUalVhbmtTb1dpUWZUNFR6UVFzVmp3cWYiLCJtYWMiOiJkZjUyNmUzYjliZjFiYTZhNTNhYTQ0NmExYWRlNGQxYmFjZGYwY2I5YzBiNTFlZGUwZWNiMDcyYjcwYmUwMzFlIiwidGFnIjoiIn0%3D; tenstrings-institute-session=eyJpdiI6IldsN2J2Q28vcHlOanc5d0NoRk9kNkE9PSIsInZhbHVlIjoiRTBHa3BVV0VvVytYZndLemJCOUJVOEowNURHekl6SkRrUmx3SzFGbHZvK0thaUh4L3VQRlI3UDBySjNKS0J2MDEzS0RCNkxtalF4eDNsYUh5bkIxVFNncVh6R1lJbERIaS9MQ2U1aWdieEc5T1RvRW8zSUdMZFp6MHZxZXFsb0QiLCJtYWMiOiJhZTg2NGY3ZjM5NDZhYWE4OTM3ZjE4MTUwOGIyZjA0MmQ5MjJiYmNjYTNhNTFkYTc1OTljMTlmMDYxOTY1YjMwIiwidGFnIjoiIn0%3D
+* **host**: portal.tenstrings.org
+* **pragma**: no-cache
+* **referer**: https://portal.tenstrings.org/admin/students
+* **user-agent**: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36
+* **cache-control**: no-cache
+* **x-forwarded-for**: 102.88.109.20
+* **x-forwarded-proto**: https
+* **x-real-ip**: 102.88.109.20
+* **x-real-port**: 31179
+* **x-forwarded-port**: 443
+* **x-port**: 443
+* **x-lscache**: 1
+* **sec-ch-ua-platform**: "Android"
+* **sec-ch-ua**: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"
+* **x-livewire**: 
+* **sec-ch-ua-mobile**: ?1
+* **origin**: https://portal.tenstrings.org
+* **sec-fetch-site**: same-origin
+* **sec-fetch-mode**: cors
+* **sec-fetch-dest**: empty
+* **priority**: u=1, i
+
+## Route Context
+
+controller: Livewire\Mechanisms\HandleRequests\HandleRequests@handleUpdate
+route name: default.livewire.update
+middleware: web
+
+## Route Parameters
+
+No route parameter data available.
+
+## Database Queries
+
+* mysql - select * from `imports` where `imports`.`id` = 8 limit 1 (1.04 ms)
+* mysql - insert into `cache_locks` (`key`, `owner`, `expiration`) values ('tenstrings-institute-cache-laravel-queue-overlap:Filament\Actions\Imports\Jobs\ImportCsv:import8', 'RCMBIZDTg9LoYLZI', 1773420888) (0.78 ms)
+* mysql - select * from `users` where `users`.`id` = 3 limit 1 (0.47 ms)
+* mysql - delete from `sessions` where `id` = '3iKbCC24B0G1E7pg85OTlC0HowwQltbhqeO0jjIl' (0.37 ms)
+* mysql - insert into `login_sessions` (`user_id`, `ip_address`, `user_agent`, `login_at`, `updated_at`, `created_at`) values (3, '102.88.109.20', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '2026-03-13 16:44:48', '2026-03-13 16:44:48', '2026-03-13 16:44:48') (0.54 ms)
+* mysql - insert into `login_sessions` (`user_id`, `ip_address`, `user_agent`, `login_at`, `updated_at`, `created_at`) values (3, '102.88.109.20', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '2026-03-13 16:44:48', '2026-03-13 16:44:48', '2026-03-13 16:44:48') (0.37 ms)
+* mysql - select * from `students` where LOWER(email) = 'unstoppablejoyce33@gmail.com' limit 1 (23.73 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'ijeoma' and LOWER(last_name) = 'joy' (0.74 ms)
+* mysql - select * from `users` where LOWER(email) = 'unstoppablejoyce33@gmail.com' limit 1 (2.29 ms)
+* mysql - select * from `users` where `email` = 'unstoppablejoyce33@gmail.com' limit 1 (0.43 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('IJEOMA JOY', 'unstoppablejoyce33@gmail.com', '9064642269', 'student', 'y$kJoyQh/rWzmrTBfGenwMCu7I/GeROAiJiW2k3lz7SZ7SI1bPLp1fi', '2026-03-13 16:44:48', '2026-03-13 16:44:48') (2.43 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '202511GEN%' (0.51 ms)
+* mysql - select exists(select * from `students` where `student_number` = '202511GEN001') as `exists` (0.39 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"1","FIRST NAME":"IJEOMA","LAST NAME ":"JOY","MIDDLE NAME ":"IFEANYICHUKWU","SEX":"F","EMAIL ":"unstoppablejoyce33@gmail.com","DATE OF BIRTH ":"28 Dec 1992","ADDRESS ":"4 azeez olaosibikan street agility mile 12","PHONE NO.":"9064642269","year":"2025","PROGRAM ":"6 MONTH GOSPEL PROGRAMME","DURATION OF PROGRAM ":"NOV25-MAY26","FEES PAID":"150,000","BALANCE DUE":"200,000","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:48', '2026-03-13 16:44:48') (0.49 ms)
+* mysql - select * from `students` where LOWER(email) = 'botaj@hotmail.com' limit 1 (0.6 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'bolaji' and LOWER(last_name) = 'tejuoso' (0.54 ms)
+* mysql - select * from `users` where LOWER(email) = 'botaj@hotmail.com' limit 1 (0.44 ms)
+* mysql - select * from `users` where `email` = 'botaj@hotmail.com' limit 1 (0.44 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('BOLAJI TEJUOSO', 'botaj@hotmail.com', '8028216858', 'student', 'y$j3fi6MHAU/T8692QyNSC2.VQfNBtVAm23tWOmUdgx0meSQZJiYluK', '2026-03-13 16:44:48', '2026-03-13 16:44:48') (0.45 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '202511GEN%' (0.46 ms)
+* mysql - select exists(select * from `students` where `student_number` = '202511GEN001') as `exists` (0.43 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"2","FIRST NAME":"BOLAJI","LAST NAME ":"TEJUOSO","MIDDLE NAME ":"","SEX":"M","EMAIL ":"botaj@hotmail.com","DATE OF BIRTH ":"20 June 1982","ADDRESS ":"35 mobolaji bank anthony way","PHONE NO.":"8028216858","year":"2025","PROGRAM ":"MUSIC PRODUCTION","DURATION OF PROGRAM ":"NOV25-MAY26","FEES PAID":"350,000","BALANCE DUE":"NILL","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:48', '2026-03-13 16:44:48') (0.36 ms)
+* mysql - select * from `students` where LOWER(email) = 'anthonyadekoya@gmail.com' limit 1 (0.58 ms)
+* mysql - select * from `users` where LOWER(email) = 'anthonyadekoya@gmail.com' limit 1 (0.44 ms)
+* mysql - select * from `users` where `email` = 'anthonyadekoya@gmail.com' limit 1 (0.38 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('ADEKOYA ANTHONY', 'anthonyadekoya@gmail.com', 'N/A', 'student', 'y$CGzjFH3eXrFuF8muyTqgGOyiZlmalAe2UJL1KNljefk.2frnf7cpW', '2026-03-13 16:44:49', '2026-03-13 16:44:49') (0.46 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '202511GEN%' (0.46 ms)
+* mysql - select exists(select * from `students` where `student_number` = '202511GEN001') as `exists` (0.39 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"3","FIRST NAME":"ADEKOYA ","LAST NAME ":"ANTHONY","MIDDLE NAME ":"ABOLANLE","SEX":"M","EMAIL ":"anthonyadekoya@gmail.com","DATE OF BIRTH ":"19 June 1993","ADDRESS ":"21 amusa idowu street ijegun via ikotun lagos","PHONE NO.":"","year":"2025","PROGRAM ":"DIPLOMA IN AUDIO TECH","DURATION OF PROGRAM ":"NOV25-NOV26","FEES PAID":"375,900","BALANCE DUE":"161,100","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:49', '2026-03-13 16:44:49') (11.02 ms)
+* mysql - select * from `students` where LOWER(email) = 'edada0190@gmail.com' limit 1 (0.6 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'dada' and LOWER(last_name) = 'emmanuel' (0.54 ms)
+* mysql - select * from `users` where LOWER(email) = 'edada0190@gmail.com' limit 1 (0.45 ms)
+* mysql - select * from `users` where `email` = 'edada0190@gmail.com' limit 1 (0.4 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('DADA EMMANUEL', 'edada0190@gmail.com', '9061380489', 'student', 'y$n3YbpfYw6EkpvxJ1HR3eAes4Ic/97qjPspAYMmPocHw4UcNZD.L.O', '2026-03-13 16:44:49', '2026-03-13 16:44:49') (0.46 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '202511GEN%' (0.51 ms)
+* mysql - select exists(select * from `students` where `student_number` = '202511GEN001') as `exists` (0.44 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"4","FIRST NAME":"DADA","LAST NAME ":"EMMANUEL","MIDDLE NAME ":"OLUWASEUN","SEX":"M","EMAIL ":"edada0190@gmail.com","DATE OF BIRTH ":"09 03 2008","ADDRESS ":"21 tokunbo kelani street","PHONE NO.":"9061380489","year":"2025","PROGRAM ":"DIPLOMA IN AUDIO TECH","DURATION OF PROGRAM ":"NOV25-NOV26","FEES PAID":"350,000","BALANCE DUE":"187,000","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:49', '2026-03-13 16:44:49') (0.33 ms)
+* mysql - select * from `students` where LOWER(email) = 'likemctooffy@gmail.com' limit 1 (0.61 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'omomofe' and LOWER(last_name) = 'olohitare' (0.58 ms)
+* mysql - select * from `users` where LOWER(email) = 'likemctooffy@gmail.com' limit 1 (0.47 ms)
+* mysql - select * from `users` where `email` = 'likemctooffy@gmail.com' limit 1 (0.45 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('OMOMOFE OLOHITARE', 'likemctooffy@gmail.com', '8023956607', 'student', 'y$ZnnqyEFS/nbL2ybPNDmvZei5ZZHVxOlfRvw4MUoNtPtUjRautShve', '2026-03-13 16:44:49', '2026-03-13 16:44:49') (0.46 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '202511GEN%' (0.46 ms)
+* mysql - select exists(select * from `students` where `student_number` = '202511GEN001') as `exists` (0.37 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"5","FIRST NAME":"OMOMOFE","LAST NAME ":"OLOHITARE","MIDDLE NAME ":"ANITA","SEX":"F","EMAIL ":"likemctooffy@gmail.com","DATE OF BIRTH ":"28 09 2009","ADDRESS ":"t mustapha abdul ogudu","PHONE NO.":"8023956607","year":"2025","PROGRAM ":"VOCAL TRAINING","DURATION OF PROGRAM ":"NOV25-FEB26","FEES PAID":"180,000","BALANCE DUE":"NILL","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:49', '2026-03-13 16:44:49') (0.3 ms)
+* mysql - select exists(select * from `users` where LOWER(email) = 'garba_oluwatimilehin_20260313164449917@tenstrings.org') as `exists` (9.73 ms)
+* mysql - select exists(select * from `students` where LOWER(email) = 'garba_oluwatimilehin_20260313164449917@tenstrings.org') as `exists` (22.38 ms)
+* mysql - select * from `users` where LOWER(email) = 'garba_oluwatimilehin_20260313164449917@tenstrings.org' limit 1 (4.15 ms)
+* mysql - select * from `users` where `email` = 'garba_oluwatimilehin_20260313164449917@tenstrings.org' limit 1 (3.16 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('GARBA OLUWATIMILEHIN', 'garba_oluwatimilehin_20260313164449917@tenstrings.org', 'N/A', 'student', 'y$HQMa5nJ9kTyT1kTSwe4hWuxmYSZet7qxXKPOM50ow6BS7.Oi7U60G', '2026-03-13 16:44:50', '2026-03-13 16:44:50') (17.69 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '201402GEN%' (5.21 ms)
+* mysql - select exists(select * from `students` where `student_number` = '201402GEN001') as `exists` (0.41 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"6","FIRST NAME":"GARBA ","LAST NAME ":"OLUWATIMILEHIN","MIDDLE NAME ":"IBRAHIM","SEX":"M","EMAIL ":"","DATE OF BIRTH ":"","ADDRESS ":"","PHONE NO.":"","year":"2025","PROGRAM ":"MUSIC PRODUCTION","DURATION OF PROGRAM ":"FEB 14-AUG14","FEES PAID":"350,000","BALANCE DUE":"NILL","HOSTEL ":"","BALANCE ":"","REMARK":"START BECCA"}', NULL, '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.36 ms)
+* mysql - select * from `students` where LOWER(email) = 'otimba68@yahoo,.com' limit 1 (3.26 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'mba' and LOWER(last_name) = 'chidinma' (0.57 ms)
+* mysql - select exists(select * from `users` where LOWER(email) = 'mba_chidinma_20260313164450631@tenstrings.org') as `exists` (2.07 ms)
+* mysql - select exists(select * from `students` where LOWER(email) = 'mba_chidinma_20260313164450631@tenstrings.org') as `exists` (6.17 ms)
+* mysql - select * from `users` where LOWER(email) = 'mba_chidinma_20260313164450631@tenstrings.org' limit 1 (0.55 ms)
+* mysql - select * from `users` where `email` = 'mba_chidinma_20260313164450631@tenstrings.org' limit 1 (0.46 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('MBA CHIDINMA', 'mba_chidinma_20260313164450631@tenstrings.org', '9079034347', 'student', 'ym467OemwBsDkfEmTezL.ubGbk/Nr1L9HumZGsJLfYgESzkr51yKm', '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.42 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"7","FIRST NAME":"MBA","LAST NAME ":"CHIDINMA","MIDDLE NAME ":"OTI ","SEX":"F","EMAIL ":"Otimba68@yahoo,.com","DATE OF BIRTH ":"24th Aug 2009","ADDRESS ":"2,olorunkeme creasent","PHONE NO.":"9079034347","year":"2025","PROGRAM ":"Diploma in gospel music","DURATION OF PROGRAM ":"feb 14-feb 14 ","FEES PAID":"377,000","BALANCE DUE":"160,000","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.37 ms)
+* mysql - select * from `students` where LOWER(email) = 'folaross@gmail.com' limit 1 (0.53 ms)
+* mysql - select * from `users` where LOWER(email) = 'folaross@gmail.com' limit 1 (0.44 ms)
+* mysql - select * from `users` where `email` = 'folaross@gmail.com' limit 1 (1.67 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"8","FIRST NAME":"SALAUDEEN","LAST NAME ":"USMAN","MIDDLE NAME ":"ABIDEMI","SEX":"M","EMAIL ":"Folaross@gmail.com","DATE OF BIRTH ":"1oth nov 1996","ADDRESS ":"2,tallmaina  magboro","PHONE NO.":"8105935815","year":"2025","PROGRAM ":"Diploma in music perfor","DURATION OF PROGRAM ":"feb 14-feb 14 ","FEES PAID":"161,100","BALANCE DUE":"","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.35 ms)
+* mysql - select * from `students` where LOWER(email) = 'emmanuelojih@gmail.com' limit 1 (0.55 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'ojih' and LOWER(last_name) = 'emmanuel' (0.55 ms)
+* mysql - select * from `users` where LOWER(email) = 'emmanuelojih@gmail.com' limit 1 (0.43 ms)
+* mysql - select * from `users` where `email` = 'emmanuelojih@gmail.com' limit 1 (0.37 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('OJIH EMMANUEL', 'emmanuelojih@gmail.com', '9045382116', 'student', 'y$dStRpEjZ4as1OAzH04cJaur5OOg3oIsZobQ3nOoiJ.8GWQve06FaW', '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.49 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '201402GEN%' (0.49 ms)
+* mysql - select exists(select * from `students` where `student_number` = '201402GEN001') as `exists` (0.43 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"9","FIRST NAME":"OJIH","LAST NAME ":"EMMANUEL","MIDDLE NAME ":"ENEMONA","SEX":"M","EMAIL ":"emmanuelojih@gmail.com","DATE OF BIRTH ":"132th 03 1988","ADDRESS ":"9,morris stret yaba","PHONE NO.":"9045382116","year":"2025","PROGRAM ":"DIPLOMA IN AUDIO TECH","DURATION OF PROGRAM ":"feb 14-feb 14 ","FEES PAID":"537,000","BALANCE DUE":"NILL","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.31 ms)
+* mysql - select * from `students` where LOWER(email) = 'okenwa.joseph@gmail.com' limit 1 (0.56 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'okenwa' and LOWER(last_name) = 'joseph' (0.57 ms)
+* mysql - select * from `users` where LOWER(email) = 'okenwa.joseph@gmail.com' limit 1 (0.45 ms)
+* mysql - select * from `users` where `email` = 'okenwa.joseph@gmail.com' limit 1 (0.43 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('OKENWA JOSEPH', 'okenwa.joseph@gmail.com', '701841690', 'student', 'ynF.ztugcI5kZfD1vE4leBmINaE6OqqMmZ3NNVIfmuMvzVxU3Iry', '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.4 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '201402GEN%' (0.4 ms)
+* mysql - select exists(select * from `students` where `student_number` = '201402GEN001') as `exists` (0.35 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"10","FIRST NAME":"OKENWA ","LAST NAME ":"JOSEPH","MIDDLE NAME ":"CHISOM","SEX":"M","EMAIL ":"Okenwa.joseph@gmail.com","DATE OF BIRTH ":"3rd 10 2006","ADDRESS ":"16,community close owode","PHONE NO.":"701841690","year":"2025","PROGRAM ":"DIPLOMA IN AUDIO TECH","DURATION OF PROGRAM ":"feb 14-feb 14 ","FEES PAID":"200,000","BALANCE DUE":"337,000","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:50', '2026-03-13 16:44:50') (0.32 ms)
+* mysql - select * from `students` where LOWER(email) = 'onovosom2gmail.com' limit 1 (0.49 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'onovo' and LOWER(last_name) = 'victor' (0.47 ms)
+* mysql - select exists(select * from `users` where LOWER(email) = 'onovo_victor_20260313164450451@tenstrings.org') as `exists` (0.37 ms)
+* mysql - select exists(select * from `students` where LOWER(email) = 'onovo_victor_20260313164450451@tenstrings.org') as `exists` (0.34 ms)
+* mysql - select * from `users` where LOWER(email) = 'onovo_victor_20260313164450451@tenstrings.org' limit 1 (0.46 ms)
+* mysql - select * from `users` where `email` = 'onovo_victor_20260313164450451@tenstrings.org' limit 1 (0.44 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('ONOVO VICTOR', 'onovo_victor_20260313164450451@tenstrings.org', '9127619312', 'student', 'y$wCfy5nbvqp2UcdUwbhksdeWz1qMsYxSSyx8h.DRJzmUyISTxQY2Ye', '2026-03-13 16:44:51', '2026-03-13 16:44:51') (0.45 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"11","FIRST NAME":"ONOVO ","LAST NAME ":"VICTOR","MIDDLE NAME ":"CHISOM","SEX":"M","EMAIL ":"Onovosom2gmail.com","DATE OF BIRTH ":"10th 02 1997","ADDRESS ":"2,unity crescent egbeda","PHONE NO.":"9127619312","year":"2025","PROGRAM ":"DIPLOMA IN AUDIO TECH","DURATION OF PROGRAM ":"feb 14-feb 14 ","FEES PAID":"350,000","BALANCE DUE":"187,000","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:51', '2026-03-13 16:44:51') (0.43 ms)
+* mysql - select * from `students` where LOWER(email) = 'oniyidestephen@gmail.com' limit 1 (0.59 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'oniyide' and LOWER(last_name) = 'stephen' (0.62 ms)
+* mysql - select * from `users` where LOWER(email) = 'oniyidestephen@gmail.com' limit 1 (0.47 ms)
+* mysql - select * from `users` where `email` = 'oniyidestephen@gmail.com' limit 1 (0.44 ms)
+* mysql - insert into `users` (`name`, `email`, `phone`, `role`, `password`, `updated_at`, `created_at`) values ('ONIYIDE STEPHEN', 'oniyidestephen@gmail.com', '7064724304', 'student', 'y$uizu0/Q7GYWxT7GTPhQ6Bu41s9HQ.5IB3XNTY.t1L1yaFkLJdbVpK', '2026-03-13 16:44:51', '2026-03-13 16:44:51') (0.45 ms)
+* mysql - select count(*) as aggregate from `students` where `student_number` like '201402GEN%' (0.51 ms)
+* mysql - select exists(select * from `students` where `student_number` = '201402GEN001') as `exists` (0.45 ms)
+* mysql - insert into `failed_import_rows` (`import_id`, `data`, `validation_error`, `updated_at`, `created_at`) values (8, '{"S\/N":"12","FIRST NAME":"ONIYIDE","LAST NAME ":"STEPHEN","MIDDLE NAME ":"SEYI","SEX":"M","EMAIL ":"oniyidestephen@gmail.com","DATE OF BIRTH ":"10th 07 1999","ADDRESS ":"32,olashore street loasepe","PHONE NO.":"7064724304","year":"2025","PROGRAM ":"MUSIC PRODUCTION","DURATION OF PROGRAM ":"FEB 14-AUG14","FEES PAID":"350,000","BALANCE DUE":"NILL","HOSTEL ":"","BALANCE ":"","REMARK":""}', NULL, '2026-03-13 16:44:51', '2026-03-13 16:44:51') (0.31 ms)
+* mysql - select * from `students` where LOWER(email) = 'kelvinmesiba621@gmail' limit 1 (0.55 ms)
+* mysql - select * from `students` where LOWER(first_name) = 'mesiba' and LOWER(last_name) = 'kelvin' (0.57 ms)
+* mysql - select exists(select * from `users` where LOWER(email) = 'mesiba_kelvin_20260313164451280@tenstrings.org') as `exists` (0.47 ms)
+* mysql - select exists(select * from `students` where LOWER(email) = 'mesiba_kelvin_20260313164451280@tenstrings.org') as `exists` (0.42 ms)
