@@ -27,6 +27,12 @@ class EditStudentCore extends EditRecord
             Forms\Components\TextInput::make('guardian_email')->email()->maxLength(255),
             Forms\Components\TextInput::make('guardian_relationship')->maxLength(255),
             Forms\Components\Textarea::make('address')->rows(3),
+            Forms\Components\Select::make('sex')
+                ->options([
+                    'Male' => 'Male',
+                    'Female' => 'Female',
+                ])
+                ->native(false),
             Forms\Components\Select::make('branch')
                 ->options([
                     'AJAH BRANCH' => 'AJAH BRANCH',
