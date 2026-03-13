@@ -39,7 +39,7 @@ class ImportStudentsCsv extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'send_email' => true,
+            'send_email' => false,
             'only_branch' => null,
         ]);
     }
@@ -73,7 +73,7 @@ class ImportStudentsCsv extends Page implements HasForms
                             ->placeholder('Import all branches'),
                         Toggle::make('send_email')
                             ->label('Send credentials by email')
-                            ->helperText('When enabled, each imported student gets matric number + generated password by email.'),
+                            ->helperText('Off by default. Enable only when you want immediate email delivery.'),
                     ]),
             ])
             ->statePath('data');

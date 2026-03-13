@@ -22,6 +22,7 @@ class ImportStudentsFromCsv extends Command
     protected $signature = 'students:import-csv
         {file : Absolute or relative path to CSV file}
         {--no-email : Do not send generated credentials email}
+        {--send-email : Send generated credentials email during import}
         {--only-branch= : Restrict import to one branch: AJAH, FESTAC, IKEJA, AGEGE}';
 
     protected $description = 'Import students from a CSV, create portal accounts, and email generated passwords.';
@@ -29,7 +30,7 @@ class ImportStudentsFromCsv extends Command
     public function handle(): int
     {
         $file = (string) $this->argument('file');
-        $sendEmail = ! (bool) $this->option('no-email');
+        $sendEmail = (bool) $this->option('send-email') && ! (bool) $this->option('no-email');
         $onlyBranchOption = $this->resolveOnlyBranchOption();
 
         if ($onlyBranchOption === false) {
