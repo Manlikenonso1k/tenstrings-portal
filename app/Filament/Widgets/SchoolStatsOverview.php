@@ -3,9 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Course;
-use App\Models\Payment;
 use App\Models\Student;
-use App\Models\StudentCourseFee;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -13,8 +11,8 @@ class SchoolStatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
-        $revenue = Payment::query()->sum('amount_paid');
-        $outstanding = StudentCourseFee::query()->sum('outstanding_balance');
+        $revenue = Student::query()->sum('fees_paid');
+        $outstanding = Student::query()->sum('balance_due');
 
         return [
             Stat::make('Total Students', Student::query()->count()),

@@ -1,4 +1,19 @@
 <x-filament-panels::page>
+    <div class="grid gap-4 md:grid-cols-3">
+        <x-filament::section>
+            <p class="text-xs text-gray-500">Total Balance</p>
+            <p class="text-xl font-semibold">₦{{ number_format((float) ($student?->total_balance ?? 0), 2) }}</p>
+        </x-filament::section>
+        <x-filament::section>
+            <p class="text-xs text-gray-500">Balance Due</p>
+            <p class="text-xl font-semibold">₦{{ number_format((float) ($student?->balance_due ?? 0), 2) }}</p>
+        </x-filament::section>
+        <x-filament::section>
+            <p class="text-xs text-gray-500">Fees Paid</p>
+            <p class="text-xl font-semibold">₦{{ number_format((float) ($student?->fees_paid ?? 0), 2) }}</p>
+        </x-filament::section>
+    </div>
+
     <x-filament::section>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">

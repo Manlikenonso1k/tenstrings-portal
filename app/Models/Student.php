@@ -20,6 +20,10 @@ class Student extends Model
         'selected_course_name',
         'selected_course_code',
         'duration',
+        'fees_paid',
+        'balance_due',
+        'hostel_fee',
+        'total_balance',
         'first_name',
         'middle_name',
         'last_name',
@@ -47,6 +51,10 @@ class Student extends Model
         'date_of_birth' => 'date',
         'start_date' => 'date',
         'registration_date' => 'date',
+        'fees_paid' => 'decimal:2',
+        'balance_due' => 'decimal:2',
+        'hostel_fee' => 'decimal:2',
+        'total_balance' => 'decimal:2',
     ];
 
     protected static function booted(): void

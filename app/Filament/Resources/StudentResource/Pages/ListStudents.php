@@ -20,7 +20,11 @@ class ListStudents extends ListRecords
                 ->icon('heroicon-o-arrow-up-tray')
                 ->importer(StudentImporter::class)
                 ->chunkSize(100)
-                ->maxRows(5000),
+                ->maxRows(5000)
+                ->fileRules([
+                    'mimes:csv,txt',
+                    'max:5120',
+                ]),
         ];
     }
 }

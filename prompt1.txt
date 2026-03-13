@@ -1,25 +1,39 @@
-CONTEXT: I am improving the CSV student import feature for the Tenstrings Portal (Laravel 11 + Filament v3). Currently, the import is silent and provides no feedback, leading to confusion with duplicate records.
+CONTEXT: I am upgrading the CSV import system for the Tenstrings Portal (Laravel 11 + Filament v3). The current importer is missing records and failing to map financial data correctly.
 
-TASK: Implement a robust CSV Importer that provides real-time progress tracking and a detailed summary report.
+TASK: CREATE A ROBUST FINANCIAL IMPORTER
+
+Unique Identifier (Upsert Logic): Configure the importer to use the Email or Matriculation Number as the unique key. If a record exists, UPDATE it; if not, CREATE it. This prevents the "6 missing students" issue and stops duplicates.
+
+Field Mapping: Map the following CSV columns to the Student model and a related Payments table if necessary:
+
+FEES PAID -> fees_paid
+
+BALANCE DUE -> balance_due
+
+HOSTEL -> hostel_fee
+
+BALANCE -> total_balance
+
+Real-Time Progress: Use Filament's ImportAction with Database Transactions and Queueing. Ensure a progress bar is visible in the UI during processing.
+
+Admin Revenue Integration: Ensure these values update a central "Revenue Dashboard." The Admin should see a total sum of fees_paid (Revenue) and balance_due (Pending) immediately after import.
+
+Student Portal Visibility: Update the Student "Dashboard" or "Finance" sub-page to display their specific total_balance and balance_due so they know what they owe.
+
+The "WordPress Style" Summary: After completion, trigger a notification showing:
+
+✅ Total Successfully Processed
+
+🔄 Records Updated (Duplicates handled)
+
+❌ Records Failed (and why)
 
 TECHNICAL REQUIREMENTS:
 
-Filament Import Action: Use the built-in ImportAction for the Student Resource.
+Provide the StudentImporter class code.
 
-Progress Tracking: Enable background job processing so that a real-time progress bar appears in the notifications/UI while the data is being processed.
+Provide the updated StudentResource action configuration.
 
-Duplicate Handling: >     - Configure the Importer to check for existing emails or matric numbers.
+Ensure the logic handles numeric formatting (e.g., removing "₦" or commas from the CSV before saving).
 
-If a duplicate is found, it should be logged as "Skipped" rather than throwing an error or creating a double entry.
-
-Summary Report: After the import finishes, display a summary notification or modal showing:
-
-Total rows processed.
-
-Number of successful imports.
-
-Number of skipped/duplicate rows.
-
-Validation: Ensure the importer validates required fields (Name, Course, Start Date) and provides a CSV of "failed rows" that the user can download and fix.
-
-OUTPUT: Provide the Importer class logic, the StudentResource action configuration, and instructions for setting up the Laravel Queue Worker to handle the progress bar.
+OUTPUT: Complete PHP code for the Importer and a checklist for setting up the Queue Worker.

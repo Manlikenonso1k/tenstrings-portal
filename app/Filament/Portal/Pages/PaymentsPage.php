@@ -3,7 +3,9 @@
 namespace App\Filament\Portal\Pages;
 
 use App\Models\Payment;
+use App\Models\Student;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentsPage extends Page
 {
@@ -17,9 +19,11 @@ class PaymentsPage extends Page
 
     protected function getViewData(): array
     {
-        $studentId = auth()->user()?->student?->id;
+        $studentId = Auth::user()?->student?->id;
+        $student = $studentId ? Student::query()->find($studentId) : null;
 
         return [
+            'student' => $student,
             'payments' => Payment::query()
                 ->where('student_id', $studentId)
                 ->latest('payment_date')
