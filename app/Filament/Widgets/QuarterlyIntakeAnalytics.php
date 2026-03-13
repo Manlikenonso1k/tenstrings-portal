@@ -44,7 +44,6 @@ class QuarterlyIntakeAnalytics extends BaseWidget
                         return $state;
                     }),
                 Tables\Columns\TextColumn::make('enrollments')->label('Enrollments')->sortable(),
-            ])
-            ->defaultSort('intake_year', 'desc');
+            ]);
     }
 }
