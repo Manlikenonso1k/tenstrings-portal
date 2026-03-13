@@ -1,40 +1,27 @@
-CONTEXT: I am adding data visualization to the Tenstrings Portal (Laravel 11 + Filament v3). I need a visual dashboard at the top of the Admin home page to track money.
+CONTEXT: I am expanding the analytics dashboard for the Tenstrings Portal (Laravel 11 + Filament v3). I need to track historical data across multiple years and compare performance across different branches.
 
-TASK: CREATE A FILTERABLE FINANCIAL CHART WIDGET
+TASK: ADVANCED FILTERING & BRANCH COMPARISON
 
-Widget Type: Create a Filament ChartWidget.
+Dual-Filter System: Update the FinanceChart and EnrollmentChart widgets to include two select filters:
 
-Data Sources: >    - Revenue: Sum of fees_paid from the Student model.
+Year Filter: A dropdown allowing the user to select the year (e.g., 2024, 2025, 2026). Default should be the current year.
 
-Pending: Sum of balance_due from the Student model.
+Quarterly Filter: (Existing) Feb/May/Aug/Nov logic.
 
-Chart Options: Implement a Bar Chart to compare Revenue vs. Pending, and a Doughnut Chart to show the ratio of paid vs. unpaid fees.
-use color green ,blue and red to represent data and when filtered an animation to show the chart growth when refreshed 
+Branch-Specific Charts: Create three new charts (Bar or Radar charts are recommended):
 
-Quarterly Filtering: Add a custom filter dropdown on the widget. The options must be:
+Branch Enrollment: Total students per branch.
 
-Q1: February – April
+Branch Revenue: Total fees_paid per branch.
 
-Q2: May – July
+Branch Pending: Total balance_due per branch.
 
-Q3: August – October
+Handling Legacy Data: For student records where the branch column is null or empty, categorize them under a custom label called "Legacy/Unassigned" in the charts. Use a distinct color (like Grey) for this category so it stands out as data that needs cleaning.
 
-Q4: November – January
+Data Logic: >     * The charts must dynamically update when either the Year or Quarter filter is changed.
 
-Visual Styling: >    - Use Tenstrings Blue for Revenue.
+Use Eloquent queries with whereYear() and groupBy('branch_name').
 
-Use a Warning Amber/Red for Pending fees.
+Layout: Position the Branch Revenue vs. Pending bar chart as the main feature at the top, and a Student Enrollment by Branch doughnut chart on the side.
 
-Ensure the widget is set to full-width or grid-column-span-2 to sit at the top of the dashboard.
-
-Performance: Ensure the queries are optimized and use getFilters() to refresh the chart data dynamically when a new period is selected.
-
-TECHNICAL REQUIREMENTS:
-
-Use Chart.js (built into Filament).
-
-Provide the code for the FinanceChart widget class.
-
-Provide the getHeaderWidgets() configuration for the Admin/Dashboard page.
-
-OUTPUT: Complete PHP code for the widget and registration instructions.
+OUTPUT: Provide the updated PHP code for the widgets, the filtering logic for the Year/Quarter combination, and the SQL/Eloquent logic to handle null branch values.

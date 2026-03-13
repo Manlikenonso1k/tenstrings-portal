@@ -6,9 +6,9 @@ use App\Models\Student;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Database\Eloquent\Builder;
 
-class FinanceRatioChart extends ChartWidget
+class BranchEnrollmentDoughnut extends ChartWidget
 {
-    protected static ?string $heading = 'Paid vs Unpaid Ratio';
+    protected static ?string $heading = 'Student Enrollment by Branch';
 
     protected static ?string $pollingInterval = null;
 
@@ -46,50 +46,55 @@ class FinanceRatioChart extends ChartWidget
     {
         [$year, $quarter] = $this->parseFilter();
 
-        $totals = $this->buildBaseQuery($year, $quarter)
-            ->selectRaw('COALESCE(SUM(fees_paid), 0) as paid, COALESCE(SUM(balance_due), 0) as unpaid')
-            ->first();
+        $rows = $this->buildBaseQuery($year, $quarter)
+            ->selectRaw("
+                COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
+                COUNT(*) as total
+            ")
+            ->groupByRaw("COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned')")
+            ->orderByRaw('total DESC')
+            ->get();
+
+        $palette = ['#2563eb', '#16a34a', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#0891b2'];
+
+        $colors = $rows->map(function ($row, $i) use ($palette) {
+            return $row->branch_name === 'Legacy/Unassigned'
+                ? '#9ca3af'
+                : ($palette[$i % count($palette)]);
+        })->toArray();
 
         return [
             'datasets' => [
                 [
-                    'data' => [
-                        (float) ($totals->paid ?? 0),
-                        (float) ($totals->unpaid ?? 0),
-                    ],
-                    'backgroundColor' => [
-                        '#16a34a',
-                        '#ef4444',
-                    ],
-                    'borderColor' => ['#15803d', '#dc2626'],
-                    'borderWidth' => 1,
+                    'data'            => $rows->pluck('total')->toArray(),
+                    'backgroundColor' => $colors,
+                    'borderColor'     => $colors,
+                    'borderWidth'     => 1,
                 ],
             ],
-            'labels' => ['Paid', 'Unpaid'],
+            'labels' => $rows->pluck('branch_name')->toArray(),
         ];
     }
 
     protected function getOptions(): array
     {
         return [
-            'responsive' => true,
+            'responsive'          => true,
             'maintainAspectRatio' => false,
-            'animation' => [
+            'animation'           => [
                 'duration' => 900,
-                'easing' => 'easeOutQuart',
+                'easing'   => 'easeOutQuart',
             ],
             'plugins' => [
-                'legend' => [
-                    'position' => 'bottom',
-                ],
+                'legend' => ['position' => 'bottom'],
             ],
-            'cutout' => '62%',
+            'cutout' => '55%',
         ];
     }
 
     private function parseFilter(): array
     {
-        $raw = $this->filter ?? (now()->year . '_q1');
+        $raw   = $this->filter ?? (now()->year . '_q1');
         $parts = explode('_', $raw, 2);
 
         return [(int) ($parts[0] ?? now()->year), $parts[1] ?? 'q1'];
@@ -108,9 +113,9 @@ class FinanceRatioChart extends ChartWidget
         }
 
         $months = match ($quarter) {
-            'q1' => [2, 3, 4],
-            'q2' => [5, 6, 7],
-            'q3' => [8, 9, 10],
+            'q1'    => [2, 3, 4],
+            'q2'    => [5, 6, 7],
+            'q3'    => [8, 9, 10],
             default => [2, 3, 4],
         };
 

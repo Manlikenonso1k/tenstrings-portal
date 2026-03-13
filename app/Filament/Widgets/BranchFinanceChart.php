@@ -6,9 +6,9 @@ use App\Models\Student;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Database\Eloquent\Builder;
 
-class FinanceChart extends ChartWidget
+class BranchFinanceChart extends ChartWidget
 {
-    protected static ?string $heading = 'Finance Overview (Revenue vs Pending)';
+    protected static ?string $heading = 'Branch Revenue vs Pending';
 
     protected static ?string $pollingInterval = null;
 
@@ -46,59 +46,68 @@ class FinanceChart extends ChartWidget
     {
         [$year, $quarter] = $this->parseFilter();
 
-        $totals = $this->buildBaseQuery($year, $quarter)
-            ->selectRaw('COALESCE(SUM(fees_paid), 0) as revenue, COALESCE(SUM(balance_due), 0) as pending')
-            ->first();
+        $rows = $this->buildBaseQuery($year, $quarter)
+            ->selectRaw("
+                COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
+                COALESCE(SUM(fees_paid), 0) as revenue,
+                COALESCE(SUM(balance_due), 0) as pending
+            ")
+            ->groupByRaw("COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned')")
+            ->orderByRaw('revenue DESC')
+            ->get();
+
+        $labels        = $rows->pluck('branch_name')->toArray();
+        $revenues      = $rows->pluck('revenue')->map(fn ($v) => (float) $v)->toArray();
+        $pendingValues = $rows->pluck('pending')->map(fn ($v) => (float) $v)->toArray();
+
+        $revColors = $rows->map(fn ($r) => $r->branch_name === 'Legacy/Unassigned' ? '#9ca3af' : '#2563eb')->toArray();
+        $penColors = $rows->map(fn ($r) => $r->branch_name === 'Legacy/Unassigned' ? '#6b7280' : '#dc2626')->toArray();
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Amount (NGN)',
-                    'data' => [
-                        (float) ($totals->revenue ?? 0),
-                        (float) ($totals->pending ?? 0),
-                    ],
-                    'backgroundColor' => [
-                        '#2563eb',
-                        '#dc2626',
-                    ],
-                    'borderColor' => [
-                        '#1d4ed8',
-                        '#b91c1c',
-                    ],
-                    'borderWidth' => 1,
-                    'borderRadius' => 10,
+                    'label'           => 'Revenue (NGN)',
+                    'data'            => $revenues,
+                    'backgroundColor' => $revColors,
+                    'borderColor'     => $revColors,
+                    'borderWidth'     => 1,
+                    'borderRadius'    => 6,
+                ],
+                [
+                    'label'           => 'Pending (NGN)',
+                    'data'            => $pendingValues,
+                    'backgroundColor' => $penColors,
+                    'borderColor'     => $penColors,
+                    'borderWidth'     => 1,
+                    'borderRadius'    => 6,
                 ],
             ],
-            'labels' => ['Revenue', 'Pending'],
+            'labels' => $labels,
         ];
     }
 
     protected function getOptions(): array
     {
         return [
-            'responsive' => true,
+            'responsive'          => true,
             'maintainAspectRatio' => false,
-            'animation' => [
+            'animation'           => [
                 'duration' => 900,
-                'easing' => 'easeOutQuart',
+                'easing'   => 'easeOutQuart',
             ],
             'plugins' => [
-                'legend' => [
-                    'display' => false,
-                ],
+                'legend' => ['position' => 'top'],
             ],
             'scales' => [
-                'y' => [
-                    'beginAtZero' => true,
-                ],
+                'x' => ['stacked' => false],
+                'y' => ['beginAtZero' => true],
             ],
         ];
     }
 
     private function parseFilter(): array
     {
-        $raw = $this->filter ?? (now()->year . '_q1');
+        $raw   = $this->filter ?? (now()->year . '_q1');
         $parts = explode('_', $raw, 2);
 
         return [(int) ($parts[0] ?? now()->year), $parts[1] ?? 'q1'];
@@ -117,9 +126,9 @@ class FinanceChart extends ChartWidget
         }
 
         $months = match ($quarter) {
-            'q1' => [2, 3, 4],
-            'q2' => [5, 6, 7],
-            'q3' => [8, 9, 10],
+            'q1'    => [2, 3, 4],
+            'q2'    => [5, 6, 7],
+            'q3'    => [8, 9, 10],
             default => [2, 3, 4],
         };
 
