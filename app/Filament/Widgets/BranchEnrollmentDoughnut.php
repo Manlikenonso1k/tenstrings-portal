@@ -51,7 +51,7 @@ class BranchEnrollmentDoughnut extends ChartWidget
                 COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
                 COUNT(*) as total
             ")
-            ->groupByRaw("COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned')")
+            ->groupBy('branch')
             ->orderByRaw('total DESC')
             ->get();
 
