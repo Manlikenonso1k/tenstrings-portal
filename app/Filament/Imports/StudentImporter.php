@@ -312,7 +312,7 @@ class StudentImporter extends Importer
 
     public function getJobConnection(): ?string
     {
-        return 'database';
+        return 'sync';
     }
 
     public function getJobBatchName(): ?string
