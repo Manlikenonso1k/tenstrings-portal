@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -64,6 +65,7 @@ class ImportStudentsFromCsv extends Command
         $skipped = 0;
         $emailed = 0;
         $line = 1;
+        $skippedRows = [];
 
         while (($row = fgetcsv($handle)) !== false) {
             $line++;
@@ -80,6 +82,7 @@ class ImportStudentsFromCsv extends Command
             if ($firstName === '' || $lastName === '' || $email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $skipped++;
                 $this->warn("Line {$line}: skipped due to missing/invalid name or email.");
+                $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'missing_or_invalid_name_or_email');
 
                 continue;
             }
@@ -176,12 +179,14 @@ class ImportStudentsFromCsv extends Command
                 if ($result['status'] === 'exists') {
                     $skipped++;
                     $this->line("Line {$line}: skipped, student with email {$email} already exists.");
+                    $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'student_email_already_exists');
 
                     continue;
                 }
 
                 if ($result['status'] === 'branch_filtered') {
                     $skipped++;
+                    $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'filtered_by_only_branch_option');
 
                     continue;
                 }
@@ -189,6 +194,7 @@ class ImportStudentsFromCsv extends Command
                 if ($result['status'] === 'conflict') {
                     $skipped++;
                     $this->warn("Line {$line}: skipped, user {$email} exists with a non-student role.");
+                    $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'existing_non_student_user_conflict');
 
                     continue;
                 }
@@ -219,6 +225,7 @@ class ImportStudentsFromCsv extends Command
                     'line' => $line,
                     'error' => $exception->getMessage(),
                 ]);
+                $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'import_failed: ' . $exception->getMessage());
 
                 $this->error("Line {$line}: import failed - {$exception->getMessage()}");
             }
@@ -226,8 +233,11 @@ class ImportStudentsFromCsv extends Command
 
         fclose($handle);
 
+        $skippedRowsPath = $this->exportSkippedRows($header, $skippedRows);
+
         $this->newLine();
         $this->info("Import completed. Created: {$created}, Skipped: {$skipped}, Emails sent: {$emailed}");
+        $this->line("Skipped rows report: {$skippedRowsPath}");
 
         return self::SUCCESS;
     }
@@ -478,5 +488,50 @@ class ImportStudentsFromCsv extends Command
         return Str::of(str_repeat('x', 10))
             ->replaceMatches('/x/', fn () => $alphabet[random_int(0, strlen($alphabet) - 1)])
             ->toString();
+    }
+
+    private function buildSkippedRow(array $header, array $row, int $line, string $reason): array
+    {
+        $record = [
+            '__line' => $line,
+            '__reason' => $reason,
+        ];
+
+        foreach ($header as $index => $column) {
+            $record[(string) $column] = (string) ($row[$index] ?? '');
+        }
+
+        return $record;
+    }
+
+    private function exportSkippedRows(array $header, array $skippedRows): string
+    {
+        $directory = 'imports/reports';
+        Storage::disk('local')->makeDirectory($directory);
+
+        $filename = 'skipped_rows_' . now()->format('Ymd_His') . '.csv';
+        $relativePath = $directory . '/' . $filename;
+        $absolutePath = Storage::disk('local')->path($relativePath);
+
+        $file = fopen($absolutePath, 'wb');
+        if (! $file) {
+            throw new \RuntimeException('Unable to write skipped rows report.');
+        }
+
+        $outputHeader = array_merge(['__line', '__reason'], array_map(fn ($value) => (string) $value, $header));
+        fputcsv($file, $outputHeader);
+
+        foreach ($skippedRows as $record) {
+            $line = [];
+            foreach ($outputHeader as $column) {
+                $line[] = (string) ($record[$column] ?? '');
+            }
+
+            fputcsv($file, $line);
+        }
+
+        fclose($file);
+
+        return $absolutePath;
     }
 }
