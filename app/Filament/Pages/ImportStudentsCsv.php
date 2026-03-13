@@ -32,6 +32,8 @@ class ImportStudentsCsv extends Page implements HasForms
 
     protected static string $view = 'filament.pages.import-students-csv';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public ?array $data = [];
 
     public function mount(): void

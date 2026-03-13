@@ -1,39 +1,17 @@
-CONTEXT: I am upgrading the CSV import system for the Tenstrings Portal (Laravel 11 + Filament v3). The current importer is missing records and failing to map financial data correctly.
+[u519226541@us-phx-web940 portal_app]$ ps -ef | grep "artisan queue:work" | grep -v grep
+u519226+ 1441985 3872213 10 10:20 pts/1    00:00:00 php artisan queue:work --queue=default --tries=3 --timeout=120
+[u519226541@us-phx-web940 portal_app]$ php artisan optimize:clear
 
-TASK: CREATE A ROBUST FINANCIAL IMPORTER
+   INFO  Clearing cached bootstrap files.  
 
-Unique Identifier (Upsert Logic): Configure the importer to use the Email or Matriculation Number as the unique key. If a record exists, UPDATE it; if not, CREATE it. This prevents the "6 missing students" issue and stops duplicates.
+  config ............................................................................................................................... 1.50ms DONE
+  cache ............................................................................................................................... 16.73ms DONE
+  compiled ............................................................................................................................. 1.68ms DONE
+  events ............................................................................................................................... 0.83ms DONE
+  routes ............................................................................................................................... 0.81ms DONE
+  views ................................................................................................................................ 2.13ms DONE
+  blade-icons .......................................................................................................................... 0.23ms DONE
+  filament ............................................................................................................................. 1.24ms DONE
 
-Field Mapping: Map the following CSV columns to the Student model and a related Payments table if necessary:
-
-FEES PAID -> fees_paid
-
-BALANCE DUE -> balance_due
-
-HOSTEL -> hostel_fee
-
-BALANCE -> total_balance
-
-Real-Time Progress: Use Filament's ImportAction with Database Transactions and Queueing. Ensure a progress bar is visible in the UI during processing.
-
-Admin Revenue Integration: Ensure these values update a central "Revenue Dashboard." The Admin should see a total sum of fees_paid (Revenue) and balance_due (Pending) immediately after import.
-
-Student Portal Visibility: Update the Student "Dashboard" or "Finance" sub-page to display their specific total_balance and balance_due so they know what they owe.
-
-The "WordPress Style" Summary: After completion, trigger a notification showing:
-
-✅ Total Successfully Processed
-
-🔄 Records Updated (Duplicates handled)
-
-❌ Records Failed (and why)
-
-TECHNICAL REQUIREMENTS:
-
-Provide the StudentImporter class code.
-
-Provide the updated StudentResource action configuration.
-
-Ensure the logic handles numeric formatting (e.g., removing "₦" or commas from the CSV before saving).
-
-OUTPUT: Complete PHP code for the Importer and a checklist for setting up the Queue Worker.
+[u519226541@us-phx-web940 portal_app]$ tail -f storage/logs/queue-worker.log
+no
