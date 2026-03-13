@@ -16,7 +16,7 @@ class CourseShortcodeMappingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-hashtag';
 
-    protected static ?string $navigationGroup = 'Access Control';
+    protected static ?string $navigationGroup = 'System Settings';
 
     protected static ?string $navigationLabel = 'Course Shortcodes';
 

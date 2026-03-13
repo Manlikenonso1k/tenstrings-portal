@@ -60,6 +60,6 @@ class AttendanceResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['admin', 'instructor', 'student'], true);
+        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'instructor', 'student'], true);
     }
 }

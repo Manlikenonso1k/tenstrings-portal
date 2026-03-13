@@ -16,7 +16,9 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static ?string $navigationGroup = 'Access Control';
+    protected static ?string $navigationGroup = 'System Settings';
+
+    protected static ?string $navigationLabel = 'User Management';
 
     public static function form(Form $form): Form
     {
@@ -83,19 +85,19 @@ class UserResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->isSuperAdmin() ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->isSuperAdmin() ?? false;
     }
 
     public static function canDelete($record): bool
     {
         $authUser = auth()->user();
 
-        if (! $authUser || ! $authUser->isAdmin()) {
+        if (! $authUser || ! $authUser->isSuperAdmin()) {
             return false;
         }
 

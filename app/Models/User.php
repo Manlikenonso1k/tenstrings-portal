@@ -55,8 +55,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => in_array($this->role, ['super_admin', 'admin', 'instructor'], true),
+            'admin' => in_array($this->role, ['super_admin', 'admin'], true),
             'portal' => $this->role === 'student',
+            'instructor' => in_array($this->role, ['super_admin', 'instructor'], true),
             default => false,
         };
     }
@@ -96,5 +97,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function instructor()
     {
         return $this->hasOne(Instructor::class);
+    }
+
+    public function loginSessions()
+    {
+        return $this->hasMany(LoginSession::class);
     }
 }

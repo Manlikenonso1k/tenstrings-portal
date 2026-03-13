@@ -71,7 +71,7 @@ class PaymentResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['admin', 'student'], true);
+        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'student'], true);
     }
 
     public static function validatePaymentDoesNotExceedBalance(array $data): void

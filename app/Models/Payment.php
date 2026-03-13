@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Payment extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'payment_number',
@@ -68,5 +71,13 @@ class Payment extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('payments')
+            ->logFillable()
+            ->logOnlyDirty();
     }
 }

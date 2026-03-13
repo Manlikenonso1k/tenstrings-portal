@@ -16,7 +16,7 @@ class PortalSettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'Access Control';
+    protected static ?string $navigationGroup = 'System Settings';
 
     protected static ?string $navigationLabel = 'Portal Settings';
 
@@ -57,7 +57,7 @@ class PortalSettingResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isAdmin() ?? false;
+        return auth()->user()?->isSuperAdmin() ?? false;
     }
 
     public static function canCreate(): bool

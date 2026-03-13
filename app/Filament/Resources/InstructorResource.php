@@ -69,11 +69,11 @@ class InstructorResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['admin', 'instructor'], true);
+        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'instructor'], true);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->role === 'admin';
+        return in_array(auth()->user()?->role, ['super_admin', 'admin'], true);
     }
 }

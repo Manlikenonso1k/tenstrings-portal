@@ -120,12 +120,36 @@ class ImportStudentsCsv extends Page implements HasForms
             Artisan::call('students:import-csv', $arguments);
             $output = trim(Artisan::output());
 
+            activity('imports')
+                ->event('imported_csv')
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'source' => 'filament.import_students_csv',
+                    'file' => $csvPath,
+                    'only_branch' => $onlyBranch !== '' ? $onlyBranch : null,
+                    'send_email' => (bool) ($state['send_email'] ?? false),
+                    'result' => $output,
+                ])
+                ->log('Imported Students CSV');
+
             Notification::make()
                 ->title('Student import completed.')
                 ->body($output !== '' ? $output : 'Import command finished successfully.')
                 ->success()
                 ->send();
         } catch (Throwable $exception) {
+            activity('imports')
+                ->event('import_failed')
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'source' => 'filament.import_students_csv',
+                    'file' => $csvPath,
+                    'only_branch' => $onlyBranch !== '' ? $onlyBranch : null,
+                    'send_email' => (bool) ($state['send_email'] ?? false),
+                    'error' => $exception->getMessage(),
+                ])
+                ->log('Student CSV import failed');
+
             Notification::make()
                 ->title('Student import failed.')
                 ->body($exception->getMessage())

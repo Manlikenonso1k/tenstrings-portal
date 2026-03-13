@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Student extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     public const MAIN_INTAKE_MONTHS = [2, 5, 8, 11];
 
@@ -113,5 +116,22 @@ class Student extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('students')
+            ->logOnly([
+                'first_name',
+                'last_name',
+                'email',
+                'branch',
+                'fees_paid',
+                'balance_due',
+                'total_balance',
+                'status',
+            ])
+            ->logOnlyDirty();
     }
 }

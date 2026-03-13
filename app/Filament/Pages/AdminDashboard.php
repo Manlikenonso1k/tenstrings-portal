@@ -6,6 +6,7 @@ use App\Filament\Widgets\BranchEnrollmentDoughnut;
 use App\Filament\Widgets\BranchFinanceChart;
 use App\Filament\Widgets\FinanceChart;
 use App\Filament\Widgets\FinanceRatioChart;
+use App\Filament\Widgets\SystemActivityLineChart;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 class AdminDashboard extends BaseDashboard
@@ -13,6 +14,7 @@ class AdminDashboard extends BaseDashboard
     protected function getHeaderWidgets(): array
     {
         return [
+            SystemActivityLineChart::class,
             BranchFinanceChart::class,
             BranchEnrollmentDoughnut::class,
             FinanceChart::class,

@@ -67,11 +67,11 @@ class CourseResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['admin', 'instructor', 'student'], true);
+        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'instructor', 'student'], true);
     }
 
     public static function canCreate(): bool
     {
-        return in_array(auth()->user()?->role, ['admin'], true);
+        return in_array(auth()->user()?->role, ['super_admin', 'admin'], true);
     }
 }
