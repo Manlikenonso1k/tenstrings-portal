@@ -53,6 +53,9 @@ class StudentResource extends Resource
                         Forms\Components\TextInput::make('phone')->tel()->required()->maxLength(30),
                         Forms\Components\TextInput::make('guardian_phone')->tel()->maxLength(30),
                         Forms\Components\Textarea::make('address'),
+                        Forms\Components\DatePicker::make('date_of_birth')
+                            ->label('Date of Birth')
+                            ->maxDate(now()->subYears(5)),
                         Forms\Components\Select::make('branch')
                             ->options([
                                 'AJAH BRANCH' => 'AJAH BRANCH',
