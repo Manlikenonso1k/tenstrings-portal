@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Student;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class FinanceRatioChart extends ChartWidget
@@ -17,6 +18,8 @@ class FinanceRatioChart extends ChartWidget
     protected int|string|array $columnSpan = 2;
 
     public ?string $filter = null;
+
+    private ?array $cachedTotals = null;
 
     public function mount(): void
     {
@@ -44,18 +47,14 @@ class FinanceRatioChart extends ChartWidget
 
     protected function getData(): array
     {
-        [$year, $quarter] = $this->parseFilter();
-
-        $totals = $this->buildBaseQuery($year, $quarter)
-            ->selectRaw('COALESCE(SUM(fees_paid), 0) as paid, COALESCE(SUM(balance_due), 0) as unpaid')
-            ->first();
+        $totals = $this->resolveTotals();
 
         return [
             'datasets' => [
                 [
                     'data' => [
-                        (float) ($totals->paid ?? 0),
-                        (float) ($totals->unpaid ?? 0),
+                        $totals['paid'],
+                        $totals['unpaid'],
                     ],
                     'backgroundColor' => [
                         '#16a34a',
@@ -67,6 +66,14 @@ class FinanceRatioChart extends ChartWidget
             ],
             'labels' => ['Paid', 'Unpaid'],
         ];
+    }
+
+    public function getDescription(): string | Htmlable | null
+    {
+        $totals = $this->resolveTotals();
+
+        return 'Total NGN: Paid ' . $this->formatNaira($totals['paid'])
+            . ' | Unpaid ' . $this->formatNaira($totals['unpaid']);
     }
 
     protected function getOptions(): array
@@ -117,5 +124,28 @@ class FinanceRatioChart extends ChartWidget
         return Student::query()
             ->whereYear('start_date', $year)
             ->whereRaw('MONTH(start_date) IN (' . implode(',', $months) . ')');
+    }
+
+    private function resolveTotals(): array
+    {
+        if ($this->cachedTotals !== null) {
+            return $this->cachedTotals;
+        }
+
+        [$year, $quarter] = $this->parseFilter();
+
+        $totals = $this->buildBaseQuery($year, $quarter)
+            ->selectRaw('COALESCE(SUM(fees_paid), 0) as paid, COALESCE(SUM(balance_due), 0) as unpaid')
+            ->first();
+
+        return $this->cachedTotals = [
+            'paid' => (float) ($totals->paid ?? 0),
+            'unpaid' => (float) ($totals->unpaid ?? 0),
+        ];
+    }
+
+    private function formatNaira(float $amount): string
+    {
+        return 'NGN ' . number_format($amount, 2);
     }
 }

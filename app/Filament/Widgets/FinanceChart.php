@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Student;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class FinanceChart extends ChartWidget
@@ -17,6 +18,8 @@ class FinanceChart extends ChartWidget
     protected int|string|array $columnSpan = 'full';
 
     public ?string $filter = null;
+
+    private ?array $cachedTotals = null;
 
     public function mount(): void
     {
@@ -44,19 +47,15 @@ class FinanceChart extends ChartWidget
 
     protected function getData(): array
     {
-        [$year, $quarter] = $this->parseFilter();
-
-        $totals = $this->buildBaseQuery($year, $quarter)
-            ->selectRaw('COALESCE(SUM(fees_paid), 0) as revenue, COALESCE(SUM(balance_due), 0) as pending')
-            ->first();
+        $totals = $this->resolveTotals();
 
         return [
             'datasets' => [
                 [
                     'label' => 'Amount (NGN)',
                     'data' => [
-                        (float) ($totals->revenue ?? 0),
-                        (float) ($totals->pending ?? 0),
+                        $totals['revenue'],
+                        $totals['pending'],
                     ],
                     'backgroundColor' => [
                         '#2563eb',
@@ -72,6 +71,14 @@ class FinanceChart extends ChartWidget
             ],
             'labels' => ['Revenue', 'Pending'],
         ];
+    }
+
+    public function getDescription(): string | Htmlable | null
+    {
+        $totals = $this->resolveTotals();
+
+        return 'Total NGN: Revenue ' . $this->formatNaira($totals['revenue'])
+            . ' | Pending ' . $this->formatNaira($totals['pending']);
     }
 
     protected function getOptions(): array
@@ -126,5 +133,28 @@ class FinanceChart extends ChartWidget
         return Student::query()
             ->whereYear('start_date', $year)
             ->whereRaw('MONTH(start_date) IN (' . implode(',', $months) . ')');
+    }
+
+    private function resolveTotals(): array
+    {
+        if ($this->cachedTotals !== null) {
+            return $this->cachedTotals;
+        }
+
+        [$year, $quarter] = $this->parseFilter();
+
+        $totals = $this->buildBaseQuery($year, $quarter)
+            ->selectRaw('COALESCE(SUM(fees_paid), 0) as revenue, COALESCE(SUM(balance_due), 0) as pending')
+            ->first();
+
+        return $this->cachedTotals = [
+            'revenue' => (float) ($totals->revenue ?? 0),
+            'pending' => (float) ($totals->pending ?? 0),
+        ];
+    }
+
+    private function formatNaira(float $amount): string
+    {
+        return 'NGN ' . number_format($amount, 2);
     }
 }

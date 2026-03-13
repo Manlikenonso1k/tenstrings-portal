@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Student;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class BranchEnrollmentDoughnut extends ChartWidget
@@ -17,6 +18,8 @@ class BranchEnrollmentDoughnut extends ChartWidget
     protected int|string|array $columnSpan = 2;
 
     public ?string $filter = null;
+
+    private ?array $cachedChartData = null;
 
     public function mount(): void
     {
@@ -44,36 +47,26 @@ class BranchEnrollmentDoughnut extends ChartWidget
 
     protected function getData(): array
     {
-        [$year, $quarter] = $this->parseFilter();
-
-        $rows = $this->buildBaseQuery($year, $quarter)
-            ->selectRaw("
-                COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
-                COUNT(*) as total
-            ")
-            ->groupBy('branch')
-            ->orderByRaw('total DESC')
-            ->get();
-
-        $palette = ['#2563eb', '#16a34a', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#0891b2'];
-
-        $colors = $rows->map(function ($row, $i) use ($palette) {
-            return $row->branch_name === 'Legacy/Unassigned'
-                ? '#9ca3af'
-                : ($palette[$i % count($palette)]);
-        })->toArray();
+        $chartData = $this->resolveChartData();
 
         return [
             'datasets' => [
                 [
-                    'data'            => $rows->pluck('total')->toArray(),
-                    'backgroundColor' => $colors,
-                    'borderColor'     => $colors,
+                    'data'            => $chartData['totals'],
+                    'backgroundColor' => $chartData['colors'],
+                    'borderColor'     => $chartData['colors'],
                     'borderWidth'     => 1,
                 ],
             ],
-            'labels' => $rows->pluck('branch_name')->toArray(),
+            'labels' => $chartData['labels'],
         ];
+    }
+
+    public function getDescription(): string | Htmlable | null
+    {
+        $chartData = $this->resolveChartData();
+
+        return 'Total Students: ' . number_format($chartData['totalStudents']);
     }
 
     protected function getOptions(): array
@@ -122,5 +115,39 @@ class BranchEnrollmentDoughnut extends ChartWidget
         return Student::query()
             ->whereYear('start_date', $year)
             ->whereRaw('MONTH(start_date) IN (' . implode(',', $months) . ')');
+    }
+
+    private function resolveChartData(): array
+    {
+        if ($this->cachedChartData !== null) {
+            return $this->cachedChartData;
+        }
+
+        [$year, $quarter] = $this->parseFilter();
+
+        $rows = $this->buildBaseQuery($year, $quarter)
+            ->selectRaw("
+                COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
+                COUNT(*) as total
+            ")
+            ->groupBy('branch')
+            ->orderByRaw('total DESC')
+            ->get();
+
+        $palette = ['#2563eb', '#16a34a', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#0891b2'];
+        $colors = $rows->values()->map(function ($row, $index) use ($palette) {
+            return $row->branch_name === 'Legacy/Unassigned'
+                ? '#9ca3af'
+                : $palette[$index % count($palette)];
+        })->toArray();
+
+        $totals = $rows->pluck('total')->map(fn ($value) => (int) $value)->toArray();
+
+        return $this->cachedChartData = [
+            'labels' => $rows->pluck('branch_name')->toArray(),
+            'totals' => $totals,
+            'colors' => $colors,
+            'totalStudents' => array_sum($totals),
+        ];
     }
 }

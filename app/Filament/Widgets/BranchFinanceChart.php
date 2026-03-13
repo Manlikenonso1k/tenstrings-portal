@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Student;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class BranchFinanceChart extends ChartWidget
@@ -17,6 +18,8 @@ class BranchFinanceChart extends ChartWidget
     protected int|string|array $columnSpan = 'full';
 
     public ?string $filter = null;
+
+    private ?array $cachedChartData = null;
 
     public function mount(): void
     {
@@ -44,46 +47,37 @@ class BranchFinanceChart extends ChartWidget
 
     protected function getData(): array
     {
-        [$year, $quarter] = $this->parseFilter();
-
-        $rows = $this->buildBaseQuery($year, $quarter)
-            ->selectRaw("
-                COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
-                COALESCE(SUM(fees_paid), 0) as revenue,
-                COALESCE(SUM(balance_due), 0) as pending
-            ")
-            ->groupBy('branch')
-            ->orderByRaw('revenue DESC')
-            ->get();
-
-        $labels        = $rows->pluck('branch_name')->toArray();
-        $revenues      = $rows->pluck('revenue')->map(fn ($v) => (float) $v)->toArray();
-        $pendingValues = $rows->pluck('pending')->map(fn ($v) => (float) $v)->toArray();
-
-        $revColors = $rows->map(fn ($r) => $r->branch_name === 'Legacy/Unassigned' ? '#9ca3af' : '#2563eb')->toArray();
-        $penColors = $rows->map(fn ($r) => $r->branch_name === 'Legacy/Unassigned' ? '#6b7280' : '#dc2626')->toArray();
+        $chartData = $this->resolveChartData();
 
         return [
             'datasets' => [
                 [
                     'label'           => 'Revenue (NGN)',
-                    'data'            => $revenues,
-                    'backgroundColor' => $revColors,
-                    'borderColor'     => $revColors,
+                    'data'            => $chartData['revenues'],
+                    'backgroundColor' => $chartData['revColors'],
+                    'borderColor'     => $chartData['revColors'],
                     'borderWidth'     => 1,
                     'borderRadius'    => 6,
                 ],
                 [
                     'label'           => 'Pending (NGN)',
-                    'data'            => $pendingValues,
-                    'backgroundColor' => $penColors,
-                    'borderColor'     => $penColors,
+                    'data'            => $chartData['pendingValues'],
+                    'backgroundColor' => $chartData['penColors'],
+                    'borderColor'     => $chartData['penColors'],
                     'borderWidth'     => 1,
                     'borderRadius'    => 6,
                 ],
             ],
-            'labels' => $labels,
+            'labels' => $chartData['labels'],
         ];
+    }
+
+    public function getDescription(): string | Htmlable | null
+    {
+        $chartData = $this->resolveChartData();
+
+        return 'Total NGN: Revenue ' . $this->formatNaira($chartData['revenueTotal'])
+            . ' | Pending ' . $this->formatNaira($chartData['pendingTotal']);
     }
 
     protected function getOptions(): array
@@ -135,5 +129,45 @@ class BranchFinanceChart extends ChartWidget
         return Student::query()
             ->whereYear('start_date', $year)
             ->whereRaw('MONTH(start_date) IN (' . implode(',', $months) . ')');
+    }
+
+    private function resolveChartData(): array
+    {
+        if ($this->cachedChartData !== null) {
+            return $this->cachedChartData;
+        }
+
+        [$year, $quarter] = $this->parseFilter();
+
+        $rows = $this->buildBaseQuery($year, $quarter)
+            ->selectRaw("
+                COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned') as branch_name,
+                COALESCE(SUM(fees_paid), 0) as revenue,
+                COALESCE(SUM(balance_due), 0) as pending
+            ")
+            ->groupBy('branch')
+            ->orderByRaw('revenue DESC')
+            ->get();
+
+        $labels = $rows->pluck('branch_name')->toArray();
+        $revenues = $rows->pluck('revenue')->map(fn ($value) => (float) $value)->toArray();
+        $pendingValues = $rows->pluck('pending')->map(fn ($value) => (float) $value)->toArray();
+        $revColors = $rows->map(fn ($row) => $row->branch_name === 'Legacy/Unassigned' ? '#9ca3af' : '#2563eb')->toArray();
+        $penColors = $rows->map(fn ($row) => $row->branch_name === 'Legacy/Unassigned' ? '#6b7280' : '#dc2626')->toArray();
+
+        return $this->cachedChartData = [
+            'labels' => $labels,
+            'revenues' => $revenues,
+            'pendingValues' => $pendingValues,
+            'revColors' => $revColors,
+            'penColors' => $penColors,
+            'revenueTotal' => array_sum($revenues),
+            'pendingTotal' => array_sum($pendingValues),
+        ];
+    }
+
+    private function formatNaira(float $amount): string
+    {
+        return 'NGN ' . number_format($amount, 2);
     }
 }
