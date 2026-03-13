@@ -1,33 +1,25 @@
-CONTEXT: I am resolving import failures in the Tenstrings Portal (Laravel 11 + Filament v3). Several rows (7, 27, 42, 43, 50, 53) are failing due to missing/invalid emails or duplicate conflicts.
+CONTEXT: My Laravel 11 / Filament v3 CSV import is running in the background, but the UI is silent. I have no progress bar, and I don't receive a summary of skipped or duplicated rows.
 
-TASK 1: GRACEFUL VALIDATION FIXES
+TASK: ENABLE REAL-TIME IMPORT FEEDBACK
 
-Email Repair: In the StudentImporter class, implement a beforeValidate or mutateFormDataBeforeCreate hook to:
+Database Notifications: Ensure Filament's Database Notifications are enabled so the import summary can be "popped up" in the admin panel once finished.
 
-Row 42/43 Fix: Replace commas with dots in email strings (e.g., gmail,com -> gmail.com).
+Broadcasting & Queues: Configure the ImportAction to ensure it uses the database driver for notifications.
 
-Row 27/50/53 Fallback: If the email field is empty, generate a temporary placeholder email using the student's name and matric number (e.g., student_name_123@tenstrings.org).
+The Progress UI: Update the StudentImporter to explicitly handle the getJobProgress() or getImportSummary() so the user sees a real-time percentage bar in the top-right notification center.
 
-Duplicate Strategy (Row 7): If dzeegaunded@gmail.com exists, do not fail the import. Instead, use an Upsert to update the existing record with the new CSV data.
+Detailed Reports: Ensure that once the import is "Done," a notification is sent to the Super Admin containing:
 
-TASK 2: BRANCH NOTIFICATION LOGIC
+A link to download the failed/skipped rows CSV.
 
-Trigger: Whenever a student is created or updated via the importer, trigger an automated email containing their Matriculation Number and Password.
+The count of successful vs. duplicated entries.
 
-Routing Logic:
+TECHNICAL REQUIREMENTS:
 
-If branch is Ikeja → Send to tenstringsikeja@gmail.com.
+Provide the command to create the notifications table if missing.
 
-If branch is Agege → Send to tenstringsagege@gmail.com.
+Provide the code for the ImportAction that triggers the progress bar.
 
-If branch is Ajah (or if the branch field is NULL/Empty) → Send to tenstringsajah@gmail.com.
+Explain how to verify that the queue:work command is correctly updating the Filament imports table.
 
-send all the data to victorynonso9@gmail.com as master email oof all branches
-
-Data Priority: Ensure the email subject is clear: "New Student Credentials: [Student Name]".
-
-TASK 3: SUMMARY REPORT
-
-After the import, generate a summary for the Super Admin listing exactly which "placeholder" emails were created so they can be updated with real emails later.
-
-OUTPUT: Provide the updated StudentImporter logic, the Mail class for branch notifications, and the regex for email cleaning.
+OUTPUT: A step-by-step fix for the silent import issue and the code to display the final report modal.

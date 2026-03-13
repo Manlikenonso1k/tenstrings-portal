@@ -262,6 +262,9 @@ class StudentImporter extends Importer
         $failedRows = (int) $import->getFailedRowsCount();
         $createdRows = (int) Cache::pull(static::cacheCounterKeyForImport($import->id, 'created'), 0);
         $updatedRows = (int) Cache::pull(static::cacheCounterKeyForImport($import->id, 'updated'), 0);
+        $failedRowsDownloadUrl = $failedRows > 0
+            ? route('filament.imports.failed-rows.download', ['import' => $import], absolute: false)
+            : null;
 
         $failureReasons = $import->failedRows()
             ->whereNotNull('validation_error')
@@ -284,16 +287,37 @@ class StudentImporter extends Importer
             $body .= "\nWhy failed: {$failureReasons}.";
         }
 
-        if ($failedRows > 0) {
-            $body .= " Download the failed rows CSV, fix it, and re-import.";
+        if ($failedRowsDownloadUrl !== null) {
+            $body .= "\nDownload failed rows: {$failedRowsDownloadUrl}";
         }
 
         return $body;
     }
 
+    public static function getCompletedNotificationTitle(Import $import): string
+    {
+        $failedRows = (int) $import->getFailedRowsCount();
+
+        if ($failedRows === 0) {
+            return 'Student import completed successfully';
+        }
+
+        return 'Student import completed with issues';
+    }
+
     public function getJobQueue(): ?string
     {
         return 'default';
+    }
+
+    public function getJobConnection(): ?string
+    {
+        return 'database';
+    }
+
+    public function getJobBatchName(): ?string
+    {
+        return 'Student CSV Import #' . $this->import->getKey();
     }
 
     private function syncFinancialRecords(): void
