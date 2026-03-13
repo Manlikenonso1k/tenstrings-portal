@@ -34,8 +34,7 @@ class StudentImporter extends Importer
                 ->requiredMapping()
                 ->rules(['required', 'string', 'max:255']),
             ImportColumn::make('email')
-                ->requiredMapping()
-                ->rules(['required', 'email', 'max:255']),
+                ->rules(['nullable', 'string', 'max:255']),
             ImportColumn::make('phone')
                 ->rules(['nullable', 'string', 'max:30'])
                 ->castStateUsing(function (?string $state): string {
@@ -84,7 +83,7 @@ class StudentImporter extends Importer
                     return ($year >= 1990 && $year <= 2100) ? $year : null;
                 }),
             ImportColumn::make('date_of_birth')
-                ->rules(['nullable', 'date'])
+                ->rules(['nullable', 'string', 'max:255'])
                 ->castStateUsing(function (mixed $state): ?string {
                     if (blank($state)) {
                         return null;
@@ -95,7 +94,7 @@ class StudentImporter extends Importer
                     try {
                         return Carbon::parse($normalized)->toDateString();
                     } catch (\Throwable) {
-                        return (string) $state;
+                        return null;
                     }
                 }),
             ImportColumn::make('sex')
@@ -169,7 +168,7 @@ class StudentImporter extends Importer
 
     protected function beforeValidate(): void
     {
-        $email = strtolower(trim((string) ($this->data['email'] ?? '')));
+        $email = $this->ensureImportEmail((string) ($this->data['email'] ?? ''));
         $studentNumber = trim((string) ($this->data['student_number'] ?? ''));
 
         $this->data['email'] = $email;
@@ -428,6 +427,41 @@ class StudentImporter extends Importer
         }
 
         return round((float) $value, 2);
+    }
+
+    private function ensureImportEmail(string $rawEmail): string
+    {
+        $email = strtolower(trim($rawEmail));
+
+        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $email;
+        }
+
+        $first = Str::slug((string) ($this->data['first_name'] ?? 'student'), '_');
+        $last = Str::slug((string) ($this->data['last_name'] ?? 'record'), '_');
+        $base = trim($first . '_' . $last, '_');
+
+        if ($base === '') {
+            $base = 'student_record';
+        }
+
+        $suffix = preg_replace('/[^A-Za-z0-9]+/', '', (string) ($this->data['student_number'] ?? '')) ?? '';
+        if ($suffix === '') {
+            $suffix = now()->format('YmdHis') . random_int(100, 999);
+        }
+
+        $candidate = strtolower("{$base}_{$suffix}@tenstrings.org");
+        $counter = 1;
+
+        while (
+            User::query()->whereRaw('LOWER(email) = ?', [$candidate])->exists()
+            || Student::query()->whereRaw('LOWER(email) = ?', [$candidate])->exists()
+        ) {
+            $candidate = strtolower("{$base}_{$suffix}_{$counter}@tenstrings.org");
+            $counter++;
+        }
+
+        return $candidate;
     }
 
     private static function normalizeBranch(?string $state): string
