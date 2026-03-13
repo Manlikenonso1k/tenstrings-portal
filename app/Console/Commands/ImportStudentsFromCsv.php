@@ -121,12 +121,14 @@ class ImportStudentsFromCsv extends Command
                     $phoneRaw = $this->cleanText($this->value($row, $headerMap, 'phone'));
                     $addressRaw = $this->cleanText($this->value($row, $headerMap, 'address'));
                     $dobRaw = $this->cleanText($this->value($row, $headerMap, 'date_of_birth'));
+                    $sexRaw = $this->cleanText($this->value($row, $headerMap, 'sex'));
                     $remarkRaw = $this->cleanText($this->value($row, $headerMap, 'remark'));
 
                     $courseName = $this->mapCourseName($programRaw);
                     $duration = $this->resolveDuration($programRaw, $courseName);
                     $startDate = $this->resolveStartDate($intakeRaw);
                     $dob = $this->parseOptionalDate($dobRaw);
+                    $sex = $this->normalizeSex($sexRaw);
                     $branch = $this->mapBranch($remarkRaw);
 
                     if (is_string($onlyBranch) && $branch !== $onlyBranch) {
@@ -175,6 +177,7 @@ class ImportStudentsFromCsv extends Command
                             'address' => $addressRaw !== '' ? $addressRaw : null,
                             'branch' => $branch,
                             'date_of_birth' => $dob?->toDateString(),
+                            'sex' => $sex,
                             'start_date' => $startDate->toDateString(),
                             'registration_date' => $existingStudent->registration_date ?? now()->toDateString(),
                             'status' => 'active',
@@ -242,6 +245,7 @@ class ImportStudentsFromCsv extends Command
                         'address' => $addressRaw !== '' ? $addressRaw : null,
                         'branch' => $branch,
                         'date_of_birth' => $dob?->toDateString(),
+                        'sex' => $sex,
                         'start_date' => $startDate->toDateString(),
                         'registration_date' => now()->toDateString(),
                         'status' => 'active',
@@ -384,6 +388,7 @@ class ImportStudentsFromCsv extends Command
             'middle_name' => $normalized['middle_name'] ?? null,
             'email' => $normalized['email'] ?? null,
             'date_of_birth' => $normalized['date_of_birth'] ?? null,
+            'sex' => $normalized['sex'] ?? ($normalized['gender'] ?? null),
             'address' => $normalized['address'] ?? null,
             'phone' => $normalized['phone_no'] ?? ($normalized['phone'] ?? null),
             'program' => $normalized['program'] ?? null,
@@ -632,6 +637,25 @@ class ImportStudentsFromCsv extends Command
         } catch (Throwable) {
             return null;
         }
+    }
+
+    private function normalizeSex(string $value): ?string
+    {
+        $normalized = strtoupper(trim($value));
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (in_array($normalized, ['M', 'MALE'], true)) {
+            return 'Male';
+        }
+
+        if (in_array($normalized, ['F', 'FEMALE'], true)) {
+            return 'Female';
+        }
+
+        return null;
     }
 
     private function expectedEndDate(Carbon $startDate, string $duration): Carbon

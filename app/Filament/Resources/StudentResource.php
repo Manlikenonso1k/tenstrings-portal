@@ -53,6 +53,12 @@ class StudentResource extends Resource
                         Forms\Components\TextInput::make('phone')->tel()->required()->maxLength(30),
                         Forms\Components\TextInput::make('guardian_phone')->tel()->maxLength(30),
                         Forms\Components\Textarea::make('address'),
+                        Forms\Components\Select::make('sex')
+                            ->options([
+                                'Male' => 'Male',
+                                'Female' => 'Female',
+                            ])
+                            ->native(false),
                         Forms\Components\DatePicker::make('date_of_birth')
                             ->label('Date of Birth')
                             ->maxDate(now()->subYears(5)),

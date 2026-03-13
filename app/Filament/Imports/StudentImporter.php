@@ -87,6 +87,9 @@ class StudentImporter extends Importer
                         return (string) $state;
                     }
                 }),
+            ImportColumn::make('sex')
+                ->rules(['nullable', 'in:Male,Female'])
+                ->castStateUsing(fn (?string $state): ?string => self::normalizeSex($state)),
             ImportColumn::make('fees_paid')
                 ->requiredMapping()
                 ->rules(['required', 'numeric', 'min:0'])
@@ -209,6 +212,10 @@ class StudentImporter extends Importer
 
         if (blank($this->data['date_of_birth'] ?? null)) {
             $this->data['date_of_birth'] = null;
+        }
+
+        if (blank($this->data['sex'] ?? null)) {
+            $this->data['sex'] = null;
         }
     }
 
@@ -405,6 +412,25 @@ class StudentImporter extends Importer
         }
 
         return 'IKEJA BRANCH';
+    }
+
+    private static function normalizeSex(?string $state): ?string
+    {
+        $value = strtoupper(trim((string) $state));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (in_array($value, ['M', 'MALE'], true)) {
+            return 'Male';
+        }
+
+        if (in_array($value, ['F', 'FEMALE'], true)) {
+            return 'Female';
+        }
+
+        return null;
     }
 
     private static function normalizeCourseName(?string $state): string
