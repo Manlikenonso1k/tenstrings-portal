@@ -64,7 +64,9 @@ class Student extends Model
     {
         static::creating(function (Student $student) {
             if (! $student->registration_date) {
-                $student->registration_date = now()->toDateString();
+                $student->registration_date = $student->start_date
+                    ? $student->start_date->toDateString()
+                    : now()->toDateString();
             }
 
             if (! $student->student_number) {
