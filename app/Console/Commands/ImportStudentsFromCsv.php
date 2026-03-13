@@ -27,6 +27,11 @@ class ImportStudentsFromCsv extends Command
 
     protected $description = 'Import students from a CSV, create portal accounts, and email generated passwords.';
 
+    /**
+     * @var array<int, array{line:int, student:string, email:string, reason:string}>
+     */
+    private array $placeholderEmails = [];
+
     public function handle(): int
     {
         $file = (string) $this->argument('file');
@@ -63,6 +68,7 @@ class ImportStudentsFromCsv extends Command
         }
 
         $created = 0;
+        $updated = 0;
         $skipped = 0;
         $emailed = 0;
         $line = 1;
@@ -78,9 +84,22 @@ class ImportStudentsFromCsv extends Command
             $firstName = $this->cleanText($this->value($row, $headerMap, 'first_name'));
             $lastName = $this->cleanText($this->value($row, $headerMap, 'last_name'));
             $middleName = $this->cleanText($this->value($row, $headerMap, 'middle_name'));
-            $email = strtolower($this->cleanText($this->value($row, $headerMap, 'email')));
+            $emailRaw = $this->cleanText($this->value($row, $headerMap, 'email'));
+            $email = $this->cleanAndRepairEmail($emailRaw);
+            $usedPlaceholder = false;
+            $placeholderReason = '';
 
-            if ($firstName === '' || $lastName === '' || $email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($email === '') {
+                $usedPlaceholder = true;
+                $placeholderReason = 'missing_email';
+                $email = $this->generateUniquePlaceholderEmail($firstName, $lastName, null, $line);
+            } elseif (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $usedPlaceholder = true;
+                $placeholderReason = 'invalid_email';
+                $email = $this->generateUniquePlaceholderEmail($firstName, $lastName, null, $line);
+            }
+
+            if ($firstName === '' || $lastName === '') {
                 $skipped++;
                 $this->warn("Line {$line}: skipped due to missing/invalid name or email.");
                 $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'missing_or_invalid_name_or_email');
@@ -89,13 +108,11 @@ class ImportStudentsFromCsv extends Command
             }
 
             try {
-                $result = DB::transaction(function () use ($row, $headerMap, $firstName, $middleName, $lastName, $email, $onlyBranch): array {
-                    if (Student::query()->where('email', $email)->exists()) {
-                        return ['status' => 'exists'];
-                    }
+                $result = DB::transaction(function () use ($row, $headerMap, $firstName, $middleName, $lastName, $email, $line, $onlyBranch): array {
+                    $existingStudent = Student::query()->where('email', $email)->first();
 
                     $existingUser = User::query()->where('email', $email)->first();
-                    if ($existingUser && $existingUser->role !== 'student') {
+                    if (! $existingStudent && $existingUser && $existingUser->role !== 'student') {
                         return ['status' => 'conflict'];
                     }
 
@@ -120,10 +137,84 @@ class ImportStudentsFromCsv extends Command
 
                     $plainPassword = $this->generatePassword();
 
+                    if ($existingStudent) {
+                        $user = $existingStudent->user;
+
+                        if (! $user) {
+                            if ($existingUser) {
+                                $user = $existingUser;
+                            } else {
+                                $user = User::query()->create([
+                                    'name' => trim("{$firstName} {$lastName}"),
+                                    'email' => $email,
+                                    'phone' => $phone,
+                                    'role' => 'student',
+                                    'password' => Hash::make($plainPassword),
+                                ]);
+                            }
+                        }
+
+                        $user->forceFill([
+                            'name' => trim("{$firstName} {$lastName}"),
+                            'email' => $email,
+                            'phone' => $phone,
+                            'role' => 'student',
+                            'password' => Hash::make($plainPassword),
+                        ])->save();
+
+                        $existingStudent->fill([
+                            'user_id' => $user->id,
+                            'first_name' => $firstName,
+                            'middle_name' => $middleName !== '' ? $middleName : null,
+                            'last_name' => $lastName,
+                            'selected_course_name' => $courseName,
+                            'selected_course_code' => CourseCatalog::codeFor($courseName),
+                            'duration' => $duration,
+                            'email' => $email,
+                            'phone' => $phone,
+                            'address' => $addressRaw !== '' ? $addressRaw : null,
+                            'branch' => $branch,
+                            'date_of_birth' => $dob?->toDateString(),
+                            'start_date' => $startDate->toDateString(),
+                            'registration_date' => $existingStudent->registration_date ?? now()->toDateString(),
+                            'status' => 'active',
+                        ])->save();
+
+                        $enrollment = $existingStudent->enrollments()->latest('id')->first();
+                        if (! $enrollment) {
+                            $enrollment = Enrollment::query()->create([
+                                'student_id' => $existingStudent->id,
+                                'enrollment_date' => now()->toDateString(),
+                                'intake_month' => strtoupper($startDate->format('F')),
+                                'start_date' => $startDate->toDateString(),
+                                'expected_end_date' => $this->expectedEndDate($startDate, $duration)->toDateString(),
+                                'status' => 'ongoing',
+                            ]);
+                        } else {
+                            $enrollment->forceFill([
+                                'intake_month' => strtoupper($startDate->format('F')),
+                                'start_date' => $startDate->toDateString(),
+                                'expected_end_date' => $this->expectedEndDate($startDate, $duration)->toDateString(),
+                            ])->save();
+                        }
+
+                        $course = Course::query()->where('name', $courseName)->first();
+                        if ($course) {
+                            $enrollment->courses()->syncWithoutDetaching([$course->id]);
+                        }
+
+                        return [
+                            'status' => 'updated',
+                            'student' => $existingStudent->fresh(),
+                            'password' => $plainPassword,
+                        ];
+                    }
+
                     if ($existingUser) {
                         $user = $existingUser;
                         $user->forceFill([
                             'name' => trim("{$firstName} {$lastName}"),
+                            'email' => $email,
                             'phone' => $phone,
                             'role' => 'student',
                             'password' => Hash::make($plainPassword),
@@ -177,14 +268,6 @@ class ImportStudentsFromCsv extends Command
                     ];
                 });
 
-                if ($result['status'] === 'exists') {
-                    $skipped++;
-                    $this->line("Line {$line}: skipped, student with email {$email} already exists.");
-                    $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'student_email_already_exists');
-
-                    continue;
-                }
-
                 if ($result['status'] === 'branch_filtered') {
                     $skipped++;
                     $skippedRows[] = $this->buildSkippedRow($header, $row, $line, 'filtered_by_only_branch_option');
@@ -200,16 +283,44 @@ class ImportStudentsFromCsv extends Command
                     continue;
                 }
 
-                $created++;
+                if ($result['status'] === 'created') {
+                    $created++;
+                }
+
+                if ($result['status'] === 'updated') {
+                    $updated++;
+                }
 
                 /** @var Student $student */
                 $student = $result['student'];
-                $this->info("Created {$student->student_number} for {$student->email}");
+                $actionLabel = $result['status'] === 'updated' ? 'Updated' : 'Created';
+                $this->info("{$actionLabel} {$student->student_number} for {$student->email}");
+
+                if ($usedPlaceholder) {
+                    $finalPlaceholderEmail = $this->generateUniquePlaceholderEmail($firstName, $lastName, $student->student_number, $line);
+
+                    if ($student->email !== $finalPlaceholderEmail) {
+                        $student->forceFill(['email' => $finalPlaceholderEmail])->save();
+                        $student->user?->forceFill(['email' => $finalPlaceholderEmail])->save();
+                    }
+
+                    $student = $student->fresh();
+                    $email = $finalPlaceholderEmail;
+
+                    $this->placeholderEmails[] = [
+                        'line' => $line,
+                        'student' => trim("{$student->first_name} {$student->last_name}"),
+                        'email' => $finalPlaceholderEmail,
+                        'reason' => $placeholderReason,
+                    ];
+                }
+
+                $this->notifyBranchForCredentials($student, (string) $result['password']);
+                $emailed++;
 
                 if ($sendEmail) {
                     try {
                         StudentMatricMailer::sendWithCredentials($student, (string) $result['password']);
-                        $emailed++;
                     } catch (Throwable $exception) {
                         Log::warning('Student credentials email could not be sent during CSV import.', [
                             'student_id' => $student->id,
@@ -235,10 +346,27 @@ class ImportStudentsFromCsv extends Command
         fclose($handle);
 
         $skippedRowsPath = $this->exportSkippedRows($header, $skippedRows);
+        $placeholderReportPath = $this->exportPlaceholderEmails();
 
         $this->newLine();
-        $this->info("Import completed. Created: {$created}, Skipped: {$skipped}, Emails sent: {$emailed}");
+        $this->info("Import completed. Created: {$created}, Updated: {$updated}, Skipped: {$skipped}, Emails sent: {$emailed}");
         $this->line("Skipped rows report: {$skippedRowsPath}");
+
+        if ($placeholderReportPath !== null) {
+            $this->line("Placeholder emails report: {$placeholderReportPath}");
+            $this->table(
+                ['Line', 'Student', 'Placeholder Email', 'Reason'],
+                array_map(
+                    fn (array $item): array => [
+                        (string) $item['line'],
+                        $item['student'],
+                        $item['email'],
+                        $item['reason'],
+                    ],
+                    $this->placeholderEmails
+                )
+            );
+        }
 
         return self::SUCCESS;
     }
@@ -296,6 +424,49 @@ class ImportStudentsFromCsv extends Command
         $value = trim((string) $value);
 
         return preg_replace('/\s+/', ' ', $value) ?? $value;
+    }
+
+    private function cleanAndRepairEmail(?string $value): string
+    {
+        $email = strtolower(trim((string) $value));
+        $email = preg_replace('/\s+/', '', $email) ?? $email;
+        $email = preg_replace('/(?<=\w),(?=\w)/', '.', $email) ?? $email;
+
+        return $email;
+    }
+
+    private function generateUniquePlaceholderEmail(string $firstName, string $lastName, ?string $studentNumber, int $line): string
+    {
+        $base = Str::slug(trim("{$firstName} {$lastName}"), '_');
+        if ($base === '') {
+            $base = 'student';
+        }
+
+        $suffix = $studentNumber !== null
+            ? strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $studentNumber) ?? '')
+            : 'line' . $line;
+
+        if ($suffix === '') {
+            $suffix = 'line' . $line;
+        }
+
+        $candidate = "{$base}_{$suffix}@tenstrings.org";
+        $increment = 1;
+
+        while (
+            User::query()->where('email', $candidate)->exists() ||
+            Student::query()->where('email', $candidate)->exists()
+        ) {
+            $candidate = "{$base}_{$suffix}_{$increment}@tenstrings.org";
+            $increment++;
+        }
+
+        return $candidate;
+    }
+
+    private function notifyBranchForCredentials(Student $student, string $plainPassword): void
+    {
+        StudentMatricMailer::sendBranchCredentials($student, $plainPassword);
     }
 
     private function normalizePhone(string $value): string
@@ -529,6 +700,35 @@ class ImportStudentsFromCsv extends Command
             }
 
             fputcsv($file, $line);
+        }
+
+        fclose($file);
+
+        return $absolutePath;
+    }
+
+    private function exportPlaceholderEmails(): ?string
+    {
+        if ($this->placeholderEmails === []) {
+            return null;
+        }
+
+        $directory = 'imports/reports';
+        Storage::disk('local')->makeDirectory($directory);
+
+        $filename = 'placeholder_emails_' . now()->format('Ymd_His') . '.csv';
+        $relativePath = $directory . '/' . $filename;
+        $absolutePath = Storage::disk('local')->path($relativePath);
+
+        $file = fopen($absolutePath, 'wb');
+        if (! $file) {
+            throw new \RuntimeException('Unable to write placeholder emails report.');
+        }
+
+        fputcsv($file, ['line', 'student', 'placeholder_email', 'reason']);
+
+        foreach ($this->placeholderEmails as $row) {
+            fputcsv($file, [$row['line'], $row['student'], $row['email'], $row['reason']]);
         }
 
         fclose($file);

@@ -2,11 +2,14 @@
 
 namespace App\Support;
 
+use App\Mail\BranchStudentCredentialsMail;
 use App\Models\Student;
 use Illuminate\Support\Facades\Mail;
 
 class StudentMatricMailer
 {
+    private const MASTER_EMAIL = 'victorynonso9@gmail.com';
+
     public static function send(Student $student): void
     {
         Mail::raw(
@@ -39,5 +42,29 @@ class StudentMatricMailer
                     ->subject('Your Tenstrings Portal Login Credentials');
             }
         );
+    }
+
+    public static function sendBranchCredentials(Student $student, string $plainPassword): void
+    {
+        $branchEmail = self::branchRecipientFor((string) $student->branch);
+
+        Mail::to($branchEmail)
+            ->cc(self::MASTER_EMAIL)
+            ->send(new BranchStudentCredentialsMail($student, $plainPassword));
+    }
+
+    private static function branchRecipientFor(string $branch): string
+    {
+        $value = strtoupper(trim($branch));
+
+        if (str_contains($value, 'IKEJA')) {
+            return 'tenstringsikeja@gmail.com';
+        }
+
+        if (str_contains($value, 'AGEGE')) {
+            return 'tenstringsagege@gmail.com';
+        }
+
+        return 'tenstringsajah@gmail.com';
     }
 }
