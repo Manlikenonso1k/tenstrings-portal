@@ -1,129 +1,105 @@
-# Illuminate\Database\QueryException - Internal Server Error
 
-SQLSTATE[HY000]: General error: 1364 Field 'registration_date' doesn't have a default value (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: u519226541_portal_tenstri, SQL: insert into `students` (`avatar_url`, `first_name`, `middle_name`, `last_name`, `email`, `phone`, `guardian_phone`, `address`, `branch`, `selected_course_name`, `duration`, `start_date`, `selected_course_code`, `birth_certificate_path`, `jamb_path`, `neco_path`, `waec_path`, `student_number`, `updated_at`, `created_at`) values (?, NNOCHINONYE, TOCHUKWU, DANIEL , tenstringsagege@gmail.com, 08117101360, ?, No 2 Bishop orojie street st Cyril okota , FESTAC BRANCH, Certificate in Gospel Music Performance, 6 months, 2026-02-13 00:00:00, CGMP, ?, ?, ?, ?, 202602CGMP001, 2026-03-13 14:58:46, 2026-03-13 14:58:46))
+id
+student_number
+first_name
+last_name
+email
+phone
+start_date
+created_at Descending 1
 
-PHP 8.3.19
-Laravel 12.53.0
-portal.tenstrings.org
+Edit Edit
+Copy Copy
+Delete Delete
+54
+202602GEN001
+ONIYIDE
+STEPHEN
+oniyideatephen@gmail.com
+7064224304
+2026-02-01
+2026-03-13 15:40:17
 
-## Stack Trace
+Edit Edit
+Copy Copy
+Delete Delete
+55
+202602GEN002
+MESIBA
+UCHE
+kelvinmesiba621@gmail.com
+7015540583
+2026-02-01
+2026-03-13 15:40:17
 
-0 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
-1 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:794
-2 - vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php:42
-3 - vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php:35
-4 - vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4140
-5 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2235
-6 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436
-7 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401
-8 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240
-9 - vendor/filament/filament/src/Resources/Pages/CreateRecord.php:191
-10 - vendor/filament/filament/src/Resources/Pages/CreateRecord.php:102
-11 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
-12 - vendor/laravel/framework/src/Illuminate/Container/Util.php:43
-13 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
-14 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
-15 - vendor/livewire/livewire/src/Wrapped.php:23
-16 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:492
-17 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:101
-18 - vendor/livewire/livewire/src/LivewireManager.php:102
-19 - vendor/livewire/livewire/src/Mechanisms/HandleRequests/HandleRequests.php:131
-20 - vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php:46
-21 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:265
-22 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:211
-23 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:822
-24 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
-25 - vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php:50
-26 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-27 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php:87
-28 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-29 - vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php:48
-30 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-31 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:120
-32 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:63
-33 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-34 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php:36
-35 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-36 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php:74
-37 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-38 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
-39 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
-40 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:800
-41 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:764
-42 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:753
-43 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:200
-44 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
-45 - vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php:19
-46 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-47 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php:27
-48 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-49 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php:47
-50 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-51 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php:27
-52 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-53 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php:109
-54 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-55 - vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php:61
-56 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-57 - vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php:58
-58 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-59 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php:22
-60 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-61 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php:26
-62 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
-63 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
-64 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:175
-65 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:144
-66 - vendor/laravel/framework/src/Illuminate/Foundation/Application.php:1220
-67 - public/index.php:20
+Edit Edit
+Copy Copy
+Delete Delete
+53
+202603CPD001
+OLUGBEMILEKE
+OWOLANA
+nill@yahoo.com
+5139703688
+2026-03-13
+2026-03-13 15:32:39
 
-## Request
+Edit Edit
+Copy Copy
+Delete Delete
+52
+202603CMP001
+GARBA
+OLUWATIMILEHIN
+otimba681@yahoo.com
+5139703695
+2026-03-13
+2026-03-13 15:30:40
 
-POST /livewire/update
+Edit Edit
+Copy Copy
+Delete Delete
+51
+202603DMP001
+MESIBA
+UCHE
+v.chinonso@profitbuyz.com
+07015540583
+2026-03-13
+2026-03-13 15:28:57
 
-## Headers
+Edit Edit
+Copy Copy
+Delete Delete
+50
+202603CGMP002
+ONIYIDE
+STEPHEN
+chrismith1m@gmail.com
+7064224304
+2026-03-13
+2026-03-13 15:22:49
 
-* **accept**: */*
-* **accept-encoding**: br
-* **accept-language**: en-GB,en-US;q=0.9,en;q=0.8
-* **connection**: close
-* **content-type**: application/json
-* **content-length**: 2145
-* **cookie**: _ga=GA1.2.2125740300.1762264473; twk_uuid_5c686cfc77e0730ce04347e0=%7B%22uuid%22%3A%221.7xaf1zW9JzvcjBKXSDOWkgdyleRKJE3gL32DvTHp1XjHWJAxLsTN0vmH6nOFJT3K9FIIC52OQdI2q7GOm21HmkineVpCWaRcZ8QCQ8owxcQL9YycDDIZd4zG%22%2C%22version%22%3A3%2C%22domain%22%3A%22tenstrings.org%22%2C%22ts%22%3A1768572744154%7D; XSRF-TOKEN=eyJpdiI6IlpjalZvRmlxa0l6VVRrN1llVGRYRlE9PSIsInZhbHVlIjoiVkowUnNhdnJib3IzemxkUjdDZ3hUNWY2cHRFRkZWcXgxOVVYQ0FTQkJFM1hINno2YjlYSWRzQzJEYTVLcnJ0VzdDZmZRczJvdFZrUzg4K2JCOTJ5MkxwVXZTYkZ1ZHc3WVU5aDdseE5WUFprVWY0ODVUUHdDWEpWcENjc0pERzQiLCJtYWMiOiJiYjE5NmQxOTYyN2I5YjYyMTAxNGE2NDU3ZDU5ZmY0Mjg0NDA4NzNkZWFiMGExY2ViOWYyYTUxMzI3NTVmNzdmIiwidGFnIjoiIn0%3D; tenstrings-institute-session=eyJpdiI6InhmcXc0dDJBWmNJOVdGbjVseU9iV2c9PSIsInZhbHVlIjoibXM1eFBOUmZXNmRqL0NOOWp1eTJTMzJuRk1sMEdzWkVLR1VhR3dqZUFndlZFLzh3NERzaUZST3ZFZUg3SzNjdnhYTzlNenU2ak9uZnJxT24wZTYxMW9TbHVIeVV5S1R0Z2M1aDQ0eTc3Rm9wSklYZEg1WFBMTmJvTlFSRWttMHkiLCJtYWMiOiIwNjJiOTc4Nzc2ZDAzYzJlOTFlODNlMDIxNjE5NWZlYmEyMjkwYTM4Nzc5NmI2NDBiNjVkYjg2NTNhMjBkMTZmIiwidGFnIjoiIn0%3D
-* **host**: portal.tenstrings.org
-* **referer**: https://portal.tenstrings.org/admin/students/create
-* **user-agent**: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
-* **x-forwarded-for**: 102.88.109.20
-* **x-forwarded-proto**: https
-* **x-real-ip**: 102.88.109.20
-* **x-real-port**: 41688
-* **x-forwarded-port**: 443
-* **x-port**: 443
-* **x-lscache**: 1
-* **sec-ch-ua-platform**: "Windows"
-* **sec-ch-ua**: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"
-* **x-livewire**: 
-* **sec-ch-ua-mobile**: ?0
-* **origin**: https://portal.tenstrings.org
-* **sec-fetch-site**: same-origin
-* **sec-fetch-mode**: cors
-* **sec-fetch-dest**: empty
-* **priority**: u=1, i
+Edit Edit
+Copy Copy
+Delete Delete
+49
+202603DGMP001
+ADEGBEYE
+SUNITA
+tenstringsajah@gmail.com
+08126125125
+2026-03-13
+2026-03-13 15:20:48
 
-## Route Context
-
-controller: Livewire\Mechanisms\HandleRequests\HandleRequests@handleUpdate
-route name: default.livewire.update
-middleware: web
-
-## Route Parameters
-
-No route parameter data available.
-
-## Database Queries
-
-* mysql - select * from `sessions` where `id` = 'B8hsqmQ1u3TRS4iTUu034fXrcmBLqmsNq5nTOw6J' limit 1 (6.42 ms)
-* mysql - select * from `users` where `id` = 3 limit 1 (0.77 ms)
-* mysql - select count(*) as aggregate from `students` where `email` = 'tenstringsagege@gmail.com' (1.55 ms)
-* mysql - select count(*) as aggregate from `students` where `student_number` like '202602CGMP%' (0.62 ms)
-* mysql - select exists(select * from `students` where `student_number` = '202602CGMP001') as `exists` (3.85 ms)
+Edit Edit
+Copy Copy
+Delete Delete
+48
+202603CGMP001
+NNOCHINONYE
+DANIEL 
+tenstringsagege@gmail.com
+08117101360
+2026-03-13
+2026-03-13 15:12:47

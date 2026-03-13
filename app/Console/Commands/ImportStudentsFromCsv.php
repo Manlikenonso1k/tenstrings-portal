@@ -111,6 +111,13 @@ class ImportStudentsFromCsv extends Command
                 $result = DB::transaction(function () use ($row, $headerMap, $firstName, $middleName, $lastName, $email, $line, $onlyBranch): array {
                     $existingStudent = Student::query()->where('email', $email)->first();
 
+                    $phoneRaw = $this->cleanText($this->value($row, $headerMap, 'phone'));
+                    $lookupPhone = $this->normalizePhoneForLookup($phoneRaw);
+
+                    if (! $existingStudent && $lookupPhone !== '') {
+                        $existingStudent = $this->findStudentByNameAndPhone($firstName, $lastName, $lookupPhone);
+                    }
+
                     $existingUser = User::query()->where('email', $email)->first();
                     if (! $existingStudent && $existingUser && $existingUser->role !== 'student') {
                         return ['status' => 'conflict'];
@@ -118,7 +125,6 @@ class ImportStudentsFromCsv extends Command
 
                     $programRaw = $this->cleanText($this->value($row, $headerMap, 'program'));
                     $intakeRaw = $this->cleanText($this->value($row, $headerMap, 'duration_program'));
-                    $phoneRaw = $this->cleanText($this->value($row, $headerMap, 'phone'));
                     $addressRaw = $this->cleanText($this->value($row, $headerMap, 'address'));
                     $dobRaw = $this->cleanText($this->value($row, $headerMap, 'date_of_birth'));
                     $sexRaw = $this->cleanText($this->value($row, $headerMap, 'sex'));
@@ -479,6 +485,41 @@ class ImportStudentsFromCsv extends Command
         $cleaned = preg_replace('/[^0-9+,]/', '', $value) ?? $value;
 
         return trim($cleaned) !== '' ? trim($cleaned) : 'N/A';
+    }
+
+    private function normalizePhoneForLookup(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+
+        if ($digits === '') {
+            return '';
+        }
+
+        return strlen($digits) > 10 ? substr($digits, -10) : $digits;
+    }
+
+    private function findStudentByNameAndPhone(string $firstName, string $lastName, string $lookupPhone): ?Student
+    {
+        if ($firstName === '' || $lastName === '' || $lookupPhone === '') {
+            return null;
+        }
+
+        $nameMatches = Student::query()
+            ->whereRaw('LOWER(first_name) = ?', [strtolower($firstName)])
+            ->whereRaw('LOWER(last_name) = ?', [strtolower($lastName)])
+            ->get();
+
+        foreach ($nameMatches as $candidate) {
+            if (! $candidate instanceof Student) {
+                continue;
+            }
+
+            if ($this->normalizePhoneForLookup((string) $candidate->phone) === $lookupPhone) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     private function mapBranch(string $remark): string

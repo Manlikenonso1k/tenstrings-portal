@@ -112,6 +112,9 @@ class StudentImporter extends Importer
     {
         $studentNumber = trim((string) ($this->data['student_number'] ?? ''));
         $email = strtolower(trim((string) ($this->data['email'] ?? '')));
+        $firstName = strtolower(trim((string) ($this->data['first_name'] ?? '')));
+        $lastName = strtolower(trim((string) ($this->data['last_name'] ?? '')));
+        $lookupPhone = self::normalizePhoneForLookup((string) ($this->data['phone'] ?? ''));
 
         if ($studentNumber !== '') {
             $matchByMatric = Student::query()
@@ -130,6 +133,23 @@ class StudentImporter extends Importer
 
             if ($matchByEmail) {
                 return $matchByEmail;
+            }
+        }
+
+        if ($firstName !== '' && $lastName !== '' && $lookupPhone !== '') {
+            $nameMatches = Student::query()
+                ->whereRaw('LOWER(first_name) = ?', [$firstName])
+                ->whereRaw('LOWER(last_name) = ?', [$lastName])
+                ->get();
+
+            foreach ($nameMatches as $candidate) {
+                if (! $candidate instanceof Student) {
+                    continue;
+                }
+
+                if (self::normalizePhoneForLookup((string) $candidate->phone) === $lookupPhone) {
+                    return $candidate;
+                }
             }
         }
 
@@ -505,6 +525,18 @@ class StudentImporter extends Importer
         }
 
         return null;
+    }
+
+    private static function normalizePhoneForLookup(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+
+        if ($digits === '') {
+            return '';
+        }
+
+        // Compare by trailing local digits so 070... and 23470... resolve to same person.
+        return strlen($digits) > 10 ? substr($digits, -10) : $digits;
     }
 
     private static function normalizeStartDate(string $state): string
