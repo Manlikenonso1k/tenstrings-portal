@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ActivityLogResource\Pages;
 use App\Models\User;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -11,6 +13,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\Models\Activity;
 
@@ -49,6 +52,77 @@ class ActivityLogResource extends Resource
                     ->label('When')
                     ->dateTime('M d, Y H:i:s')
                     ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\Filter::make('actor_role')
+                    ->label('Actor Role')
+                    ->form([
+                        Select::make('actor_role')
+                            ->label('Role')
+                            ->options([
+                                'super_admin' => 'Super Admin',
+                                'admin' => 'Admin',
+                                'instructor' => 'Instructor',
+                                'student' => 'Student',
+                                'system' => 'System',
+                            ])
+                            ->placeholder('All roles'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $role = $data['actor_role'] ?? null;
+
+                        if (! $role) {
+                            return $query;
+                        }
+
+                        if ($role === 'system') {
+                            return $query->whereNull('causer_id');
+                        }
+
+                        return $query
+                            ->where('causer_type', User::class)
+                            ->whereHas('causer', fn (Builder $causerQuery) => $causerQuery->where('role', $role));
+                    }),
+                Tables\Filters\Filter::make('action_type')
+                    ->label('Action Type')
+                    ->form([
+                        Select::make('action_type')
+                            ->label('Action')
+                            ->options([
+                                'created' => 'Created',
+                                'updated' => 'Updated',
+                                'deleted' => 'Deleted',
+                                'imported_csv' => 'Imported CSV',
+                                'import_failed' => 'Import Failed',
+                            ])
+                            ->placeholder('All actions'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $action = $data['action_type'] ?? null;
+
+                        if (! $action) {
+                            return $query;
+                        }
+
+                        return $query->where('event', $action);
+                    }),
+                Tables\Filters\Filter::make('date_range')
+                    ->label('Date Range')
+                    ->form([
+                        DatePicker::make('from_date')->label('From'),
+                        DatePicker::make('to_date')->label('To'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                filled($data['from_date'] ?? null),
+                                fn (Builder $inner) => $inner->whereDate('created_at', '>=', $data['from_date'])
+                            )
+                            ->when(
+                                filled($data['to_date'] ?? null),
+                                fn (Builder $inner) => $inner->whereDate('created_at', '<=', $data['to_date'])
+                            );
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
