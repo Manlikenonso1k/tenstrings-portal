@@ -63,6 +63,10 @@ class Student extends Model
     protected static function booted(): void
     {
         static::creating(function (Student $student) {
+            if (! $student->registration_date) {
+                $student->registration_date = now()->toDateString();
+            }
+
             if (! $student->student_number) {
                 $student->student_number = MatricNumberGenerator::generate(
                     $student->start_date ?? $student->registration_date,
