@@ -52,7 +52,7 @@ class BranchFinanceChart extends ChartWidget
                 COALESCE(SUM(fees_paid), 0) as revenue,
                 COALESCE(SUM(balance_due), 0) as pending
             ")
-            ->groupByRaw("COALESCE(NULLIF(branch, ''), 'Legacy/Unassigned')")
+            ->groupBy('branch')
             ->orderByRaw('revenue DESC')
             ->get();
 
