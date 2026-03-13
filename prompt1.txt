@@ -1,105 +1,18 @@
-
-id
-student_number
-first_name
-last_name
-email
-phone
-start_date
-created_at Descending 1
-
-Edit Edit
-Copy Copy
-Delete Delete
-54
-202602GEN001
-ONIYIDE
-STEPHEN
-oniyideatephen@gmail.com
-7064224304
-2026-02-01
-2026-03-13 15:40:17
-
-Edit Edit
-Copy Copy
-Delete Delete
-55
-202602GEN002
-MESIBA
-UCHE
-kelvinmesiba621@gmail.com
-7015540583
-2026-02-01
-2026-03-13 15:40:17
-
-Edit Edit
-Copy Copy
-Delete Delete
-53
-202603CPD001
-OLUGBEMILEKE
-OWOLANA
-nill@yahoo.com
-5139703688
-2026-03-13
-2026-03-13 15:32:39
-
-Edit Edit
-Copy Copy
-Delete Delete
-52
-202603CMP001
-GARBA
-OLUWATIMILEHIN
-otimba681@yahoo.com
-5139703695
-2026-03-13
-2026-03-13 15:30:40
-
-Edit Edit
-Copy Copy
-Delete Delete
-51
-202603DMP001
-MESIBA
-UCHE
-v.chinonso@profitbuyz.com
-07015540583
-2026-03-13
-2026-03-13 15:28:57
-
-Edit Edit
-Copy Copy
-Delete Delete
-50
-202603CGMP002
-ONIYIDE
-STEPHEN
-chrismith1m@gmail.com
-7064224304
-2026-03-13
-2026-03-13 15:22:49
-
-Edit Edit
-Copy Copy
-Delete Delete
-49
-202603DGMP001
-ADEGBEYE
-SUNITA
-tenstringsajah@gmail.com
-08126125125
-2026-03-13
-2026-03-13 15:20:48
-
-Edit Edit
-Copy Copy
-Delete Delete
-48
-202603CGMP001
-NNOCHINONYE
-DANIEL 
-tenstringsagege@gmail.com
-08117101360
-2026-03-13
-2026-03-13 15:12:47
+[u519226541@us-phx-web940 portal_app]$ php artisan tinker --execute='$raw = ["emmanuelehimetalor@gmail.com","chuksabel234@gmail.com","ajimichael399@gmail.com.","opeyemiismail@gmail.com","favour775david@gmail.com","dannytubec7066@yahoo.com","emmanuelojih31@gmail.com"]; $emails = collect($raw)->map(fn($e) => strtolower(trim(rtrim($e, "."))))->unique()->values()->all(); $students = App\Models\Student::query()->whereIn(\Illuminate\Support\Facades\DB::raw("LOWER(email)"), $emails)->get(); echo "Found: ".$students->count().PHP_EOL; foreach ($students as $s) { $old = trim((string) $s->student_number); $needsFix = ($old === "" || preg_match("/^[0-9]{10,15}$/", $old)); if (! $needsFix) { echo "SKIP {$s->email} => {$s->student_number}".PHP_EOL; continue; } $date = $s->start_date ?: $s->registration_date ?: now(); $s->student_number = App\Support\MatricNumberGenerator::generate(\Illuminate\Support\Carbon::parse($date)->toDateString(), $s->selected_course_code); $s->save(); echo "FIXED {$s->email} => {$old} -> {$s->student_number}".PHP_EOL; }'   
+Found: 7
+SKIP emmanuelehimetalor@gmail.com => 811,938,727,309,073,000,000
+SKIP chuksabel234@gmail.com => 09161618307,+22879134748
+SKIP ajimichael399@gmail.com => 905,653,726,009,017,000,000
+SKIP opeyemiismail@gmail.com => 08107722051, 08037075794
+SKIP favour775david@gmail.com => 09135155159, 09110373357
+FIXED dannytubec7066@yahoo.com =>  -> 202602DPD009
+SKIP emmanuelojih31@gmail.com => 904582116
+[u519226541@us-phx-web940 portal_app]$ php artisan tinker --execute='$raw = ["emmanuelehimetalor@gmail.com","chuksabel234@gmail.com","ajimichael399@gmail.com.","opeyemiismail@gmail.com","favour775david@gmail.com","dannytubec7066@yahoo.com","emmanuelojih31@gmail.com"]; $emails = collect($raw)->map(fn($e) => strtolower(trim(rtrim($e, "."))))->unique()->values()->all(); App\Models\Student::query()->whereIn(\Illuminate\Support\Facades\DB::raw("LOWER(email)"), $emails)->get(["email","student_number"])->each(fn($s) => print($s->email." => ".$s->student_number.PHP_EOL));'
+emmanuelehimetalor@gmail.com => 811,938,727,309,073,000,000
+chuksabel234@gmail.com => 09161618307,+22879134748
+ajimichael399@gmail.com => 905,653,726,009,017,000,000
+opeyemiismail@gmail.com => 08107722051, 08037075794
+favour775david@gmail.com => 09135155159, 09110373357
+dannytubec7066@yahoo.com => 202602DPD009
+emmanuelojih31@gmail.com => 904582116
+[u519226541@us-phx-web940 portal_app]$ 

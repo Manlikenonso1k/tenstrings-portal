@@ -72,6 +72,17 @@ class StudentImporter extends Importer
                         return (string) $state;
                     }
                 }),
+            ImportColumn::make('year')
+                ->rules(['nullable', 'integer', 'between:1990,2100'])
+                ->castStateUsing(function (mixed $state): ?int {
+                    if (blank($state)) {
+                        return null;
+                    }
+
+                    $year = (int) trim((string) $state);
+
+                    return ($year >= 1990 && $year <= 2100) ? $year : null;
+                }),
             ImportColumn::make('date_of_birth')
                 ->rules(['nullable', 'date'])
                 ->castStateUsing(function (mixed $state): ?string {
@@ -214,10 +225,16 @@ class StudentImporter extends Importer
         $balanceDue = (float) ($this->data['balance_due'] ?? 0);
         $hostelFee = (float) ($this->data['hostel_fee'] ?? 0);
         $totalBalance = (float) ($this->data['total_balance'] ?? 0);
+        $year = isset($this->data['year']) ? (int) $this->data['year'] : null;
+
+        if ($year !== null && $year >= 1990 && $year <= 2100) {
+            $startDate = Carbon::parse((string) ($this->data['start_date'] ?? now()->toDateString()));
+            $this->data['start_date'] = $startDate->setYear($year)->toDateString();
+        }
 
         $this->data['duration'] = $duration;
         $this->data['selected_course_code'] = CourseCatalog::codeFor($courseName);
-        $this->data['branch'] = (string) ($this->data['branch'] ?? 'IKEJA BRANCH');
+        $this->data['branch'] = (string) ($this->data['branch'] ?? 'AGEGE BRANCH');
         $this->data['registration_date'] = now()->toDateString();
         $this->data['status'] = 'active';
         $this->data['user_id'] = $user->id;
@@ -237,6 +254,8 @@ class StudentImporter extends Importer
         if (blank($this->data['sex'] ?? null)) {
             $this->data['sex'] = null;
         }
+
+        unset($this->data['year']);
     }
 
     protected function afterCreate(): void
@@ -416,7 +435,7 @@ class StudentImporter extends Importer
         $value = strtoupper(trim((string) $state));
 
         if ($value === '') {
-            return 'IKEJA BRANCH';
+            return 'AGEGE BRANCH';
         }
 
         if (str_contains($value, 'AJAH')) {
@@ -431,7 +450,7 @@ class StudentImporter extends Importer
             return 'AGEGE BRANCH';
         }
 
-        return 'IKEJA BRANCH';
+        return 'AGEGE BRANCH';
     }
 
     private static function normalizeSex(?string $state): ?string

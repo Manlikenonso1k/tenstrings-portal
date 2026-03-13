@@ -538,7 +538,7 @@ class ImportStudentsFromCsv extends Command
             return 'AGEGE BRANCH';
         }
 
-        return 'IKEJA BRANCH';
+        return 'AGEGE BRANCH';
     }
 
     /**
