@@ -13,6 +13,7 @@ use App\Filament\Portal\Pages\StudentIdentityPage;
 use App\Filament\Portal\Pages\StudentCoreInfoPage;
 use App\Filament\Portal\Pages\StudentAcademicPage;
 use App\Filament\Portal\Pages\StudentDocumentsPage;
+use App\Filament\Portal\Pages\StudentPasswordPage;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -54,6 +55,7 @@ class StudentPanelProvider extends PanelProvider
                 StudentCoreInfoPage::class,
                 StudentAcademicPage::class,
                 StudentDocumentsPage::class,
+                StudentPasswordPage::class,
                 PaymentsPage::class,
                 CourseRegistrationPage::class,
                 ResultsPage::class,

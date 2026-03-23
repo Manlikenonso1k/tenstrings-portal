@@ -55,5 +55,18 @@
             <x-heroicon-o-chevron-right class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-yellow-500 transition-colors"/>
         </a>
 
+        {{-- CHANGE PASSWORD --}}
+        <a href="{{ \App\Filament\Portal\Pages\StudentPasswordPage::getUrl() }}"
+           class="group flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm hover:shadow-md hover:border-primary-400 dark:hover:border-primary-500 transition-all">
+            <div class="flex-shrink-0 w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center">
+                <x-heroicon-o-key class="w-7 h-7 text-rose-600 dark:text-rose-400"/>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-gray-900 dark:text-white text-base">CHANGE PASSWORD</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Update your portal login password securely</div>
+            </div>
+            <x-heroicon-o-chevron-right class="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-rose-500 transition-colors"/>
+        </a>
+
     </div>
 </x-filament-panels::page>

@@ -1,4 +1,29 @@
 <x-filament-panels::page>
+    @php
+        $feesPaid = (float) ($this->record->fees_paid ?? 0);
+        $balanceDue = (float) ($this->record->balance_due ?? 0);
+        $totalBalance = (float) ($this->record->total_balance ?? ($feesPaid + $balanceDue));
+        $paymentStatus = $balanceDue <= 0
+            ? 'PAID'
+            : ($feesPaid > 0 ? 'OWING (PARTIAL)' : 'PENDING');
+    @endphp
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <x-filament::section>
+            <p class="text-xs text-gray-500">Total Fees</p>
+            <p class="text-xl font-semibold">N{{ number_format($totalBalance, 2) }}</p>
+        </x-filament::section>
+        <x-filament::section>
+            <p class="text-xs text-gray-500">Amount Paid</p>
+            <p class="text-xl font-semibold">N{{ number_format($feesPaid, 2) }}</p>
+        </x-filament::section>
+        <x-filament::section>
+            <p class="text-xs text-gray-500">Amount Owed</p>
+            <p class="text-xl font-semibold">N{{ number_format($balanceDue, 2) }}</p>
+            <p class="text-xs mt-1 {{ $balanceDue <= 0 ? 'text-success-600' : 'text-danger-600' }}">{{ $paymentStatus }}</p>
+        </x-filament::section>
+    </div>
+
     <div class="mb-2 flex items-center gap-4">
         @php
         $passportUrl = $this->record->avatar_url
