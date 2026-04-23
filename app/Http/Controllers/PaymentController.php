@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filament\Portal\Pages\PaymentsPage;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\StudentCourseFee;
@@ -66,7 +67,7 @@ class PaymentController extends Controller
             ->sum('outstanding_balance');
 
         if ($outstanding <= 0) {
-            return redirect('/portal/payments')->with('status', 'No outstanding balance found.');
+            return redirect($this->portalPaymentsUrl())->with('status', 'No outstanding balance found.');
         }
 
         if (! is_string($student->email) || ! filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
@@ -121,7 +122,13 @@ class PaymentController extends Controller
 
     public function callback(): RedirectResponse
     {
-        return redirect('/portal/payments')->with('status', 'Payment submitted. Confirmation will update automatically after webhook processing.');
+        return redirect($this->portalPaymentsUrl())
+            ->with('status', 'Payment submitted. Confirmation will update automatically after webhook processing.');
+    }
+
+    private function portalPaymentsUrl(): string
+    {
+        return PaymentsPage::getUrl(panel: 'portal');
     }
 
     public function downloadInvoice(Invoice $invoice): BinaryFileResponse
