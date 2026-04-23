@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Policies\FilamentImportPolicy;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL; // Add this
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS for all assets and links
+        if (config('app.env') !== 'local') {
+            URL::forceScheme('https');
+        }
+
         Gate::policy(Import::class, FilamentImportPolicy::class);
 
         Gate::before(function (User $user) {
