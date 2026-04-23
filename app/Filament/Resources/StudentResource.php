@@ -2,9 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\StudentResource\RelationManagers\InvoicesRelationManager;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
 use App\Models\Grade;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Services\Payments\PaymentService;
 use App\Support\CourseCatalog;
 use App\Support\StudentMatricMailer;
 use Filament\Facades\Filament;
@@ -19,6 +23,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 
 class StudentResource extends Resource
@@ -213,6 +218,88 @@ class StudentResource extends Resource
                 ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('download_invoice')
+                    ->label('Download Invoice')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(function (Student $record): ?string {
+                        $invoiceId = Invoice::query()
+                            ->where('student_id', $record->id)
+                            ->latest('id')
+                            ->value('id');
+
+                        if (! $invoiceId) {
+                            return null;
+                        }
+
+                        return URL::temporarySignedRoute(
+                            'documents.invoices.download',
+                            now()->addMinutes(15),
+                            ['invoice' => $invoiceId]
+                        );
+                    })
+                    ->visible(fn (Student $record): bool => Invoice::query()->where('student_id', $record->id)->exists())
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('download_receipt')
+                    ->label('Download Receipt')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(function (Student $record): ?string {
+                        $paymentId = Payment::query()
+                            ->where('student_id', $record->id)
+                            ->where('status', 'success')
+                            ->latest('id')
+                            ->value('id');
+
+                        if (! $paymentId) {
+                            return null;
+                        }
+
+                        return URL::temporarySignedRoute(
+                            'documents.receipts.download',
+                            now()->addMinutes(15),
+                            ['payment' => $paymentId]
+                        );
+                    })
+                    ->visible(fn (Student $record): bool => Payment::query()
+                        ->where('student_id', $record->id)
+                        ->where('status', 'success')
+                        ->exists())
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('generate_future_quarter_invoice')
+                    ->label('Generate Future Quarter Invoice')
+                    ->icon('heroicon-o-calendar-days')
+                    ->form([
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Amount (NGN)')
+                            ->prefix('₦')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1),
+                        Forms\Components\Select::make('future_offset')
+                            ->label('Quarter')
+                            ->options([
+                                1 => 'Next Quarter',
+                                2 => '2 Quarters Ahead',
+                                3 => '3 Quarters Ahead',
+                            ])
+                            ->default(1)
+                            ->required(),
+                    ])
+                    ->action(function (Student $record, array $data): void {
+                        /** @var PaymentService $paymentService */
+                        $paymentService = app(PaymentService::class);
+
+                        $invoice = $paymentService->createFutureQuarterInvoice(
+                            (int) $record->id,
+                            (float) $data['amount'],
+                            (int) $data['future_offset']
+                        );
+
+                        Notification::make()
+                            ->title('Future quarter invoice created')
+                            ->body('Invoice ' . $invoice->quarter_name . ' generated successfully.')
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\Action::make('resend_matric_email')
                     ->label('Resend Matric')
                     ->icon('heroicon-o-envelope')
@@ -252,7 +339,9 @@ class StudentResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            InvoicesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

@@ -15,8 +15,17 @@ class Payment extends Model
 
     protected $fillable = [
         'payment_number',
+        'user_id',
+        'invoice_id',
         'student_id',
         'course_id',
+        'gateway',
+        'reference',
+        'amount',
+        'status',
+        'gateway_response',
+        'metadata',
+        'processed_at',
         'amount_paid',
         'payment_date',
         'payment_method',
@@ -26,8 +35,12 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'amount' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'payment_date' => 'date',
+        'processed_at' => 'datetime',
+        'gateway_response' => 'array',
+        'metadata' => 'array',
     ];
 
     protected static function booted(): void
@@ -66,6 +79,16 @@ class Payment extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     public function course()

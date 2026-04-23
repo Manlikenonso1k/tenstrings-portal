@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\StudentRegistrationController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Student\StudentPdfController;
+use App\Http\Controllers\WebhookController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -31,4 +34,22 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/students/{student}/print/biodata', [StudentPdfController::class, 'biodata'])
         ->name('students.print.biodata');
+
+    Route::post('/payments/{gateway}/initialize', [PaymentController::class, 'initialize'])
+        ->name('payments.initialize');
+
+    Route::get('/payments/{gateway}/verify/{reference}', [PaymentController::class, 'verify'])
+        ->name('payments.verify');
+
+    Route::get('/documents/invoices/{invoice}', [PaymentController::class, 'downloadInvoice'])
+        ->name('documents.invoices.download')
+        ->middleware('signed');
+
+    Route::get('/documents/receipts/{payment}', [PaymentController::class, 'downloadReceipt'])
+        ->name('documents.receipts.download')
+        ->middleware('signed');
 });
+
+Route::post('/webhooks/{gateway}', [WebhookController::class, 'handle'])
+    ->name('payments.webhook')
+    ->withoutMiddleware([VerifyCsrfToken::class]);
