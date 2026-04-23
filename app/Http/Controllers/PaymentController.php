@@ -69,6 +69,12 @@ class PaymentController extends Controller
             return redirect('/portal/payments')->with('status', 'No outstanding balance found.');
         }
 
+        if (! is_string($student->email) || ! filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
+            return back()->withErrors([
+                'amount' => 'Cannot start payment because your student email is missing or invalid. Please contact admin.',
+            ]);
+        }
+
         $validated = $request->validate([
             'amount' => ['required', 'numeric', 'min:1'],
         ]);
@@ -98,8 +104,15 @@ class PaymentController extends Controller
         $authorizationUrl = data_get($result, 'gateway_response.body.data.authorization_url');
 
         if (! is_string($authorizationUrl) || $authorizationUrl === '') {
+            $gatewayMessage = (string) (
+                data_get($result, 'gateway_response.body.message')
+                ?? data_get($result, 'gateway_response.body.data.message')
+                ?? data_get($result, 'gateway_response.body.error')
+                ?? 'Unable to start payment right now. Please try again.'
+            );
+
             return back()->withErrors([
-                'amount' => 'Unable to start payment right now. Please try again.',
+                'amount' => $gatewayMessage,
             ]);
         }
 
