@@ -71,6 +71,7 @@ class PaystackTitanGateway implements PaymentGatewayInterface
             'customer_email' => $customerEmail,
             'invoice_id' => $metadata['invoice_id'] ?? null,
             'student_id' => $metadata['student_id'] ?? null,
+            'course_id' => $metadata['course_id'] ?? null,
             'metadata' => $metadata,
             'gateway_response' => $payload,
             'dedicated_account' => $dedicatedAccount,

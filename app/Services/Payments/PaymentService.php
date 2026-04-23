@@ -5,9 +5,9 @@ namespace App\Services\Payments;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Student;
+use App\Models\StudentCourseFee;
 use App\Services\Payments\Gateways\PaystackTitanGateway;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -25,6 +25,7 @@ class PaymentService
     {
         $student = Student::query()->with('user')->findOrFail((int) $data['student_id']);
         $quarter = (string) ($data['quarter_name'] ?? $this->quarterResolver->currentQuarter());
+        $invoiceAmount = (float) ($data['invoice_amount'] ?? $data['amount']);
 
         $invoice = Invoice::query()->firstOrCreate(
             [
@@ -32,10 +33,14 @@ class PaymentService
                 'quarter_name' => $quarter,
             ],
             [
-                'amount' => (float) $data['amount'],
+                'amount' => $invoiceAmount,
                 'status' => 'unpaid',
             ]
         );
+
+        if ($invoice->status !== 'paid' && (float) $invoice->amount < $invoiceAmount) {
+            $invoice->update(['amount' => $invoiceAmount]);
+        }
 
         // Regenerate invoice PDF before payment initialization to keep it authoritative.
         $invoicePath = $this->documentService->generateInvoicePdf($invoice);
@@ -48,6 +53,7 @@ class PaymentService
             'invoice_id' => $invoice->id,
             'gateway' => $gateway,
             'reference' => $reference,
+            'course_id' => $data['course_id'] ?? null,
             'amount' => (float) $data['amount'],
             'status' => 'pending',
             'payment_status' => 'pending',
@@ -59,6 +65,7 @@ class PaymentService
                 'quarter_name' => $quarter,
                 'student_id' => $student->id,
                 'invoice_id' => $invoice->id,
+                'course_id' => $data['course_id'] ?? null,
             ],
         ]);
 
@@ -72,6 +79,7 @@ class PaymentService
                 'student_id' => $student->id,
                 'invoice_id' => $invoice->id,
                 'quarter_name' => $quarter,
+                'course_id' => $data['course_id'] ?? null,
             ],
             'callback_url' => $data['callback_url'] ?? null,
         ]);
@@ -123,6 +131,7 @@ class PaymentService
         }
 
         $result = $this->db->transaction(function () use ($gateway, $normalized) {
+            $createdNew = false;
             $payment = Payment::query()->where('reference', $normalized['reference'])->lockForUpdate()->first();
 
             if (! $payment) {
@@ -138,6 +147,7 @@ class PaymentService
                     'user_id' => $student?->user_id,
                     'student_id' => $student?->id,
                     'invoice_id' => $normalized['invoice_id'] ?? null,
+                    'course_id' => $normalized['course_id'] ?? data_get($normalized, 'metadata.course_id'),
                     'gateway' => $gateway,
                     'reference' => $normalized['reference'],
                     'amount' => (float) ($normalized['amount'] ?? 0),
@@ -150,9 +160,11 @@ class PaymentService
                     'metadata' => $normalized['metadata'] ?? [],
                     'processed_at' => now(),
                 ]);
+
+                $createdNew = true;
             }
 
-            if (in_array($payment->status, ['success', 'failed'], true)) {
+            if (! $createdNew && in_array($payment->status, ['success', 'failed'], true)) {
                 return ['processed' => true, 'idempotent' => true, 'payment_id' => $payment->id];
             }
 
@@ -173,8 +185,17 @@ class PaymentService
 
             if ($newStatus === 'success') {
                 if ($payment->invoice) {
-                    $payment->invoice->update(['status' => 'paid']);
+                    $successfulAmount = (float) Payment::query()
+                        ->where('invoice_id', $payment->invoice_id)
+                        ->where('status', 'success')
+                        ->sum('amount_paid');
+
+                    $payment->invoice->update([
+                        'status' => $successfulAmount >= (float) $payment->invoice->amount ? 'paid' : 'unpaid',
+                    ]);
                 }
+
+                $this->syncCourseFeeAndStudentSnapshot($payment->fresh());
 
                 $receiptPath = $this->documentService->generateReceiptPdf($payment->fresh());
                 $payment->update([
@@ -223,5 +244,57 @@ class PaymentService
             'failed' => 'pending',
             default => 'pending',
         };
+    }
+
+    private function syncCourseFeeAndStudentSnapshot(Payment $payment): void
+    {
+        if (! $payment->student_id) {
+            return;
+        }
+
+        $courseId = $payment->course_id ?: data_get($payment->metadata, 'course_id');
+
+        if ($courseId) {
+            $fee = StudentCourseFee::query()
+                ->where('student_id', $payment->student_id)
+                ->where('course_id', $courseId)
+                ->lockForUpdate()
+                ->first();
+
+            if ($fee) {
+                $successfulCoursePayments = (float) Payment::query()
+                    ->where('student_id', $payment->student_id)
+                    ->where('course_id', $courseId)
+                    ->where(function ($query) {
+                        $query->where('status', 'success')
+                            ->orWhere('payment_status', 'paid');
+                    })
+                    ->sum('amount_paid');
+
+                $fee->amount_paid = min((float) $fee->total_course_fee, $successfulCoursePayments);
+                $fee->outstanding_balance = max(0, (float) $fee->total_course_fee - (float) $fee->amount_paid);
+                $fee->status = $fee->outstanding_balance <= 0
+                    ? 'paid'
+                    : ((float) $fee->amount_paid > 0 ? 'partial' : 'pending');
+                $fee->save();
+            }
+        }
+
+        $student = Student::query()->find($payment->student_id);
+
+        if (! $student) {
+            return;
+        }
+
+        $totals = StudentCourseFee::query()
+            ->where('student_id', $payment->student_id)
+            ->selectRaw('COALESCE(SUM(total_course_fee), 0) as total_fee, COALESCE(SUM(amount_paid), 0) as paid, COALESCE(SUM(outstanding_balance), 0) as outstanding')
+            ->first();
+
+        $student->update([
+            'total_balance' => (float) ($totals->total_fee ?? 0),
+            'fees_paid' => (float) ($totals->paid ?? 0),
+            'balance_due' => (float) ($totals->outstanding ?? 0),
+        ]);
     }
 }

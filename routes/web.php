@@ -38,6 +38,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/payments/{gateway}/initialize', [PaymentController::class, 'initialize'])
         ->name('payments.initialize');
 
+    Route::post('/portal/payments/outstanding', [PaymentController::class, 'payOutstanding'])
+        ->name('portal.payments.pay_outstanding');
+
+    Route::get('/portal/payments/callback', [PaymentController::class, 'callback'])
+        ->name('portal.payments.callback');
+
     Route::get('/payments/{gateway}/verify/{reference}', [PaymentController::class, 'verify'])
         ->name('payments.verify');
 

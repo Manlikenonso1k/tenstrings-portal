@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\StudentCourseFee;
 use App\Services\Payments\DocumentService;
 use App\Services\Payments\PaymentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -24,6 +26,8 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'student_id' => ['required', 'integer', 'exists:students,id'],
             'amount' => ['required', 'numeric', 'min:1'],
+            'invoice_amount' => ['nullable', 'numeric', 'min:1'],
+            'course_id' => ['nullable', 'integer', 'exists:courses,id'],
             'quarter_name' => ['nullable', 'string', 'max:30'],
             'reference' => ['nullable', 'string', 'max:100'],
             'callback_url' => ['nullable', 'url'],
@@ -47,6 +51,64 @@ class PaymentController extends Controller
             'message' => 'Payment verification fetched.',
             'data' => $result,
         ], 200);
+    }
+
+    public function payOutstanding(Request $request): RedirectResponse
+    {
+        $student = $request->user()?->student;
+
+        if (! $student) {
+            abort(403);
+        }
+
+        $outstanding = (float) StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->sum('outstanding_balance');
+
+        if ($outstanding <= 0) {
+            return redirect('/portal/payments')->with('status', 'No outstanding balance found.');
+        }
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $amount = (float) $validated['amount'];
+
+        if ($amount > $outstanding) {
+            return back()->withErrors([
+                'amount' => 'Amount cannot be greater than outstanding balance.',
+            ]);
+        }
+
+        $primaryFee = StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->where('outstanding_balance', '>', 0)
+            ->orderByDesc('outstanding_balance')
+            ->first();
+
+        $result = $this->paymentService->initializePayment('paystack-titan', [
+            'student_id' => (int) $student->id,
+            'amount' => $amount,
+            'invoice_amount' => $outstanding,
+            'course_id' => $primaryFee?->course_id,
+            'callback_url' => route('portal.payments.callback'),
+        ]);
+
+        $authorizationUrl = data_get($result, 'gateway_response.body.data.authorization_url');
+
+        if (! is_string($authorizationUrl) || $authorizationUrl === '') {
+            return back()->withErrors([
+                'amount' => 'Unable to start payment right now. Please try again.',
+            ]);
+        }
+
+        return redirect()->away($authorizationUrl);
+    }
+
+    public function callback(): RedirectResponse
+    {
+        return redirect('/portal/payments')->with('status', 'Payment submitted. Confirmation will update automatically after webhook processing.');
     }
 
     public function downloadInvoice(Invoice $invoice): BinaryFileResponse
