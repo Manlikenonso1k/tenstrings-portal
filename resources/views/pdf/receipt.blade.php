@@ -22,11 +22,12 @@
     </div>
 
     <div class="card">
+        <strong>Receipt Number:</strong> {{ $payment->receipt_number ?: ('RCP-' . ($payment->payment_number ?? $payment->id)) }}<br>
         <strong>Receipt Ref:</strong> {{ $payment->reference }}<br>
-        <strong>Student:</strong> {{ trim(($payment->student->first_name ?? '') . ' ' . ($payment->student->last_name ?? '')) }}<br>
+        <strong>Student Name:</strong> {{ trim(($payment->student->first_name ?? '') . ' ' . ($payment->student->middle_name ?? '') . ' ' . ($payment->student->last_name ?? '')) }}<br>
         <strong>Matric No:</strong> {{ $payment->student->student_number ?? 'N/A' }}<br>
         <strong>Quarter:</strong> {{ data_get($payment->metadata, 'quarter_name', $payment->invoice?->quarter_name ?? 'N/A') }}<br>
-        <strong>Payment Date:</strong> {{ $payment->processed_at?->format('Y-m-d H:i') ?? $payment->updated_at?->format('Y-m-d H:i') }}<br>
+        <strong>Date:</strong> {{ $payment->processed_at?->format('Y-m-d H:i') ?? $payment->updated_at?->format('Y-m-d H:i') }}<br>
         <strong>Status:</strong> {{ strtoupper($payment->status ?? 'PENDING') }}
     </div>
 

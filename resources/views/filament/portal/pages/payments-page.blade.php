@@ -58,12 +58,25 @@
     <x-filament::section>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead><tr><th class="text-left p-2">Payment ID</th><th class="text-left p-2">Date</th><th class="text-left p-2">Amount</th><th class="text-left p-2">Status</th></tr></thead>
+                <thead><tr><th class="text-left p-2">Payment ID</th><th class="text-left p-2">Receipt No.</th><th class="text-left p-2">Date</th><th class="text-left p-2">Amount</th><th class="text-left p-2">Status</th><th class="text-left p-2">Action</th></tr></thead>
                 <tbody>
                     @forelse($payments as $payment)
-                        <tr class="border-t"><td class="p-2">{{ $payment->payment_number }}</td><td class="p-2">{{ $payment->payment_date }}</td><td class="p-2">₦{{ number_format((float) ($payment->amount_paid ?: $payment->amount), 2) }}</td><td class="p-2">{{ strtoupper((string) ($payment->status ?? $payment->payment_status)) }}</td></tr>
+                        <tr class="border-t">
+                            <td class="p-2">{{ $payment->payment_number }}</td>
+                            <td class="p-2">{{ $payment->receipt_number ?: 'Pending' }}</td>
+                            <td class="p-2">{{ optional($payment->processed_at ?: $payment->payment_date)?->format('Y-m-d H:i') }}</td>
+                            <td class="p-2">₦{{ number_format((float) ($payment->amount_paid ?: $payment->amount), 2) }}</td>
+                            <td class="p-2">{{ strtoupper((string) ($payment->status ?? $payment->payment_status)) }}</td>
+                            <td class="p-2">
+                                @if (($payment->status ?? null) === 'success')
+                                    <a href="{{ route('portal.payments.receipt', $payment) }}" target="_blank" class="text-primary-600 hover:underline">Print Receipt</a>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                        </tr>
                     @empty
-                        <tr><td colspan="4" class="p-2 text-gray-500">No payments yet.</td></tr>
+                        <tr><td colspan="6" class="p-2 text-gray-500">No payments yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>

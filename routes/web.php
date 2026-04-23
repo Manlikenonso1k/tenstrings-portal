@@ -44,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/portal/payments/callback', [PaymentController::class, 'callback'])
         ->name('portal.payments.callback');
 
+    Route::get('/portal/payments/{payment}/receipt', [PaymentController::class, 'downloadStudentReceipt'])
+        ->name('portal.payments.receipt');
+
     Route::get('/payments/{gateway}/verify/{reference}', [PaymentController::class, 'verify'])
         ->name('payments.verify');
 

@@ -154,4 +154,23 @@ class PaymentController extends Controller
 
         return response()->download(Storage::disk('local')->path($path), 'receipt_' . $payment->reference . '.pdf');
     }
+
+    public function downloadStudentReceipt(Request $request, Payment $payment): BinaryFileResponse
+    {
+        abort_unless($payment->status === 'success', 404);
+
+        $user = $request->user();
+        $isOwner = $user?->student && (int) $user->student->id === (int) $payment->student_id;
+        $isAdmin = in_array($user?->role, ['super_admin', 'admin'], true);
+
+        abort_unless($isOwner || $isAdmin, 403);
+
+        $path = (string) data_get($payment->metadata, 'receipt_path', '');
+
+        if ($path === '' || ! Storage::disk('local')->exists($path)) {
+            $path = $this->documentService->generateReceiptPdf($payment);
+        }
+
+        return response()->download(Storage::disk('local')->path($path), 'receipt_' . ($payment->receipt_number ?: $payment->reference) . '.pdf');
+    }
 }

@@ -179,6 +179,9 @@ class PaymentService
 
             if ($newStatus === 'success') {
                 $update['amount_paid'] = (float) ($normalized['amount'] ?? $payment->amount ?? 0);
+                if (! $payment->receipt_number) {
+                    $update['receipt_number'] = $this->generateReceiptNumber($payment);
+                }
             }
 
             $payment->update($update);
@@ -296,5 +299,12 @@ class PaymentService
             'fees_paid' => (float) ($totals->paid ?? 0),
             'balance_due' => (float) ($totals->outstanding ?? 0),
         ]);
+    }
+
+    private function generateReceiptNumber(Payment $payment): string
+    {
+        $date = now()->format('Ymd');
+
+        return 'RCP-' . $date . '-' . str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
     }
 }
