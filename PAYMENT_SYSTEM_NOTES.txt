@@ -1,0 +1,469 @@
+================================================================================
+TENSTRINGS PORTAL - PAYMENT SYSTEM IMPLEMENTATION NOTES
+================================================================================
+Date: April 24, 2026
+Status: PRODUCTION-READY (Last commit: 069f892)
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+Objective: Implement production-ready Paystack Titan payment gateway with 
+quarterly student billing, invoicing, receipting, and Filament admin UI.
+
+Key Requirements:
+- Students pay outstanding course fees
+- Students can print receipts with name, receipt number, date
+- Admin can manage invoices and payments via Filament
+- Webhook-driven payment processing with idempotency
+- Secure document downloads with ownership validation
+
+Framework: Laravel 10.x with Filament 3 admin panel
+Payment Gateway: Paystack Titan (virtual accounts)
+PDF Generation: barryvdh/laravel-dompdf
+
+================================================================================
+2. DATABASE SCHEMA
+================================================================================
+
+INVOICES TABLE (2026_04_23_000101_create_invoices_table.php)
+- id (bigint)
+- student_id (bigint, foreign key)
+- quarter_name (varchar) - "Q1", "Q2", "Q3", "Q4"
+- amount (decimal 10,2)
+- status (enum: pending, paid, partially_paid, overdue)
+- created_at, updated_at
+- UNIQUE(student_id, quarter_name)
+
+PAYMENTS TABLE MODIFICATIONS (2026_04_23_000102_alter_payments_table_for_gateway_processing.php)
+Added Columns:
+- user_id (bigint, foreign key to users)
+- invoice_id (bigint, foreign key to invoices)
+- gateway (varchar) - "paystack", "flutterwave", etc.
+- reference (varchar) - UNIQUE, Paystack transaction reference
+- amount (decimal 10,2)
+- status (enum: pending, processing, success, failed)
+- gateway_response (json) - Full Paystack API response
+- metadata (json) - Custom data (student_id, email, etc.)
+- processed_at (timestamp)
+- receipt_number (varchar) - Format: RCP-YYYYMMDD-######
+
+================================================================================
+3. MODELS
+================================================================================
+
+Invoice.php (NEW)
+- student_id, quarter_name, amount, status
+- Relationships: belongsTo(Student), hasMany(Payment)
+
+Payment.php (MODIFIED)
+- user_id, invoice_id, gateway, reference, amount, status
+- receipt_number, gateway_response, metadata, processed_at
+- Relationships: belongsTo(User), belongsTo(Invoice)
+- Observer: Syncs StudentCourseFee on creation
+
+Student.php (MODIFIED)
+- New relationship: invoices() hasMany(Invoice)
+
+User.php (MODIFIED)
+- New relationship: payments() hasMany(Payment)
+
+================================================================================
+4. SERVICE LAYER ARCHITECTURE
+================================================================================
+
+PaymentService.php
+Methods:
+- initializePayment(): Creates invoice/payment, calls gateway, stores auth response
+- verifyPayment(): Calls gateway verify endpoint
+- handleWebhook(): Validates signature, processes webhook idempotently, syncs fees
+- createFutureQuarterInvoice(): Creates invoice for future quarter (offset 1-3)
+- syncCourseFeeAndStudentSnapshot(): Updates student financial state
+- generateReceiptNumber(): Format RCP-YYYYMMDD-######
+
+QuarterResolver.php
+- Maps current quarter by month (Q1: Feb-Apr, Q2: May-Jul, Q3: Aug-Oct, Q4: Nov-Jan)
+- Calculates future quarters with offset
+
+DocumentService.php
+- generateInvoicePdf(): Renders template, stores in documents/invoices/
+- generateReceiptPdf(): Renders template, stores in documents/receipts/
+
+PaystackTitanGateway.php (Implements PaymentGatewayInterface)
+- initializePayment(): POST /transaction/initialize → returns authorization_url
+- verifyPayment(): GET /transaction/verify/{reference}
+- handleWebhook(): Normalizes Paystack webhook payload
+- isValidSignature(): HMAC-SHA512 validation using PAYSTACK_WEBHOOK_SECRET
+
+================================================================================
+5. PAYMENT FLOW
+================================================================================
+
+OUTSTANDING BALANCE PAYMENT:
+1. Student views portal payments page
+2. Enters amount to pay (min=1, max=outstanding_balance)
+3. Submits "Pay Outstanding" form
+4. Controller validates student and amount
+5. PaymentService.initializePayment() called:
+   - Creates Payment record (status: pending)
+   - Calls PaystackTitanGateway.initializePayment()
+   - Returns authorization_url from Paystack
+6. Student redirected to Paystack checkout
+7. Student completes payment on Paystack
+8. Paystack sends webhook to POST /webhooks/{gateway}
+9. WebhookController validates signature and calls PaymentService.handleWebhook()
+10. Webhook processing (idempotent - locked transaction):
+    - Validates signature (x-paystack-signature header)
+    - Extracts event, amount, reference, status
+    - Locks Payment row (prevents race conditions)
+    - Checks idempotency (skips if already success/failed unless brand new)
+    - Updates Payment status to success
+    - Generates receipt_number (RCP-YYYYMMDD-######)
+    - Calls syncCourseFeeAndStudentSnapshot():
+      * Finds StudentCourseFee for student
+      * Reduces outstanding_balance by amount_paid
+      * Updates status based on remaining balance
+      * Updates Student.total_balance, fees_paid, balance_due
+    - Generates receipt PDF
+    - Marks Invoice as paid (if cumulative payments >= amount)
+11. Student returns to portal or gets redirected via callback
+12. Student sees payment in history table with receipt_number
+13. Student clicks "Print Receipt" action → Downloads PDF
+
+CALLBACK FLOW:
+- After Paystack payment, student returned to /portal/payments/callback
+- Uses Filament URL resolver: PaymentsPage::getUrl(panel: 'portal')
+- Prevents 404 from hardcoded paths
+
+RECEIPT PRINTING:
+- Portal payments table shows:
+  * Payment ID | Receipt No. | Date | Amount | Status | Action
+  * "Print Receipt" action visible ONLY for success status
+- Student clicks "Print Receipt" → GET /portal/payments/{payment}/receipt
+- Route validates ownership (student can only access own payment)
+- Regenerates receipt PDF if missing
+- Downloads PDF with:
+  * Receipt Number (RCP-YYYYMMDD-######)
+  * Student Full Name (including middle name)
+  * Date (payment processed_at)
+  * Matric number, quarter, amount, status
+
+================================================================================
+6. CONTROLLERS
+================================================================================
+
+PaymentController.php
+- initialize(): POST /payments/{gateway}/initialize
+  * Validates student_id/amount
+  * Calls PaymentService.initializePayment()
+  * Returns JSON with gateway response
+
+- verify(): GET /payments/{gateway}/verify/{reference}
+  * Calls PaymentService.verifyPayment()
+  * Returns JSON status
+
+- payOutstanding(): POST /portal/payments/outstanding (auth)
+  * Authenticated endpoint
+  * Validates student exists and email
+  * Calculates outstanding_balance from StudentCourseFee
+  * Validates amount input (min=1, max=outstanding)
+  * Calls initializePayment()
+  * Redirects to Paystack authorization_url or back with error
+
+- callback(): GET /portal/payments/callback (auth)
+  * Redirects to PaymentsPage with status message from session
+
+- downloadReceipt(): GET /documents/receipts/{payment} (signed)
+  * Signed route (prevents tampering)
+  * Aborts if payment status != success
+  * Streams receipt PDF from storage
+
+- downloadStudentReceipt(): GET /portal/payments/{payment}/receipt (auth)
+  * Authenticated route (any logged-in user)
+  * Validates payment status = success
+  * Checks ownership: student can only access own, admin can access any
+  * Regenerates receipt PDF if missing
+  * Returns PDF download
+
+WebhookController.php
+- handle(): POST /webhooks/{gateway} (no CSRF)
+  * Validates signature (x-paystack-signature header)
+  * Calls PaymentService.handleWebhook()
+  * Returns JSON 200 on all outcomes (prevents retry loops)
+
+================================================================================
+7. ROUTES
+================================================================================
+
+POST /payments/{gateway}/initialize
+  Auth: yes | Controller: PaymentController@initialize
+
+GET /payments/{gateway}/verify/{reference}
+  Auth: yes | Controller: PaymentController@verify
+
+POST /portal/payments/outstanding
+  Auth: yes | Controller: PaymentController@payOutstanding
+
+GET /portal/payments/callback
+  Auth: yes | Controller: PaymentController@callback
+
+GET /portal/payments/{payment}/receipt
+  Auth: yes | Controller: PaymentController@downloadStudentReceipt
+
+GET /documents/invoices/{invoice}
+  Auth: signed | Controller: PaymentController@downloadInvoice
+
+GET /documents/receipts/{payment}
+  Auth: signed | Controller: PaymentController@downloadReceipt
+
+POST /webhooks/{gateway}
+  CSRF: no | Controller: WebhookController@handle
+
+================================================================================
+8. FILAMENT ADMIN INTEGRATION
+================================================================================
+
+StudentResource.php
+- Table Actions: Download Invoice, Download Receipt, Generate Future Invoice
+- Detail Page: Same actions available
+
+ViewStudent.php
+- Added actions on student detail page
+
+InvoicesRelationManager.php (NEW)
+- Relation manager for student invoices
+- Columns: quarter_name, amount, status
+- Actions: Download Invoice, Download Receipt, Edit
+
+PaymentsPage.php (MODIFIED)
+- Displays: total_balance, balance_due, fees_paid
+- Outstanding Balance widget with "Pay Outstanding" form
+- Payment history table with receipt printing
+
+================================================================================
+9. CONFIGURATION
+================================================================================
+
+config/services.php
+paystack:
+  secret_key: env('PAYSTACK_SECRET_KEY')
+  public_key: env('PAYSTACK_PUBLIC_KEY')
+  base_url: env('PAYSTACK_BASE_URL', 'https://api.paystack.co')
+  webhook_secret: env('PAYSTACK_WEBHOOK_SECRET')
+
+.env.example
+PAYSTACK_PUBLIC_KEY=pk_test_...
+PAYSTACK_SECRET_KEY=sk_test_...
+PAYSTACK_WEBHOOK_SECRET=...
+PAYSTACK_BASE_URL=https://api.paystack.co
+
+CRITICAL: Update .env on server with correct test/live keys
+           Run: php artisan config:cache (after .env changes)
+
+================================================================================
+10. SECURITY PATTERNS
+================================================================================
+
+Signature Validation (Webhook):
+- Uses HMAC-SHA512 with PAYSTACK_WEBHOOK_SECRET
+- Header: x-paystack-signature
+- Prevents malicious webhook spoofing
+
+Signed Routes (Document Downloads):
+- Laravel signed URLs prevent tampering
+- Automatically validate signature before serving
+- Used for: invoices, receipts (admin/signed access)
+
+Ownership Validation (Student Receipt Download):
+- Endpoint checks: auth()->user()->student_id === payment.user_id OR isAdmin
+- Student can ONLY access their own receipts
+- Admin can access any receipt
+
+Transaction Locking (Webhook Processing):
+- Uses DB::transaction() with lockForUpdate()
+- Prevents race conditions when webhook fires multiple times
+- Ensures accurate balance calculations
+
+Idempotency (Webhook Processing):
+- First webhook for reference creates Payment (status: pending → success)
+- Subsequent webhooks for same reference skip processing if already terminal
+- Unless payment was just created from webhook (allows retry on first webhook only)
+- Prevents duplicate charges and balance updates
+
+================================================================================
+11. ISSUES ENCOUNTERED & SOLUTIONS
+================================================================================
+
+ISSUE 1: Outstanding Balance Not Reconciling
+Problem: StudentCourseFee.outstanding_balance wasn't decreasing after payment
+Solution: Implemented syncCourseFeeAndStudentSnapshot() called on webhook success
+          Updates student_course_fees and Student financial snapshots atomically
+
+ISSUE 2: Callback 404 Error
+Problem: Hardcoded /portal/payments redirect didn't match Filament page slug
+Solution: Used PaymentsPage::getUrl(panel: 'portal') for dynamic URL generation
+          Respects actual Filament routing configuration
+
+ISSUE 3: Paystack "Invalid key" Error
+Problem: User received validation_error from Paystack API
+Root Cause: Wrong PAYSTACK_SECRET_KEY in .env on server
+Solution: User corrected key in .env, ran config:cache, test payment succeeded
+
+ISSUE 4: No Receipt Tracking
+Problem: Students couldn't download or track receipts
+Solution: Added receipt_number field (RCP-YYYYMMDD-######) auto-generated on success
+          Stored in Payment.receipt_number on webhook success
+
+ISSUE 5: Receipt Printing Not Student-Accessible
+Problem: Only admin signed URLs worked for receipts
+Solution: Added secure downloadStudentReceipt() endpoint with ownership validation
+          Students can download their own receipts from portal
+
+================================================================================
+12. KEY FILES & LOCATIONS
+================================================================================
+
+Migrations:
+- database/migrations/2026_04_23_000101_create_invoices_table.php
+- database/migrations/2026_04_23_000102_alter_payments_table_for_gateway_processing.php
+
+Models:
+- app/Models/Invoice.php
+- app/Models/Payment.php
+- app/Models/Student.php
+- app/Models/User.php
+
+Services:
+- app/Support/PaymentService.php
+- app/Support/QuarterResolver.php
+- app/Support/DocumentService.php
+- app/Support/PaystackTitanGateway.php
+- app/Contracts/PaymentGatewayInterface.php
+
+Controllers:
+- app/Http/Controllers/PaymentController.php
+- app/Http/Controllers/WebhookController.php
+
+Routes:
+- routes/web.php (all payment routes)
+
+Views:
+- resources/views/filament/portal/pages/payments-page.blade.php
+- resources/views/pdf/invoice.blade.php
+- resources/views/pdf/receipt.blade.php
+
+Filament:
+- app/Filament/Resources/StudentResource.php
+- app/Filament/Pages/ViewStudent.php
+- app/Filament/Resources/StudentResource/RelationManagers/InvoicesRelationManager.php
+- app/Filament/Portal/Pages/PaymentsPage.php
+
+Config:
+- config/services.php
+
+================================================================================
+13. DEPLOYMENT CHECKLIST
+================================================================================
+
+[ ] Pull commit 069f892 to server
+[ ] Run migrations: php artisan migrate
+[ ] Update .env with correct Paystack test/live keys
+[ ] Run: php artisan config:cache
+[ ] Test payment flow: student pays outstanding → check receipt printing
+[ ] Verify webhook processing: Monitor logs for signature validation
+[ ] Check file permissions: storage/app/documents/ readable by web server
+[ ] Verify HTTPS in production (required by Paystack)
+
+================================================================================
+14. ARCHITECTURE DECISIONS
+================================================================================
+
+1. Webhook as Source of Truth
+   - All payment finality determined by webhook, not verification call
+   - Prevents data inconsistency between Paystack and portal
+   - Webhook is delayed but authoritative
+
+2. Interface-Driven Gateway Abstraction
+   - PaymentGatewayInterface allows swapping Paystack for Flutterwave, etc.
+   - Each gateway normalizes to common format
+   - Service layer doesn't know specific gateway details
+
+3. Transaction-Based Idempotency
+   - Lock prevents race conditions
+   - Skips duplicate processing safely
+   - Allows webhook retries without harm
+
+4. Private Document Storage
+   - Invoices and receipts stored outside public folder
+   - Accessed via signed routes or authenticated endpoints
+   - Prevents direct URL enumeration
+
+5. Quarter-Based Billing
+   - Quarterly invoices create predictable billing cycles
+   - QuarterResolver maps months to quarters
+   - Future quarter invoices generated on-demand
+
+================================================================================
+15. RECENT COMMITS
+================================================================================
+
+Commit 8a9a01b: "Add payment gateway and invoice workflow"
+- Initial payment system with Paystack, invoices, webhook, PDF generation
+
+Commit e2013b8: "Force HTTPS in non-local environments"
+- Security enforcement for Paystack compliance
+
+Commit 55a0721: "Improve payment init failure diagnostics"
+- Better error messages when payment initialization fails
+
+Commit 40bc534: "Fix portal payment callback redirect URL"
+- Fixed 404 by using dynamic Filament URL generation
+
+Commit 069f892: "Add student receipt printing and receipt number"
+- Receipt number auto-generation
+- Secure student receipt download
+- Portal UI updates with receipt printing
+- Enhanced receipt PDF template
+
+================================================================================
+16. TESTING NOTES
+================================================================================
+
+Manual Payment Test (Successful):
+1. Student navigates to portal payments page
+2. Enters amount to pay outstanding fees
+3. Clicks "Pay Outstanding"
+4. Redirected to Paystack checkout
+5. Completed payment test
+6. Received confirmation email from Paystack
+7. Returned to portal, payment visible in history
+8. Receipt number displayed
+9. "Print Receipt" action functional
+10. Downloaded receipt PDF shows: receipt number, student name, date
+
+Key Observations:
+- Webhook fired successfully (payment status updated from pending to success)
+- StudentCourseFee.outstanding_balance reduced correctly
+- Receipt PDF generated and accessible
+- No console errors or validation failures
+
+================================================================================
+17. NEXT STEPS (Post-Implementation)
+================================================================================
+
+Optional Enhancements:
+- Payment retry logic (auto-retry failed webhooks)
+- Batch invoice generation for all students in a quarter
+- Email receipts automatically to student
+- Payment plan support (monthly installments)
+- Multi-gateway support (Flutterwave as fallback)
+- Admin dashboard with payment metrics
+- Student payment history export (CSV)
+
+Current Status: FEATURE-COMPLETE
+The system is production-ready and handles all core payment workflows.
+User is now exploring Laravel learning pathways.
+
+================================================================================
+END OF NOTES
+================================================================================

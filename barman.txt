@@ -1,0 +1,42 @@
+Role: Senior Laravel & Filament 3 Developer.
+Task: Build a Daily Stocking & Request System for "Bar" and "Kitchen" roles.
+
+1. Database Schema (Stock Logs):
+
+Create a DailyStock model with these specific fields:
+
+item_name, price_ngn (₦), opening_stock, added_stock, trans_in, trans_out.
+
+Calculated Fields: total_stock (Opening + Added + In - Out), sales (Total Stock - Closing), and closing_stock.
+
+remarks (Text), category (Enum: Bar, Kitchen).
+
+recorded_by (User ID).
+
+2. Permissions & Roles (Filament Shield):
+
+Barman/Chef: Can Create and View their own stock logs. They CANNOT delete any records.
+
+Admin/Manager: Full CRUD access, including the ability to Delete records and edit prices.
+
+3. The Stocking UI:
+
+In the DailyStockResource, use a Simple Layout.
+
+When the Barman enters "Opening" and "Closing," use a Livewire Listener or reactive() fields in Filament to automatically calculate the Sales and Total Stock in real-time before they hit save.
+
+4. Stock Request System:
+
+Create a StockRequest model: item_name, quantity, status (Pending, Approved, Declined), and manager_notes.
+
+Workflow: Barman/Chef submits request -> Manager receives notification -> Manager accepts/declines.
+
+If "Accepted," automatically add that quantity to the next day's added_stock for that item.
+
+5. Dashboard Widgets:
+
+Top Consumed Widget: A "Barman Insights" widget using a Bar Chart to show which 5 items have the highest sales value based on the last 7 days of inventory updates.
+
+Create separate versions for the Kitchen Chef dashboard.
+
+Instructions: Use Filament Actions for the Approve/Decline buttons and Spatie Permissions to lock the delete button. Ensure the currency symbol ₦ is used in all price headers.

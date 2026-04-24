@@ -1,0 +1,144 @@
+# Illuminate\Database\QueryException - Internal Server Error
+
+SQLSTATE[42S02]: Base table or view not found: 1146 Table 'u519226541_portal_tenstri.payment_advice' doesn't exist (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: u519226541_portal_tenstri, SQL: select * from `payment_advice` where `student_id` = 10 and `status` = pending order by `id` desc limit 1)
+
+PHP 8.3.30
+Laravel 12.53.0
+portal.tenstrings.org
+
+## Stack Trace
+
+0 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+1 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:794
+2 - vendor/laravel/framework/src/Illuminate/Database/Connection.php:411
+3 - vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3475
+4 - vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3460
+5 - vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4050
+6 - vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3459
+7 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:902
+8 - vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:884
+9 - vendor/laravel/framework/src/Illuminate/Database/Concerns/BuildsQueries.php:366
+10 - app/Filament/Portal/Pages/PaymentsPage.php:39
+11 - vendor/filament/filament/src/Pages/BasePage.php:53
+12 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+13 - vendor/laravel/framework/src/Illuminate/Container/Util.php:43
+14 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:96
+15 - vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+16 - vendor/livewire/livewire/src/Wrapped.php:23
+17 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:289
+18 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:249
+19 - vendor/livewire/livewire/src/Mechanisms/HandleComponents/HandleComponents.php:54
+20 - vendor/livewire/livewire/src/LivewireManager.php:73
+21 - vendor/livewire/livewire/src/Features/SupportPageComponents/HandlesPageComponents.php:17
+22 - vendor/livewire/livewire/src/Features/SupportPageComponents/SupportPageComponents.php:117
+23 - vendor/livewire/livewire/src/Features/SupportPageComponents/HandlesPageComponents.php:14
+24 - vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php:46
+25 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:265
+26 - vendor/laravel/framework/src/Illuminate/Routing/Route.php:211
+27 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:822
+28 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+29 - vendor/filament/filament/src/Http/Middleware/DispatchServingFilamentEvent.php:15
+30 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+31 - vendor/filament/filament/src/Http/Middleware/DisableBladeIconComponents.php:14
+32 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+33 - vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php:50
+34 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+35 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php:87
+36 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+37 - vendor/laravel/framework/src/Illuminate/Session/Middleware/AuthenticateSession.php:70
+38 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+39 - vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php:63
+40 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+41 - vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php:48
+42 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+43 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:120
+44 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:63
+45 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+46 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php:36
+47 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+48 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php:74
+49 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+50 - vendor/filament/filament/src/Http/Middleware/SetUpPanel.php:19
+51 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+52 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+53 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
+54 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:800
+55 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:764
+56 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:753
+57 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:200
+58 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+59 - vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php:19
+60 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+61 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php:21
+62 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php:31
+63 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+64 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php:21
+65 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php:51
+66 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+67 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php:27
+68 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+69 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php:109
+70 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+71 - vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php:61
+72 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+73 - vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php:58
+74 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+75 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php:22
+76 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+77 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php:26
+78 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+79 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+80 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:175
+81 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:144
+82 - vendor/laravel/framework/src/Illuminate/Foundation/Application.php:1220
+83 - public/index.php:20
+
+## Request
+
+GET /portal/payments-page
+
+## Headers
+
+* **accept**: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+* **accept-encoding**: br
+* **accept-language**: en-GB,en-US;q=0.9,en;q=0.8
+* **cookie**: _ga=GA1.2.2125740300.1762264473; twk_uuid_5c686cfc77e0730ce04347e0=%7B%22uuid%22%3A%221.7xaf1zW9JzvcjBKXSDOWkgdyleRKJE3gL32DvTHp1XjHWJAxLsTN0vmH6nOFJT3K9FIIC52OQdI2q7GOm21HmkineVpCWaRcZ8QCQ8owxcQL9YycDDIZd4zG%22%2C%22version%22%3A3%2C%22domain%22%3A%22tenstrings.org%22%2C%22ts%22%3A1777039956261%7D; XSRF-TOKEN=eyJpdiI6Ii9zWC9iV0oyYWpjQzRWcVRtc3hvVmc9PSIsInZhbHVlIjoidms2Z1UwY1d3ZlZKYlhTR3NpMjlYQmpFOG81RFdGSU55K0YvdE5xN2RFUmREUDJpekRDUXlsZUt6ZVUrT1NmZ1pMbEYrK3BoR0YvRVJIYlBJUEN5clA4ZmljU01keE00dXRicURNUUtXSjJab1hoQ1RWYVdPWVRNcHVhcW8vVlUiLCJtYWMiOiJkYTIxZjcyZmFhZTdlZDUwYTUwYmI2NjA1ZmNkYzY4YjQ2MzBjYmUxN2JlY2UzNzA5ZTkzZWUzZTViNGQ1ODE2IiwidGFnIjoiIn0%3D; tenstrings-institute-session=eyJpdiI6ImErWVpLLzNydDlUQWs3alRwcEdFaFE9PSIsInZhbHVlIjoia3ZpQXdMaTlhU2cycXVKNW13aTBMQ0MvbElUczVYaGNoOVo0S3F5Qkx4eTFZV3FIVkNGdUl2T1Z6RHlBRVpvSURaZlBGZUlJcVp0a0hTaDJvakpYdXoyT1kvTithZDNGbkpSVldMOFhZT0JlTnlvcmhBZnp3U0Y5ZWF2MFg1Z20iLCJtYWMiOiJiYjc1MzdiMTE3NGNiMDlmMzRkNDEwNWFlOGZjMTYzOGNmNDFiODA3MDQ0NTE5ZWM2MzgzZmJiOGFmMzM2NTZjIiwidGFnIjoiIn0%3D
+* **host**: portal.tenstrings.org
+* **pragma**: no-cache
+* **referer**: https://portal.tenstrings.org/portal/dashboard-page
+* **user-agent**: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36
+* **cache-control**: no-cache
+* **x-forwarded-for**: 102.89.23.177
+* **x-forwarded-proto**: https
+* **x-real-ip**: 102.89.23.177
+* **x-real-port**: 8339
+* **x-forwarded-port**: 443
+* **x-port**: 443
+* **x-lscache**: 1
+* **sec-ch-ua**: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+* **sec-ch-ua-mobile**: ?1
+* **sec-ch-ua-platform**: "Android"
+* **upgrade-insecure-requests**: 1
+* **sec-fetch-site**: same-origin
+* **sec-fetch-mode**: navigate
+* **sec-fetch-user**: ?1
+* **sec-fetch-dest**: document
+* **priority**: u=0, i
+
+## Route Context
+
+controller: App\Filament\Portal\Pages\PaymentsPage
+route name: filament.portal.pages.payments-page
+middleware: panel:portal, Illuminate\Cookie\Middleware\EncryptCookies, Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse, Illuminate\Session\Middleware\StartSession, Filament\Http\Middleware\AuthenticateSession, Illuminate\View\Middleware\ShareErrorsFromSession, Illuminate\Foundation\Http\Middleware\VerifyCsrfToken, Illuminate\Routing\Middleware\SubstituteBindings, Filament\Http\Middleware\DisableBladeIconComponents, Filament\Http\Middleware\DispatchServingFilamentEvent, Filament\Http\Middleware\Authenticate
+
+## Route Parameters
+
+No route parameter data available.
+
+## Database Queries
+
+* mysql - select * from `sessions` where `id` = 'tq7TcWrAz7k86qNmja1TbMk0IqwFJcJGEl5CpM5H' limit 1 (36.07 ms)
+* mysql - select * from `users` where `id` = 12 limit 1 (9.8 ms)
+* mysql - select * from `students` where `students`.`user_id` = 12 and `students`.`user_id` is not null limit 1 (2.67 ms)
+* mysql - select * from `students` where `students`.`id` = 10 limit 1 (0.42 ms)
+* mysql - select sum(`outstanding_balance`) as aggregate from `student_course_fees` where `student_id` = 10 (6.63 ms)

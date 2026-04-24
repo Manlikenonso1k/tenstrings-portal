@@ -1,0 +1,53 @@
+
+
+**Role:** You are a Senior Laravel Backend Engineer specializing in scalable, multi-gateway payment systems and high-end Admin UI development (Filament V3).
+
+**Objective:** Design and generate production-ready Laravel code for the **Tenstrings Music Institute Student Portal**. The system must handle quarterly student billing (Current and Future quarters), integrate **Paystack Titan (Virtual Accounts)**, and provide automated Invoicing and Receipting within a **Filament Admin Dashboard**.
+
+### 1. Core Architecture & Gateway Abstraction
+* **Thin Controllers:** Handle requests and call services only.
+* **Layered Structure:** Controller → `PaymentService` → Gateway Classes.
+* **Interface-Driven:** Create `PaymentGatewayInterface` with:
+    * `initializePayment(array $data)`
+    * `verifyPayment(string $reference)`
+    * `handleWebhook(array $payload)`
+* **Concrete Gateway:** Implement `PaystackTitanGateway` following the interface. Ensure it handles virtual account reconciliation logic.
+
+### 2. Domain Logic: Quarterly Billing & Documents
+* **Quarterly Logic:** Implement a system to define "Current Quarter" and "Future Quarters." Invoices must be generated based on these periods.
+* **Invoicing:** Generate a PDF Invoice (using `barryvdh/laravel-dompdf`) before payment.
+* **Receipting:** Generate a PDF Receipt automatically upon successful payment.
+* **Database Schema:**
+    * `payments`: id, user_id, gateway, reference (unique), amount, status (pending, processing, success, failed), gateway_response (JSON), metadata (JSON).
+    * `invoices`: id, student_id, quarter_name, amount, status (unpaid, paid).
+
+### 3. Webhook & Security Protocol
+* **Source of Truth:** Webhooks are the ONLY source of truth for payment status.
+* **Validation:** Validate all Paystack/Gateway signatures using environment keys.
+* **Idempotency:** Prevent duplicate processing of the same transaction reference.
+* **Logging:** Implement comprehensive logging for all gateway interactions and webhook payloads.
+
+### 4. Filament Admin Integration
+* **Student Resource:** Add a `RelationManager` for Invoices and Receipts.
+* **Actions:**
+    * In the Student list/view: Admin must be able to click a "Download Invoice" or "Download Receipt" action.
+    * Receipts should only be accessible/visible if the payment status is `success`.
+    * Include a custom action to manually trigger a "Future Quarter" invoice for a specific student.
+
+### 5. Output Requirements
+Provide the complete implementation including:
+1.  **Migrations:** For `payments` and `invoices` tables.
+2.  **Contracts & Services:** `PaymentGatewayInterface`, `PaymentService`, and `PaystackTitanGateway`.
+3.  **Controllers & Routes:** `PaymentController`, `WebhookController`, and dynamic routing for gateways.
+4.  **Document Generation:** A service or action to generate the PDF templates.
+5.  **Filament Components:** The `RelationManager` and Table Actions code.
+
+***
+
+### Pro-Tips for this Build:
+* **The "Titan" Advantage:** Since Paystack Titan gives students a permanent virtual account, your `handleWebhook` logic should look for the `customer_code` or `dedicated_account` field. This allows you to match a transfer to a student even if they didn't initiate it through a "Pay Now" button.
+* **Storage:** Make sure your `Invoice` and `Receipt` PDFs are stored in the `private` disk so they aren't publicly accessible via a URL, then use a Laravel signed URL or a Filament Action to stream them to the Admin.
+
+
+
+**Do you want me to help you draft the specific Blade template for the Tenstrings Receipt to make it look professional?**
