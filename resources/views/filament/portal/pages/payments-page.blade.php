@@ -32,13 +32,13 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
         <a href="{{ route('fees.generate') }}" class="bg-white rounded-md cursor-pointer h-full border-2 p-6 transform duration-200 hover:border-primary-500 hover:scale-[1.02] pb-2">
-            <img alt="" class="rounded-full h-16 w-16" src="/assets/icons/papers.svg">
+            <img alt="Generate Fees" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/papers.svg') }}">
             <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Generate Fees</div>
             <div class="text-xs text-gray-500">Select Quarter (Feb, May, Aug, Nov)</div>
         </a>
 
         <a href="{{ route('fees.advice.current') }}" class="bg-white rounded-md cursor-pointer h-full border-2 p-6 transform duration-200 hover:border-primary-500 hover:scale-[1.02] pb-2">
-            <img alt="" class="rounded-full h-16 w-16" src="/assets/icons/receipt.png">
+            <img alt="View Pay Advice" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/receipt.svg') }}">
             <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">View Pay Advice</div>
             <div class="text-xs text-gray-500">View current generated advice</div>
         </a>
@@ -47,7 +47,7 @@
             onclick="initPaystackPayment()"
             class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
         >
-            <img alt="" class="rounded-full h-16 w-16" src="/assets/icons/credit-card.png">
+            <img alt="Pay Online" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
             <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Pay Online</div>
             <div class="text-xs text-gray-500">
                 @if ($pendingAdvice)
@@ -59,7 +59,7 @@
         </div>
 
         <a href="{{ route('fees.receipts') }}" class="bg-white rounded-md cursor-pointer h-full border-2 p-6 transform duration-200 hover:border-primary-500 hover:scale-[1.02] pb-2">
-            <img alt="" class="rounded-full h-16 w-16" src="/assets/icons/printer.svg">
+            <img alt="Print Receipt" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/printer.svg') }}">
             <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Print Receipt</div>
             <div class="text-xs text-gray-500">Download previous receipts</div>
         </a>
