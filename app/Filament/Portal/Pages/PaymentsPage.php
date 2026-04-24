@@ -3,6 +3,7 @@
 namespace App\Filament\Portal\Pages;
 
 use App\Models\Payment;
+use App\Models\PaymentAdvice;
 use App\Models\Student;
 use App\Models\StudentCourseFee;
 use Filament\Pages\Page;
@@ -29,6 +30,14 @@ class PaymentsPage extends Page
         return [
             'student' => $student,
             'outstandingBalance' => $outstandingBalance,
+            'pendingAdvice' => $studentId
+                ? PaymentAdvice::query()
+                    ->with('course')
+                    ->where('student_id', $studentId)
+                    ->where('status', 'pending')
+                    ->latest('id')
+                    ->first()
+                : null,
             'payments' => Payment::query()
                 ->where('student_id', $studentId)
                 ->latest('payment_date')

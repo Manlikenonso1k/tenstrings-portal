@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\PaymentAdvice;
 use App\Models\Student;
 use App\Models\StudentCourseFee;
 use App\Services\Payments\Gateways\PaystackTitanGateway;
@@ -66,6 +67,7 @@ class PaymentService
                 'student_id' => $student->id,
                 'invoice_id' => $invoice->id,
                 'course_id' => $data['course_id'] ?? null,
+                ...((array) ($data['metadata'] ?? [])),
             ],
         ]);
 
@@ -80,6 +82,7 @@ class PaymentService
                 'invoice_id' => $invoice->id,
                 'quarter_name' => $quarter,
                 'course_id' => $data['course_id'] ?? null,
+                ...((array) ($data['metadata'] ?? [])),
             ],
             'callback_url' => $data['callback_url'] ?? null,
         ]);
@@ -200,6 +203,8 @@ class PaymentService
 
                 $this->syncCourseFeeAndStudentSnapshot($payment->fresh());
 
+                $this->markAdviceAsPaid($payment->fresh());
+
                 $receiptPath = $this->documentService->generateReceiptPdf($payment->fresh());
                 $payment->update([
                     'metadata' => array_merge((array) $payment->metadata, ['receipt_path' => $receiptPath]),
@@ -306,5 +311,36 @@ class PaymentService
         $date = now()->format('Ymd');
 
         return 'RCP-' . $date . '-' . str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function markAdviceAsPaid(Payment $payment): void
+    {
+        $adviceId = (int) data_get($payment->metadata, 'payment_advice_id', 0);
+
+        if ($adviceId > 0) {
+            PaymentAdvice::query()
+                ->whereKey($adviceId)
+                ->where('student_id', $payment->student_id)
+                ->where('status', 'pending')
+                ->update([
+                    'status' => 'paid',
+                    'payment_id' => $payment->id,
+                    'paid_at' => now(),
+                ]);
+
+            return;
+        }
+
+        PaymentAdvice::query()
+            ->where('student_id', $payment->student_id)
+            ->where('course_id', $payment->course_id)
+            ->where('status', 'pending')
+            ->latest('id')
+            ->limit(1)
+            ->update([
+                'status' => 'paid',
+                'payment_id' => $payment->id,
+                'paid_at' => now(),
+            ]);
     }
 }

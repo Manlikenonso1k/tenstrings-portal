@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\StudentRegistrationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Portal\FeeWorkflowController;
 use App\Http\Controllers\Student\StudentPdfController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -40,6 +41,21 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/portal/payments/outstanding', [PaymentController::class, 'payOutstanding'])
         ->name('portal.payments.pay_outstanding');
+
+    Route::get('/fees/generate', [FeeWorkflowController::class, 'generatePage'])
+        ->name('fees.generate');
+
+    Route::post('/fees/generate', [FeeWorkflowController::class, 'generateAdvice'])
+        ->name('fees.generate.store');
+
+    Route::get('/fees/advice/current', [FeeWorkflowController::class, 'currentAdvice'])
+        ->name('fees.advice.current');
+
+    Route::post('/fees/pay-online', [FeeWorkflowController::class, 'payOnline'])
+        ->name('fees.pay-online');
+
+    Route::get('/fees/receipts', [FeeWorkflowController::class, 'receipts'])
+        ->name('fees.receipts');
 
     Route::get('/portal/payments/callback', [PaymentController::class, 'callback'])
         ->name('portal.payments.callback');
