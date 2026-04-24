@@ -9,6 +9,8 @@ class PaymentAdvice extends Model
 {
     use HasFactory;
 
+    protected $table = 'payment_advices';
+
     protected $fillable = [
         'student_id',
         'course_id',
