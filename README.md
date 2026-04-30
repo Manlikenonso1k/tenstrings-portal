@@ -107,6 +107,30 @@ npm run dev
 - Quarterly intake analytics (FEB/MAY/AUG/NOV)
 - Quarterly assessment analytics (assessment volume + average percentage by month)
 
+## Online Payments (TGI Primary, Paystack Backup)
+
+- Student portal payments page now supports online fee payment for outstanding balances.
+- Primary gateway: `TGI` (two-step flow: initiate + get URL)
+- Automatic fallback gateway: `Paystack`
+- Callback route: `/portal/payments/callback`
+
+Required `.env` keys:
+
+- `TGI_BASE_URL` (default: `https://integration-service.tgipay.com`)
+- `TGI_PUBLIC_KEY` (from TGI Merchant Portal > Integrations > Public Key)
+- `PAYSTACK_BASE_URL` (default: `https://api.paystack.co`)
+- `PAYSTACK_SECRET_KEY`
+
+TGI Integration Details:
+
+- **Endpoints used**:
+  - Initiate: `POST /integration/api/v1/payment/initiate` (with integration-key header)
+  - Get URL: `GET /integration/api/v1/payment/{transactionReference}` (with integration-key header)
+- **Callback format**: `?status=success|failed&ref={reference}&tgipay=1`
+- **Metadata storage**: Payment metadata is stored in session since TGI doesn't return it in callback
+- If TGI initialize fails, the system automatically retries with Paystack.
+- Verified gateway payments are stored in `payments` with `payment_method=card` and `notes=Gateway: TGI` or `Gateway: Paystack`.
+
 ## Student Portal Sidebar
 
 `/portal` shows only:

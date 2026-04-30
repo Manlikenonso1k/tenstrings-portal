@@ -37,6 +37,10 @@ class Payment extends Model
         });
 
         static::created(function (Payment $payment) {
+            if (! in_array($payment->payment_status, ['paid', 'partial'], true)) {
+                return;
+            }
+
             if (! $payment->course_id) {
                 return;
             }
