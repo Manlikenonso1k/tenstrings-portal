@@ -6,6 +6,7 @@ use App\Models\Student;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class FinanceChart extends ChartWidget
 {
@@ -116,10 +117,10 @@ class FinanceChart extends ChartWidget
         if ($quarter === 'q4') {
             return Student::query()->where(function (Builder $q) use ($year) {
                 $q->whereYear('start_date', $year)
-                    ->whereRaw('MONTH(start_date) IN (11, 12)');
+                    ->whereRaw($this->monthExpression() . ' IN (11, 12)');
             })->orWhere(function (Builder $q) use ($year) {
                 $q->whereYear('start_date', $year + 1)
-                    ->whereRaw('MONTH(start_date) = 1');
+                    ->whereRaw($this->monthExpression() . ' = 1');
             });
         }
 
@@ -132,7 +133,14 @@ class FinanceChart extends ChartWidget
 
         return Student::query()
             ->whereYear('start_date', $year)
-            ->whereRaw('MONTH(start_date) IN (' . implode(',', $months) . ')');
+            ->whereRaw($this->monthExpression() . ' IN (' . implode(',', $months) . ')');
+    }
+
+    private function monthExpression(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "CAST(strftime('%m', start_date) AS INTEGER)"
+            : 'MONTH(start_date)';
     }
 
     private function resolveTotals(): array
