@@ -10,6 +10,10 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/livewire/update', function () {
+    return redirect()->to(url()->previous() ?: '/admin');
+})->name('livewire.update.fallback');
+
 Route::get('/', function () {
     if (! Auth::check()) {
         return redirect('/portal/login');
