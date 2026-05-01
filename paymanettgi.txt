@@ -1,0 +1,71 @@
+Agent To-Do List
+[ ] Model Audit: Ensure the Course model has duration and total_fee fields.
+
+[ ] Logic Engine: Implement the "Payment Rule":
+
+If Course Duration < 1 Year: Required Amount = 100%.
+
+If Course Duration >= 1 Year: Required Amount = 70% (Minimum).
+
+[ ] Fee Mapping: Map these calculated values to the "Generate Fees" view in the student portal.
+
+[ ] TGIPAY Backend Service:
+
+Create TgiPayController.
+
+Implement initiatePayment (Server-to-Server).
+
+Implement getPaymentUrl (Server-to-Server).
+
+[ ] Route Setup: Define the payment-callback route to handle the tgipay=1 success/fail parameters.
+
+[ ] UI Integration: Add the TGIPAY card to the payment page alongside Paystack.
+
+[ ] Database Sync: Ensure the PaymentAdvice or Invoices table updates its status to "Paid" upon a successful TGIPAY callback.
+
+The Master Prompt for your Agent
+Subject: Implement Course-Based Fee Logic and TGIPAY Direct Integration
+
+Context:
+We are upgrading the Tenstrings Student Portal. We already have Paystack Titan working. You need to implement a course-duration-based fee logic and add TGIPAY as a secondary payment gateway.
+
+Step 1: Fee Calculation Logic
+Inspect the Course and Enrollment data. When a student clicks "Generate Fees," the system must apply these rules:
+
+Short Courses (< 12 months): The amount_to_pay must be 100% of the course fee.
+
+Long Courses (>= 12 months): The amount_to_pay must be at least 70% of the course fee as a deposit.
+
+The generated "Payment Advice" must reflect these specific amounts based on the student's selected course.
+
+Step 2: TGIPAY Direct Integration (Server-Side)
+Following the TGIPAY Direct Integration UI Redirect documentation:
+
+Initiation: Create a backend method to POST to [https://integration-service.tgipay.com/integration/api/v1/payment/initiate](https://integration-service.tgipay.com/integration/api/v1/payment/initiate).
+
+Headers: Include integration-key (use placeholder ENV variables).
+
+Payload: Use customerFirstName, customerLastName, customerEmail, amount, and a unique UUID transactionReference.
+
+Redirect Flow: Once initiated, call the GET endpoint with the transactionReference to retrieve the data.url. Redirect the student to this URL. Do not perform these calls from the frontend.
+
+Step 3: Callback Handling
+Set up a controller to handle the callback from TGIPAY:
+
+URL: {{your-site}}/payment-callback
+
+Parameters: Expect status (success/failed) and ref.
+
+Action: If status === 'success', update the PaymentAdvice status to "Paid" in the database and redirect to a "Success" page.
+
+Step 4: UI Update
+Add a new payment option card for TGIPAY on the payment page. Use the same styling as the existing cards.
+
+Icon: Use a relevant credit card or payment icon.
+
+Action: Trigger the backend TGIPAY initiation flow.
+
+Constraint: Ensure the Paystack Titan integration remains untouched and fully functional.
+
+A Quick Note on TGIPAY vs Paystack
+Since you are using two gateways now, your database needs to track which gateway was used. Ask your agent to add a gateway column (e.g., paystack or tgipay) to your payments table. This will save you a massive headache during month-end accounting when you're trying to reconcile the school's bank statements!

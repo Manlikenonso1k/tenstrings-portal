@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\StudentRegistrationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\FeeWorkflowController;
 use App\Http\Controllers\Student\StudentPdfController;
+use App\Http\Controllers\TgiPayController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Auth;
@@ -41,6 +42,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/portal/payments/outstanding', [PaymentController::class, 'payOutstanding'])
         ->name('portal.payments.pay_outstanding');
+
+    // TGIPAY payment routes
+    Route::post('/tgipay/initiate', [TgiPayController::class, 'initiatePayment'])
+        ->name('tgipay.initiate');
+
+    Route::get('/tgipay/callback', [TgiPayController::class, 'callback'])
+        ->name('tgipay.callback');
 
     Route::get('/fees/generate', [FeeWorkflowController::class, 'generatePage'])
         ->name('fees.generate');

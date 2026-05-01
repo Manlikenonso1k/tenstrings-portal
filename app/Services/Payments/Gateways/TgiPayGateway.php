@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Services\Payments\Gateways;
+
+use App\Contracts\PaymentGatewayInterface;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Http;
+
+class TgiPayGateway implements PaymentGatewayInterface
+{
+    /**
+     * Initiate payment via TGIPAY Direct Integration.
+     *
+     * Server-to-Server flow:
+     * 1. POST to initiate endpoint with payment details
+     * 2. GET to retrieve payment URL
+     * 3. Redirect user to payment URL
+     */
+    public function initializePayment(array $data): array
+    {
+        $payload = [
+            'customerFirstName' => $data['customer_first_name'] ?? '',
+            'customerLastName' => $data['customer_last_name'] ?? '',
+            'customerEmail' => $data['email'],
+            'amount' => (float) $data['amount'],
+            'transactionReference' => $data['reference'],
+        ];
+
+        $response = Http::withHeaders([
+            'integration-key' => $this->integrationKey(),
+        ])
+            ->acceptJson()
+            ->timeout(30)
+            ->post($this->baseUrl() . '/payment/initiate', $payload);
+
+        return [
+            'ok' => $response->successful(),
+            'status' => $response->status(),
+            'body' => $response->json() ?? [],
+        ];
+    }
+
+    /**
+     * Get payment URL from TGIPAY after initialization.
+     */
+    public function getPaymentUrl(string $transactionReference): array
+    {
+        $response = Http::withHeaders([
+            'integration-key' => $this->integrationKey(),
+        ])
+            ->acceptJson()
+            ->timeout(30)
+            ->get($this->baseUrl() . '/payment/status/' . $transactionReference);
+
+        return [
+            'ok' => $response->successful(),
+            'status' => $response->status(),
+            'body' => $response->json() ?? [],
+        ];
+    }
+
+    /**
+     * Verify payment status with TGIPAY.
+     */
+    public function verifyPayment(string $reference): array
+    {
+        $response = Http::withHeaders([
+            'integration-key' => $this->integrationKey(),
+        ])
+            ->acceptJson()
+            ->timeout(30)
+            ->get($this->baseUrl() . '/payment/verify/' . $reference);
+
+        return [
+            'ok' => $response->successful(),
+            'status' => $response->status(),
+            'body' => $response->json() ?? [],
+        ];
+    }
+
+    /**
+     * Handle webhook callback from TGIPAY.
+     *
+     * Expected payload parameters:
+     * - status: 'success' or 'failed'
+     * - ref: transaction reference
+     */
+    public function handleWebhook(array $payload): array
+    {
+        $status = (string) Arr::get($payload, 'status', 'processing');
+        $reference = (string) Arr::get($payload, 'ref', '');
+
+        // Map TGIPAY status to internal status
+        $internalStatus = match ($status) {
+            'success' => 'success',
+            'failed' => 'failed',
+            default => 'processing',
+        };
+
+        return [
+            'event' => 'payment.status',
+            'reference' => $reference,
+            'status' => $internalStatus,
+            'amount' => (float) Arr::get($payload, 'amount', 0),
+            'currency' => Arr::get($payload, 'currency', 'NGN'),
+            'customer_email' => Arr::get($payload, 'customer_email', ''),
+            'student_id' => Arr::get($payload, 'student_id'),
+            'course_id' => Arr::get($payload, 'course_id'),
+            'invoice_id' => Arr::get($payload, 'invoice_id'),
+            'metadata' => Arr::get($payload, 'metadata', []),
+            'gateway_response' => $payload,
+        ];
+    }
+
+    private function integrationKey(): string
+    {
+        return (string) config('services.tgipay.integration_key', env('TGIPAY_INTEGRATION_KEY'));
+    }
+
+    private function baseUrl(): string
+    {
+        return (string) config('services.tgipay.base_url', 'https://integration-service.tgipay.com/integration/api/v1');
+    }
+}

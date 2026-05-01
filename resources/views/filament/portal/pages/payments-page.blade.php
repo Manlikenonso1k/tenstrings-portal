@@ -48,10 +48,25 @@
             class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
         >
             <img alt="Pay Online" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
-            <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Pay Online</div>
+            <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Paystack Titan</div>
             <div class="text-xs text-gray-500">
                 @if ($pendingAdvice)
-                    Pay ₦{{ number_format((float) $pendingAdvice->amount, 2) }} via Paystack-Titan
+                    Pay ₦{{ number_format((float) $pendingAdvice->amount, 2) }}
+                @else
+                    Generate a pending advice to enable payment
+                @endif
+            </div>
+        </div>
+
+        <div
+            onclick="initTgiPayPayment()"
+            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
+        >
+            <img alt="TGIPAY" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
+            <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">TGIPAY</div>
+            <div class="text-xs text-gray-500">
+                @if ($pendingAdvice)
+                    Pay ₦{{ number_format((float) $pendingAdvice->amount, 2) }}
                 @else
                     Generate a pending advice to enable payment
                 @endif
@@ -69,6 +84,11 @@
         @csrf
     </form>
 
+    <form id="tgipay-payment-form" method="POST" action="{{ route('tgipay.initiate') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="advice_id" id="tgipay-advice-id" value="{{ $pendingAdvice?->id ?? '' }}">
+    </form>
+
     <script>
         function initPaystackPayment() {
             const hasPendingAdvice = @json((bool) $pendingAdvice);
@@ -78,6 +98,16 @@
             }
 
             document.getElementById('paystack-payment-form').submit();
+        }
+
+        function initTgiPayPayment() {
+            const hasPendingAdvice = @json((bool) $pendingAdvice);
+
+            if (!hasPendingAdvice) {
+                return;
+            }
+
+            document.getElementById('tgipay-payment-form').submit();
         }
     </script>
 

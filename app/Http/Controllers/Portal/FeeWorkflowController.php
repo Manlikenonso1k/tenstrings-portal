@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\PaymentAdvice;
 use App\Models\StudentCourseFee;
+use App\Services\Payments\FeeCalculationService;
 use App\Services\Payments\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class FeeWorkflowController extends Controller
 {
     public function __construct(
         private readonly PaymentService $paymentService,
+        private readonly FeeCalculationService $feeCalculationService,
     ) {
     }
 
@@ -85,7 +87,18 @@ class FeeWorkflowController extends Controller
             ]);
         }
 
-        $amount = (float) ($fee->outstanding_balance > 0 ? $fee->outstanding_balance : $fee->total_course_fee);
+        // Calculate required amount based on course duration
+        $course = $fee->course;
+        $totalCourseFee = (float) $fee->total_course_fee;
+        $outstandingBalance = (float) $fee->outstanding_balance;
+
+        if ($outstandingBalance > 0) {
+            // If there's outstanding balance, use that
+            $amount = $outstandingBalance;
+        } else {
+            // Otherwise calculate based on course duration rules
+            $amount = $this->feeCalculationService->calculateRequiredAmount($course, $totalCourseFee);
+        }
 
         if ($amount <= 0) {
             return back()->withErrors([

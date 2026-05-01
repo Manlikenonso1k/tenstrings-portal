@@ -8,6 +8,7 @@ use App\Models\PaymentAdvice;
 use App\Models\Student;
 use App\Models\StudentCourseFee;
 use App\Services\Payments\Gateways\PaystackTitanGateway;
+use App\Services\Payments\Gateways\TgiPayGateway;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -237,10 +238,11 @@ class PaymentService
         return $invoice;
     }
 
-    public function gateway(string $gateway): PaystackTitanGateway
+    public function gateway(string $gateway): PaystackTitanGateway|TgiPayGateway
     {
         return match (strtolower($gateway)) {
             'paystack', 'paystack_titan', 'paystack-titan' => app(PaystackTitanGateway::class),
+            'tgipay', 'tgi-pay', 'tgi_pay' => app(TgiPayGateway::class),
             default => throw new RuntimeException('Unsupported gateway: ' . $gateway),
         };
     }
