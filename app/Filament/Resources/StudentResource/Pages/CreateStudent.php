@@ -30,7 +30,8 @@ class CreateStudent extends CreateRecord
 
         // Create a payment advice snapshot so the portal shows a balance
         $quarterResolver = app(QuarterResolver::class);
-        $currentQuarter = $quarterResolver->currentQuarter();
+        $startDate = $student->start_date ?? now();
+        $currentQuarter = $quarterResolver->currentQuarter($startDate->toImmutable());
         [$quarterLabel, $quarterYear] = explode('-', $currentQuarter, 2);
         $quarterMonth = match ($quarterLabel) {
             'Q1' => 2,
