@@ -241,6 +241,7 @@ class StudentImporter extends Importer
             'start_date' => $startDate->toDateString(),
             'registration_date' => $startDate->toDateString(),
             'status' => 'active',
+            'created_via' => 'csv',
             'user_id' => $user->id,
             'fees_paid' => $feesPaid,
             'balance_due' => $balanceDue,

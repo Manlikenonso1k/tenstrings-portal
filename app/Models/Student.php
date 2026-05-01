@@ -45,6 +45,7 @@ class Student extends Model
         'start_date',
         'registration_date',
         'status',
+        'created_via',
         'guardian_name',
         'guardian_phone',
         'guardian_email',
