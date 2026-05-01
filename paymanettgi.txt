@@ -1,1 +1,43 @@
-Agent Prompt: Fixing Student Creation Logic & Account LinkingObjective:Fix the "No linked user account" error and the "0 Balance" issue when students are created manually via the Filament Admin Backend. Ensure that automated debt logic is applied correctly to manual entries but ignored for CSV imports.1. Fix: Automated User Account CreationProblem: Manual student creation in Filament does not generate a corresponding record in the users table.Task:Implement a Model Observer or use Filament's afterCreate hook on the Student Resource.When a Student is created, automatically create a record in the users table using the student's email.Assign a default password (e.g., password123) and link the user_id to the students table.Ensure the password reset functionality is accessible once the link is established.2. Fix: Automated "Amount Owed" LogicProblem: Newly created students show 0 balance because no fee record is generated upon enrollment.Task:Modify the Student creation logic: As soon as a course_id is assigned to a student via the dashboard, the system must query the total_fee from the courses table.Create an entry in the invoices or payments table marked as unpaid with that total fee amount.The Logic: If created_via is 'dashboard', set amount_owed = course_fee.3. Fix: Protect CSV Import LogicRequirement: CSV imports carry their own "Paid" and "Owed" data which must not be overwritten by the automated logic.Task:Add a check in the creation logic: If the student is being created via the CSV Importer, skip the automated fee generation.The system must trust the amount_paid and amount_owed values provided in the CSV file for imported students.4. Validation & TGIPAY Testing ReadinessConfirm: After these fixes, a manually created student should be able to log in and see a "Balance Owed" matching their course fee.TGIPAY Integration: Verify that the "Pay Online" (TGIPAY) button correctly pulls this "Balance Owed" as the transaction amount.Test Case:Create a student for a 1-year course ($X$).Student logs in; dashboard should show $X$ owing.Student clicks "Pay Online" via TGIPAY; the checkout amount should show 70% of $X$ (as per our previous logic).
+We are fixing the Student Portal payment page. Conceptually, this is very simple: The course fee is stored in the courses table. When an admin creates a new student in the Filament backend (/admin/students/create), the student should immediately owe that course fee.
+
+The Task:
+
+Find the Hook: Go to the Filament StudentResource. Open the "Create" page logic (likely CreateStudent.php or inside the Resource hooks).
+
+Grab the Fee: Use the afterCreate hook. When the student is saved, grab their course_id. Query the courses table to get the total_fee for that exact course.
+
+Create the Snapshot (Debt): Create a new record in the exact table that the student portal's /portal/payments-page reads from (e.g., PaymentAdvice, Fee, or Invoice).
+
+Set student_id = the new student.
+
+Set amount_owed = the total_fee you just grabbed from the course.
+
+Set status = 'unpaid' or 'pending'.
+
+No CSV Overwrites: If you see that this student is being created via a CSV import, abort this hook. CSVs carry their own financial data. Only run this if the student is created manually via the Filament form.
+
+Code Example for the Hook:
+
+PHP
+protected function afterCreate(): void
+{
+    $student = $this->record;
+
+    // Grab the course fee
+    $course = \App\Models\Course::find($student->course_id);
+    
+    if ($course) {
+        // Create the owing record so the portal shows a balance
+        \App\Models\PaymentAdvice::create([
+            'student_id' => $student->id,
+            'amount' => $course->total_fee, // The snapshot of the price
+            'status' => 'pending',
+            'description' => $course->name . ' - Tuition Fee'
+        ]);
+    }
+}
+Note for Agent: Ensure the model names (PaymentAdvice, Course) match the actual database schema.
+
+That cuts out all the complex calculations and just tells the agent: "Look at the course price, attach it to the student, and display it on the payment page."
+
+That should close the loop immediately. Let me know when the agent deploys this!
