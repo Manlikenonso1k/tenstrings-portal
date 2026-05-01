@@ -144,6 +144,15 @@ Use full artisan commands only:
 - ❌ `&& php artisan ...` (invalid at start of line)
 - ❌ `route:list` (must be `php artisan route:list`)
 
+## Payment System
+
+- Payment records are linked to student enrollments
+- Each payment records the amount, date, and enrollment reference
+- Outstanding balance calculation: `Total Tuition - Sum of Payments`
+- Payment validation prevents overpayment (amount cannot exceed outstanding balance)
+- All payment records are immutable for audit trail purposes
+- Student portal displays payment history and current outstanding balance
+
 ## Next Recommended Additions
 
 - PDF/Excel exports for reports and transcripts
