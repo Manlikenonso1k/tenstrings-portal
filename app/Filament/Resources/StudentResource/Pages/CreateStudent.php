@@ -35,5 +35,43 @@ class CreateStudent extends CreateRecord
             'status' => 'pending',
             'generated_at' => now(),
         ]);
+        
+        // Ensure a StudentCourseFee exists (so fee generation and outstanding calculations work)
+        $existingFee = \App\Models\StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        if (! $existingFee) {
+            $courseFee = (float) ($course->course_fee ?? 0);
+            $durationMonths = (int) ($course->duration_months ?? 0);
+
+            if ($durationMonths < 12) {
+                $requiredAmount = $courseFee;
+            } else {
+                $requiredAmount = round($courseFee * 0.7, 2);
+            }
+
+            \App\Models\StudentCourseFee::query()->create([
+                'student_id' => $student->id,
+                'course_id' => $course->id,
+                'total_course_fee' => $courseFee,
+                'amount_paid' => 0,
+                'outstanding_balance' => $requiredAmount,
+                'status' => 'pending',
+            ]);
+        }
+
+        // Update student's financial snapshot from StudentCourseFee totals
+        $totals = \App\Models\StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->selectRaw('COALESCE(SUM(total_course_fee), 0) as total_fee, COALESCE(SUM(amount_paid), 0) as paid, COALESCE(SUM(outstanding_balance), 0) as outstanding')
+            ->first();
+
+        $student->update([
+            'total_balance' => (float) ($totals->total_fee ?? 0),
+            'fees_paid' => (float) ($totals->paid ?? 0),
+            'balance_due' => (float) ($totals->outstanding ?? 0),
+        ]);
     }
 }
