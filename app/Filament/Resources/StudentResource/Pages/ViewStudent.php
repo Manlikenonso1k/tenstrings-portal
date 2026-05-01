@@ -5,6 +5,7 @@ namespace App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\User;
 use App\Services\Payments\PaymentService;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
@@ -128,13 +129,25 @@ class ViewStudent extends ViewRecord
                     $user = $this->record->user;
 
                     if (! $user) {
-                        Notification::make()
-                            ->title('No linked user account')
-                            ->body('This student does not have a linked login account yet.')
-                            ->danger()
-                            ->send();
+                        $email = strtolower(trim((string) $this->record->email));
 
-                        return;
+                        if ($email !== '') {
+                            $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
+                        }
+
+                        if (! $user) {
+                            $user = User::query()->create([
+                                'name' => trim(($this->record->first_name ?? '') . ' ' . ($this->record->last_name ?? '')),
+                                'email' => $email,
+                                'phone' => (string) ($this->record->phone ?? 'N/A'),
+                                'role' => 'student',
+                                'password' => Hash::make((string) $data['new_password']),
+                            ]);
+                        }
+
+                        $this->record->forceFill([
+                            'user_id' => $user->id,
+                        ])->save();
                     }
 
                     $user->forceFill([
