@@ -47,6 +47,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/portal/payments/outstanding', [PaymentController::class, 'payOutstanding'])
         ->name('portal.payments.pay_outstanding');
 
+    Route::get('/fees/pay/{gateway}', [FeeWorkflowController::class, 'paymentStep'])
+        ->name('fees.pay.step');
+
+    Route::post('/fees/pay/{gateway}', [FeeWorkflowController::class, 'submitPayment'])
+        ->name('fees.pay.submit');
+
     // TGIPAY payment routes
     Route::post('/tgipay/initiate', [TgiPayController::class, 'initiatePayment'])
         ->name('tgipay.initiate');

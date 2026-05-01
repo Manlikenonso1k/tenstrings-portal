@@ -43,35 +43,35 @@
             <div class="text-xs text-gray-500">View current generated advice</div>
         </a>
 
-        <div
-            onclick="initPaystackPayment()"
-            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
+        <a
+            href="{{ $pendingAdvice ? route('fees.pay.step', 'paystack-titan') : route('fees.generate') }}"
+            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70 pointer-events-none' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
         >
             <img alt="Pay Online" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
             <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Paystack Titan</div>
             <div class="text-xs text-gray-500">
                 @if ($pendingAdvice)
-                    Pay ₦{{ number_format((float) $pendingAdvice->amount, 2) }}
+                    Continue to amount step
                 @else
                     Generate a pending advice to enable payment
                 @endif
             </div>
-        </div>
+        </a>
 
-        <div
-            onclick="initTgiPayPayment()"
-            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
+        <a
+            href="{{ $pendingAdvice ? route('fees.pay.step', 'tgipay') : route('fees.generate') }}"
+            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70 pointer-events-none' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
         >
             <img alt="TGIPAY" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
             <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">TGIPAY</div>
             <div class="text-xs text-gray-500">
                 @if ($pendingAdvice)
-                    Pay ₦{{ number_format((float) $pendingAdvice->amount, 2) }}
+                    Continue to amount step
                 @else
                     Generate a pending advice to enable payment
                 @endif
             </div>
-        </div>
+        </a>
 
         <a href="{{ route('fees.receipts') }}" class="bg-white rounded-md cursor-pointer h-full border-2 p-6 transform duration-200 hover:border-primary-500 hover:scale-[1.02] pb-2">
             <img alt="Print Receipt" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/printer.svg') }}">
@@ -79,37 +79,6 @@
             <div class="text-xs text-gray-500">Download previous receipts</div>
         </a>
     </div>
-
-    <form id="paystack-payment-form" method="POST" action="{{ route('fees.pay-online') }}" class="hidden">
-        @csrf
-    </form>
-
-    <form id="tgipay-payment-form" method="POST" action="{{ route('tgipay.initiate') }}" class="hidden">
-        @csrf
-        <input type="hidden" name="advice_id" id="tgipay-advice-id" value="{{ $pendingAdvice?->id ?? '' }}">
-    </form>
-
-    <script>
-        function initPaystackPayment() {
-            const hasPendingAdvice = @json((bool) $pendingAdvice);
-
-            if (!hasPendingAdvice) {
-                return;
-            }
-
-            document.getElementById('paystack-payment-form').submit();
-        }
-
-        function initTgiPayPayment() {
-            const hasPendingAdvice = @json((bool) $pendingAdvice);
-
-            if (!hasPendingAdvice) {
-                return;
-            }
-
-            document.getElementById('tgipay-payment-form').submit();
-        }
-    </script>
 
     <x-filament::section>
         <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">

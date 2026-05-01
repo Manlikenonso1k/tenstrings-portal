@@ -48,6 +48,44 @@ class FeeWorkflowController extends Controller
         ]);
     }
 
+    public function paymentStep(Request $request, string $gateway): View|RedirectResponse
+    {
+        $student = $request->user()?->student;
+
+        if (! $student) {
+            abort(403);
+        }
+
+        $pendingAdvice = PaymentAdvice::query()
+            ->with('course')
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->latest('id')
+            ->first();
+
+        if (! $pendingAdvice) {
+            return redirect()->route('fees.generate')
+                ->withErrors(['payment' => 'No pending advice found. Generate fees first.']);
+        }
+
+        $outstandingBalance = (float) StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->sum('outstanding_balance');
+
+        if ($outstandingBalance <= 0) {
+            $outstandingBalance = (float) $pendingAdvice->amount;
+        }
+
+        return view('fees.pay-step', [
+            'student' => $student,
+            'gateway' => $gateway,
+            'gatewayLabel' => $this->gatewayLabel($gateway),
+            'pendingAdvice' => $pendingAdvice,
+            'outstandingBalance' => $outstandingBalance,
+            'defaultAmount' => (float) $pendingAdvice->amount,
+        ]);
+    }
+
     public function generateAdvice(Request $request): RedirectResponse
     {
         $student = $request->user()?->student;
@@ -121,6 +159,90 @@ class FeeWorkflowController extends Controller
             ->with('status', 'Payment advice generated successfully.');
     }
 
+    public function submitPayment(Request $request, string $gateway): RedirectResponse
+    {
+        $student = $request->user()?->student;
+
+        if (! $student) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $pendingAdvice = PaymentAdvice::query()
+            ->with('course')
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->latest('id')
+            ->first();
+
+        if (! $pendingAdvice) {
+            return redirect()->route('fees.generate')
+                ->withErrors(['payment' => 'No pending advice found. Generate fees first.']);
+        }
+
+        $outstandingBalance = (float) StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->sum('outstanding_balance');
+
+        if ($outstandingBalance <= 0) {
+            $outstandingBalance = (float) $pendingAdvice->amount;
+        }
+
+        $amount = (float) $validated['amount'];
+
+        if ($amount > $outstandingBalance) {
+            return back()->withErrors([
+                'amount' => 'Amount cannot be greater than outstanding balance.',
+            ]);
+        }
+
+        if (! is_string($student->email) || ! filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
+            return back()->withErrors([
+                'amount' => 'Cannot start payment because your student email is missing or invalid. Please contact admin.',
+            ]);
+        }
+
+        $primaryFee = StudentCourseFee::query()
+            ->where('student_id', $student->id)
+            ->where('outstanding_balance', '>', 0)
+            ->orderByDesc('outstanding_balance')
+            ->first();
+
+        $result = $this->paymentService->initializePayment($gateway, [
+            'student_id' => (int) $student->id,
+            'amount' => $amount,
+            'invoice_amount' => $outstandingBalance,
+            'course_id' => $pendingAdvice->course_id ?: $primaryFee?->course_id,
+            'quarter_name' => $pendingAdvice->quarter_name,
+            'callback_url' => route('portal.payments.callback'),
+            'metadata' => [
+                'payment_advice_id' => $pendingAdvice->id,
+                'advice_year' => $pendingAdvice->year,
+                'advice_quarter_month' => $pendingAdvice->quarter_month,
+            ],
+        ]);
+
+        $authorizationUrl = data_get($result, 'gateway_response.body.data.authorization_url');
+
+        if (! is_string($authorizationUrl) || $authorizationUrl === '') {
+            $gatewayMessage = (string) (
+                data_get($result, 'gateway_response.body.message')
+                ?? data_get($result, 'gateway_response.body.data.message')
+                ?? data_get($result, 'gateway_response.body.error')
+                ?? 'Unable to start payment right now. Please try again.'
+            );
+
+            return back()->withErrors([
+                'amount' => $gatewayMessage,
+            ]);
+        }
+
+        return redirect()->away($authorizationUrl);
+    }
+
     public function currentAdvice(Request $request): View
     {
         $student = $request->user()?->student;
@@ -144,59 +266,7 @@ class FeeWorkflowController extends Controller
 
     public function payOnline(Request $request): RedirectResponse
     {
-        $student = $request->user()?->student;
-
-        if (! $student) {
-            abort(403);
-        }
-
-        $advice = PaymentAdvice::query()
-            ->where('student_id', $student->id)
-            ->where('status', 'pending')
-            ->latest('id')
-            ->first();
-
-        if (! $advice) {
-            return redirect()->route('fees.generate')
-                ->withErrors(['payment' => 'No pending advice found. Generate fees first.']);
-        }
-
-        if (! is_string($student->email) || ! filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
-            return back()->withErrors([
-                'payment' => 'Cannot start payment because your student email is missing or invalid. Please contact admin.',
-            ]);
-        }
-
-        $result = $this->paymentService->initializePayment('paystack-titan', [
-            'student_id' => (int) $student->id,
-            'amount' => (float) $advice->amount,
-            'invoice_amount' => (float) $advice->amount,
-            'course_id' => $advice->course_id,
-            'quarter_name' => $advice->quarter_name,
-            'callback_url' => route('portal.payments.callback'),
-            'metadata' => [
-                'payment_advice_id' => $advice->id,
-                'advice_year' => $advice->year,
-                'advice_quarter_month' => $advice->quarter_month,
-            ],
-        ]);
-
-        $authorizationUrl = data_get($result, 'gateway_response.body.data.authorization_url');
-
-        if (! is_string($authorizationUrl) || $authorizationUrl === '') {
-            $gatewayMessage = (string) (
-                data_get($result, 'gateway_response.body.message')
-                ?? data_get($result, 'gateway_response.body.data.message')
-                ?? data_get($result, 'gateway_response.body.error')
-                ?? 'Unable to start payment right now. Please try again.'
-            );
-
-            return back()->withErrors([
-                'payment' => $gatewayMessage,
-            ]);
-        }
-
-        return redirect()->away($authorizationUrl);
+        return $this->submitPayment($request, 'paystack-titan');
     }
 
     public function receipts(Request $request): View
@@ -226,6 +296,15 @@ class FeeWorkflowController extends Controller
             8 => 'Q3-' . $year,
             11 => 'Q4-' . $year,
             default => 'Q1-' . $year,
+        };
+    }
+
+    private function gatewayLabel(string $gateway): string
+    {
+        return match (strtolower($gateway)) {
+            'paystack', 'paystack-titan', 'paystack_titan' => 'Paystack Titan',
+            'tgipay', 'tgi-pay', 'tgi_pay' => 'TGIPAY',
+            default => ucfirst(str_replace(['-', '_'], ' ', $gateway)),
         };
     }
 }

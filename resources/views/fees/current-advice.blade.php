@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Current Payment Advice</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-800">
 <div class="max-w-4xl mx-auto p-6 md:p-10">
@@ -56,11 +55,9 @@
             </div>
         </div>
 
-        <div class="mt-6 flex gap-3">
-            <form method="POST" action="{{ route('fees.pay-online') }}">
-                @csrf
-                <button type="submit" class="rounded-md bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">Pay Online</button>
-            </form>
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{{ route('fees.pay.step', 'paystack-titan') }}" class="rounded-md bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">Pay with Paystack Titan</a>
+            <a href="{{ route('fees.pay.step', 'tgipay') }}" class="rounded-md bg-slate-800 text-white px-4 py-2 hover:bg-slate-900">Pay with TGIPAY</a>
             <button onclick="window.print()" class="rounded-md border border-slate-300 px-4 py-2 hover:bg-slate-100">Print Advice</button>
         </div>
     @endif
