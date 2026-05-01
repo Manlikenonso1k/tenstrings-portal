@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StudentResource\Pages;
 
 use App\Filament\Resources\StudentResource;
+use App\Services\Payments\QuarterResolver;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateStudent extends CreateRecord
@@ -28,9 +29,22 @@ class CreateStudent extends CreateRecord
         }
 
         // Create a payment advice snapshot so the portal shows a balance
+        $quarterResolver = app(QuarterResolver::class);
+        $currentQuarter = $quarterResolver->currentQuarter();
+        [$quarterLabel, $quarterYear] = explode('-', $currentQuarter, 2);
+        $quarterMonth = match ($quarterLabel) {
+            'Q1' => 2,
+            'Q2' => 5,
+            'Q3' => 8,
+            default => 11,
+        };
+
         \App\Models\PaymentAdvice::query()->create([
             'student_id' => $student->id,
             'course_id' => $course->id,
+            'quarter_month' => $quarterMonth,
+            'year' => (int) $quarterYear,
+            'quarter_name' => $currentQuarter,
             'amount' => (float) ($course->course_fee ?? 0),
             'status' => 'pending',
             'generated_at' => now(),
