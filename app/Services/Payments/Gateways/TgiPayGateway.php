@@ -69,7 +69,7 @@ class TgiPayGateway implements PaymentGatewayInterface
         Log::info('TGIPAY payment verification request', [
             'trace_id' => $traceId,
             'reference' => $reference,
-            'endpoint' => $this->baseUrl() . '/payment/verify/' . $reference,
+            'endpoint' => $this->baseUrl() . '/payment/status/' . $reference,
             'has_integration_key' => $this->integrationKey() !== '',
         ]);
 
@@ -78,7 +78,7 @@ class TgiPayGateway implements PaymentGatewayInterface
         ])
             ->acceptJson()
             ->timeout(30)
-            ->get($this->baseUrl() . '/payment/verify/' . $reference);
+            ->get($this->baseUrl() . '/payment/status/' . $reference);
 
         if (! $response->successful()) {
             Log::warning('TGIPAY payment verification rejected', [
@@ -100,7 +100,7 @@ class TgiPayGateway implements PaymentGatewayInterface
      * Handle webhook callback from TGIPAY.
      *
      * Expected payload parameters:
-     * - status: 'success' or 'failed'
+     * - status: 'success', 'failed', 'completed', or related final status
      * - ref: transaction reference
      */
     public function handleWebhook(array $payload): array
@@ -110,8 +110,8 @@ class TgiPayGateway implements PaymentGatewayInterface
 
         // Map TGIPAY status to internal status
         $internalStatus = match ($status) {
-            'success' => 'success',
-            'failed' => 'failed',
+            'success', 'successful', 'completed', 'paid' => 'success',
+            'failed', 'cancelled', 'canceled' => 'failed',
             default => 'processing',
         };
 

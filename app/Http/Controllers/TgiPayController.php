@@ -156,7 +156,7 @@ class TgiPayController extends Controller
      * Handle TGIPAY payment callback.
      *
      * Expected parameters:
-     * - status: 'success' or 'failed'
+     * - status: 'success', 'failed', 'completed', or related final status
      * - ref: transaction reference
      */
     public function callback(Request $request): RedirectResponse
@@ -184,10 +184,17 @@ class TgiPayController extends Controller
         try {
             // Verify payment with TGIPAY
             $verifyResponse = $this->tgiPayGateway->verifyPayment($reference, $traceId);
+            $verifiedStatus = strtolower((string) data_get($verifyResponse, 'body.data.paymentStatus', data_get($verifyResponse, 'body.data.status', $status)));
+            $finalStatus = match ($verifiedStatus) {
+                'success', 'successful', 'completed', 'paid' => 'success',
+                'failed', 'cancelled', 'canceled' => 'failed',
+                default => 'processing',
+            };
 
             Log::info('TGIPAY payment callback received', [
                 'reference' => $reference,
                 'status' => $status,
+                'verified_status' => $verifiedStatus,
                 'verify_ok' => $verifyResponse['ok'],
             ]);
 
@@ -206,7 +213,7 @@ class TgiPayController extends Controller
                     ->with('error', 'Payment record not found.');
             }
 
-            if ($status === 'success') {
+            if ($finalStatus === 'success') {
                 $payment->update([
                     'status' => 'success',
                     'payment_status' => 'paid',
@@ -229,7 +236,9 @@ class TgiPayController extends Controller
 
                 return redirect('/portal/payments')
                     ->with('status', 'Payment successful. Your payment advice has been updated.');
-            } else {
+            }
+
+            if ($finalStatus === 'failed') {
                 $payment->update([
                     'status' => 'failed',
                     'payment_status' => 'failed',
@@ -245,6 +254,16 @@ class TgiPayController extends Controller
                 return redirect('/portal/payments')
                     ->with('error', 'Payment failed. Please try again.');
             }
+
+            $payment->update([
+                'status' => 'processing',
+                'payment_status' => 'pending',
+                'gateway_response' => $verifyResponse['body'] ?? [],
+                'processed_at' => now(),
+            ]);
+
+            return redirect('/portal/payments')
+                ->with('status', 'Payment is still processing. Please check again shortly.');
         } catch (\Exception $e) {
             Log::error('TGIPAY callback processing exception', [
                 'reference' => $reference,

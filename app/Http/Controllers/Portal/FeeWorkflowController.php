@@ -76,6 +76,8 @@ class FeeWorkflowController extends Controller
             $outstandingBalance = (float) $pendingAdvice->amount;
         }
 
+        $isTgiPay = in_array(strtolower($gateway), ['tgipay', 'tgi-pay', 'tgi_pay'], true);
+
         return view('fees.pay-step', [
             'student' => $student,
             'gateway' => $gateway,
@@ -83,6 +85,8 @@ class FeeWorkflowController extends Controller
             'pendingAdvice' => $pendingAdvice,
             'outstandingBalance' => $outstandingBalance,
             'defaultAmount' => (float) $pendingAdvice->amount,
+            'isTgiPay' => $isTgiPay,
+            'submitRoute' => $isTgiPay ? route('tgipay.initiate') : route('fees.pay.submit', $gateway),
         ]);
     }
 

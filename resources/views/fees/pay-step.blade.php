@@ -378,27 +378,41 @@
                 <p class="muted" style="margin:0;font-size:14px;font-weight:600;">Payment form</p>
                 <h2 class="form-title" style="margin-top:4px;">Amount to Pay</h2>
 
-                <form action="{{ route('fees.pay.submit', $gateway) }}" method="POST">
+                <form action="{{ $submitRoute }}" method="POST">
                     @csrf
 
-                    <div class="form-group">
-                        <label for="amount" class="form-label">Amount to Pay</label>
-                        <input
-                            id="amount"
-                            name="amount"
-                            type="number"
-                            min="1"
-                            max="{{ (float) $outstandingBalance }}"
-                            step="0.01"
-                            value="{{ old('amount', $defaultAmount) }}"
-                            class="input"
-                            required
-                        >
-                        <div class="helper">Pre-filled with the outstanding balance for a faster checkout.</div>
-                    </div>
+                    @if ($isTgiPay)
+                        <input type="hidden" name="advice_id" value="{{ $pendingAdvice->id }}">
+                    @endif
+
+                    @if (! $isTgiPay)
+                        <div class="form-group">
+                            <label for="amount" class="form-label">Amount to Pay</label>
+                            <input
+                                id="amount"
+                                name="amount"
+                                type="number"
+                                min="1"
+                                max="{{ (float) $outstandingBalance }}"
+                                step="0.01"
+                                value="{{ old('amount', $defaultAmount) }}"
+                                class="input"
+                                required
+                            >
+                            <div class="helper">Pre-filled with the outstanding balance for a faster checkout.</div>
+                        </div>
+                    @else
+                        <div class="form-group">
+                            <div class="helper" style="margin-top:0; font-size: 14px; color:#0f766e; background:#f0fdfa; border:1px solid #ccfbf1; padding:14px 16px; border-radius:16px;">
+                                TGIPAY will create a payment session from your pending advice and redirect you to the hosted checkout page.
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="actions">
-                        <button type="submit" class="btn btn-primary">Continue to {{ $gatewayLabel }}</button>
+                        <button type="submit" class="btn btn-primary">
+                            {{ $isTgiPay ? 'Continue to TGIPAY Checkout' : 'Continue to ' . $gatewayLabel }}
+                        </button>
                         <a href="{{ route('fees.generate') }}" class="btn btn-secondary">Back to Generate Fees</a>
                     </div>
                 </form>
