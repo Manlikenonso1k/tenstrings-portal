@@ -14,9 +14,9 @@
             --muted: #64748b;
             --line: #e2e8f0;
             --line-strong: #cbd5e1;
-            --blue: #2563eb;
-            --blue-strong: #1d4ed8;
-            --blue-soft: #dbeafe;
+            --accent: {{ $gateway === 'tgipay' ? '#0f766e' : '#2563eb' }};
+            --accent-strong: {{ $gateway === 'tgipay' ? '#115e59' : '#1d4ed8' }};
+            --accent-soft: {{ $gateway === 'tgipay' ? '#ccfbf1' : '#dbeafe' }};
             --shadow: 0 24px 64px rgba(15, 23, 42, 0.08);
             --radius-xl: 28px;
             --radius-lg: 22px;
@@ -247,9 +247,9 @@
         }
 
         .input:focus {
-            border-color: var(--blue);
+            border-color: var(--accent);
             background: #fff;
-            box-shadow: 0 0 0 4px var(--blue-soft);
+            box-shadow: 0 0 0 4px var(--accent-soft);
         }
 
         .helper {
@@ -279,14 +279,14 @@
         }
 
         .btn-primary {
-            border: 1px solid var(--blue);
-            background: var(--blue);
+            border: 1px solid var(--accent);
+            background: var(--accent);
             color: #fff;
-            box-shadow: 0 16px 32px rgba(37, 99, 235, 0.18);
+            box-shadow: 0 16px 32px {{ $gateway === 'tgipay' ? 'rgba(15, 118, 110, 0.18)' : 'rgba(37, 99, 235, 0.18)' }};
         }
 
         .btn-primary:hover {
-            background: var(--blue-strong);
+            background: var(--accent-strong);
             transform: translateY(-1px);
         }
 
@@ -324,9 +324,9 @@
     <div class="topbar">
         <div>
             <p class="eyebrow">Two-step payment</p>
-            <h1>Paystack Titan Payment</h1>
+            <h1>{{ $gatewayLabel }} Payment</h1>
             <p class="subtitle">
-                Review the advice below, choose the amount to pay, and continue to the secure payment gateway.
+                Review the advice below, choose the amount to pay, and continue to the secure {{ $gatewayLabel }} payment gateway.
             </p>
         </div>
 
@@ -351,7 +351,7 @@
                         <p class="muted" style="margin:0;font-size:14px;font-weight:600;">Student summary</p>
                         <h2 class="card-title">Payment overview</h2>
                     </div>
-                    <div class="badge">Secure</div>
+                    <div class="badge">{{ $gatewayLabel }}</div>
                 </div>
 
                 <div class="summary">
@@ -398,7 +398,7 @@
                     </div>
 
                     <div class="actions">
-                        <button type="submit" class="btn btn-primary">Continue to Paystack Titan</button>
+                        <button type="submit" class="btn btn-primary">Continue to {{ $gatewayLabel }}</button>
                         <a href="{{ route('fees.generate') }}" class="btn btn-secondary">Back to Generate Fees</a>
                     </div>
                 </form>
