@@ -19,6 +19,7 @@ class TgiPayGateway implements PaymentGatewayInterface
      */
     public function initializePayment(array $data): array
     {
+        $traceId = (string) ($data['trace_id'] ?? 'tgipay-init-missing-trace');
         $payload = [
             'customerFirstName' => $data['customer_first_name'] ?? '',
             'customerLastName' => $data['customer_last_name'] ?? '',
@@ -26,6 +27,14 @@ class TgiPayGateway implements PaymentGatewayInterface
             'amount' => (float) $data['amount'],
             'transactionReference' => $data['reference'],
         ];
+
+        Log::info('TGIPAY initialize payment request', [
+            'trace_id' => $traceId,
+            'reference' => $payload['transactionReference'],
+            'endpoint' => $this->baseUrl() . '/payment/initiate',
+            'has_integration_key' => $this->integrationKey() !== '',
+            'amount' => $payload['amount'],
+        ]);
 
         $response = Http::withHeaders([
             'integration-key' => $this->integrationKey(),
@@ -36,6 +45,7 @@ class TgiPayGateway implements PaymentGatewayInterface
 
         if (! $response->successful()) {
             Log::warning('TGIPAY initialize payment rejected', [
+                'trace_id' => $traceId,
                 'status' => $response->status(),
                 'body' => $response->json(),
             ]);
@@ -51,8 +61,17 @@ class TgiPayGateway implements PaymentGatewayInterface
     /**
      * Get payment URL from TGIPAY after initialization.
      */
-    public function getPaymentUrl(string $transactionReference): array
+    public function getPaymentUrl(string $transactionReference, string $traceId = ''): array
     {
+        $traceId = $traceId !== '' ? $traceId : 'tgipay-url-' . $transactionReference;
+
+        Log::info('TGIPAY payment URL lookup request', [
+            'trace_id' => $traceId,
+            'reference' => $transactionReference,
+            'endpoint' => $this->baseUrl() . '/payment/status/' . $transactionReference,
+            'has_integration_key' => $this->integrationKey() !== '',
+        ]);
+
         $response = Http::withHeaders([
             'integration-key' => $this->integrationKey(),
         ])
@@ -62,6 +81,7 @@ class TgiPayGateway implements PaymentGatewayInterface
 
         if (! $response->successful()) {
             Log::warning('TGIPAY payment URL lookup rejected', [
+                'trace_id' => $traceId,
                 'reference' => $transactionReference,
                 'status' => $response->status(),
                 'body' => $response->json(),
@@ -78,8 +98,17 @@ class TgiPayGateway implements PaymentGatewayInterface
     /**
      * Verify payment status with TGIPAY.
      */
-    public function verifyPayment(string $reference): array
+    public function verifyPayment(string $reference, string $traceId = ''): array
     {
+        $traceId = $traceId !== '' ? $traceId : 'tgipay-verify-' . $reference;
+
+        Log::info('TGIPAY payment verification request', [
+            'trace_id' => $traceId,
+            'reference' => $reference,
+            'endpoint' => $this->baseUrl() . '/payment/verify/' . $reference,
+            'has_integration_key' => $this->integrationKey() !== '',
+        ]);
+
         $response = Http::withHeaders([
             'integration-key' => $this->integrationKey(),
         ])
@@ -89,6 +118,7 @@ class TgiPayGateway implements PaymentGatewayInterface
 
         if (! $response->successful()) {
             Log::warning('TGIPAY payment verification rejected', [
+                'trace_id' => $traceId,
                 'reference' => $reference,
                 'status' => $response->status(),
                 'body' => $response->json(),

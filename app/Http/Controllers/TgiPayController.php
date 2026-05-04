@@ -56,6 +56,15 @@ class TgiPayController extends Controller
         try {
             // Step 1: Generate reference
             $reference = 'TGIPAY-' . date('Ymdhis') . '-' . $student->id;
+            $traceId = 'tgipay-init-' . $reference;
+
+            Log::withContext([
+                'trace_id' => $traceId,
+                'gateway' => 'tgipay',
+                'reference' => $reference,
+                'student_id' => $student->id,
+                'advice_id' => $advice->id,
+            ]);
 
             // Step 2: Create Payment record to track the transaction
             $payment = Payment::query()->create([
@@ -89,6 +98,7 @@ class TgiPayController extends Controller
                 'email' => $student->email,
                 'amount' => (float) $advice->amount,
                 'reference' => $reference,
+                'trace_id' => $traceId,
             ]);
 
             if (! $initResponse['ok']) {
@@ -167,6 +177,13 @@ class TgiPayController extends Controller
     {
         $status = (string) $request->query('status', '');
         $reference = (string) $request->query('ref', '');
+        $traceId = $reference !== '' ? 'tgipay-callback-' . $reference : 'tgipay-callback-missing-reference';
+
+        Log::withContext([
+            'trace_id' => $traceId,
+            'gateway' => 'tgipay',
+            'reference' => $reference,
+        ]);
 
         if ($status === '' || $reference === '') {
             Log::warning('TGIPAY callback with missing parameters', [
@@ -180,7 +197,7 @@ class TgiPayController extends Controller
 
         try {
             // Verify payment with TGIPAY
-            $verifyResponse = $this->tgiPayGateway->verifyPayment($reference);
+            $verifyResponse = $this->tgiPayGateway->verifyPayment($reference, $traceId);
 
             Log::info('TGIPAY payment callback received', [
                 'reference' => $reference,

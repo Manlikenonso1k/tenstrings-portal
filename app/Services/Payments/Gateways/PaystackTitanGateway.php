@@ -30,7 +30,7 @@ class PaystackTitanGateway implements PaymentGatewayInterface
         ];
     }
 
-    public function verifyPayment(string $reference): array
+    public function verifyPayment(string $reference, string $traceId = ''): array
     {
         $response = Http::withToken($this->secretKey())
             ->acceptJson()
