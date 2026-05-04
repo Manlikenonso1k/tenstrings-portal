@@ -113,30 +113,16 @@ class TgiPayController extends Controller
                 return back()->withErrors(['payment' => 'Unable to initiate payment with TGIPAY. Please try again later.']);
             }
 
-            // Step 4: Get payment URL
-            $urlResponse = $this->tgiPayGateway->getPaymentUrl($reference);
-
-            if (! $urlResponse['ok']) {
-                $payment->update(['status' => 'failed', 'gateway_response' => $urlResponse['body'] ?? []]);
-
-                Log::error('TGIPAY payment URL retrieval failed', [
-                    'student_id' => $student->id,
-                    'reference' => $reference,
-                    'response' => $urlResponse,
-                ]);
-
-                return back()->withErrors(['payment' => 'Unable to retrieve payment URL. Please try again later.']);
-            }
-
-            $paymentUrl = data_get($urlResponse, 'body.data.url');
+            // Step 4: Use checkout URL returned by TGIPAY initiate response
+            $paymentUrl = data_get($initResponse, 'body.data.url');
 
             if (! is_string($paymentUrl) || $paymentUrl === '') {
-                $payment->update(['status' => 'failed', 'gateway_response' => $urlResponse['body'] ?? []]);
+                $payment->update(['status' => 'failed', 'gateway_response' => $initResponse['body'] ?? []]);
 
-                Log::error('TGIPAY payment URL not found', [
+                Log::error('TGIPAY checkout URL not found in initiate response', [
                     'student_id' => $student->id,
                     'reference' => $reference,
-                    'response' => $urlResponse,
+                    'response' => $initResponse,
                 ]);
 
                 return back()->withErrors(['payment' => 'Unable to retrieve payment URL. Please try again later.']);

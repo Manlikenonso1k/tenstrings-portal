@@ -60,43 +60,6 @@ class TgiPayGateway implements PaymentGatewayInterface
     }
 
     /**
-     * Get payment URL from TGIPAY after initialization.
-     */
-    public function getPaymentUrl(string $transactionReference, string $traceId = ''): array
-    {
-        $traceId = $traceId !== '' ? $traceId : 'tgipay-url-' . $transactionReference;
-
-        Log::info('TGIPAY payment URL lookup request', [
-            'trace_id' => $traceId,
-            'reference' => $transactionReference,
-            'endpoint' => $this->baseUrl() . '/payment/status/' . $transactionReference,
-            'has_integration_key' => $this->integrationKey() !== '',
-        ]);
-
-        $response = Http::withHeaders([
-            'integration-key' => $this->integrationKey(),
-        ])
-            ->acceptJson()
-            ->timeout(30)
-            ->get($this->baseUrl() . '/payment/status/' . $transactionReference);
-
-        if (! $response->successful()) {
-            Log::warning('TGIPAY payment URL lookup rejected', [
-                'trace_id' => $traceId,
-                'reference' => $transactionReference,
-                'status' => $response->status(),
-                'body' => $response->json(),
-            ]);
-        }
-
-        return [
-            'ok' => $response->successful(),
-            'status' => $response->status(),
-            'body' => $response->json() ?? [],
-        ];
-    }
-
-    /**
      * Verify payment status with TGIPAY.
      */
     public function verifyPayment(string $reference, string $traceId = ''): array
