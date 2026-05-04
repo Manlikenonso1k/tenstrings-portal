@@ -69,7 +69,7 @@ class TgiPayGateway implements PaymentGatewayInterface
         Log::info('TGIPAY payment URL lookup request', [
             'trace_id' => $traceId,
             'reference' => $transactionReference,
-            'endpoint' => $this->baseUrl() . '/payment/' . $transactionReference,
+            'endpoint' => $this->baseUrl() . '/payment/status/' . $transactionReference,
             'has_integration_key' => $this->integrationKey() !== '',
         ]);
 
@@ -78,7 +78,7 @@ class TgiPayGateway implements PaymentGatewayInterface
         ])
             ->acceptJson()
             ->timeout(30)
-            ->get($this->baseUrl() . '/payment/' . $transactionReference);
+            ->get($this->baseUrl() . '/payment/status/' . $transactionReference);
 
         if (! $response->successful()) {
             Log::warning('TGIPAY payment URL lookup rejected', [
