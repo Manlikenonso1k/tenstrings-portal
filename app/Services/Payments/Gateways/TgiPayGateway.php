@@ -5,6 +5,7 @@ namespace App\Services\Payments\Gateways;
 use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TgiPayGateway implements PaymentGatewayInterface
 {
@@ -33,6 +34,13 @@ class TgiPayGateway implements PaymentGatewayInterface
             ->timeout(30)
             ->post($this->baseUrl() . '/payment/initiate', $payload);
 
+        if (! $response->successful()) {
+            Log::warning('TGIPAY initialize payment rejected', [
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+        }
+
         return [
             'ok' => $response->successful(),
             'status' => $response->status(),
@@ -52,6 +60,14 @@ class TgiPayGateway implements PaymentGatewayInterface
             ->timeout(30)
             ->get($this->baseUrl() . '/payment/status/' . $transactionReference);
 
+        if (! $response->successful()) {
+            Log::warning('TGIPAY payment URL lookup rejected', [
+                'reference' => $transactionReference,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+        }
+
         return [
             'ok' => $response->successful(),
             'status' => $response->status(),
@@ -70,6 +86,14 @@ class TgiPayGateway implements PaymentGatewayInterface
             ->acceptJson()
             ->timeout(30)
             ->get($this->baseUrl() . '/payment/verify/' . $reference);
+
+        if (! $response->successful()) {
+            Log::warning('TGIPAY payment verification rejected', [
+                'reference' => $reference,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+        }
 
         return [
             'ok' => $response->successful(),
