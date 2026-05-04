@@ -75,6 +75,8 @@ class PaymentService
         $gatewayClient = $this->gateway($gateway);
 
         $response = $gatewayClient->initializePayment([
+            'customer_first_name' => (string) ($student->first_name ?? ''),
+            'customer_last_name' => (string) ($student->last_name ?? ''),
             'email' => $student->email,
             'amount' => (float) $data['amount'],
             'reference' => $reference,
