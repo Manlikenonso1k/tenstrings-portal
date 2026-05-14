@@ -10,6 +10,7 @@ use App\Models\StudentCourseFee;
 use App\Services\Payments\PaymentService;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class PaymentsPage extends Page
 {
@@ -25,6 +26,12 @@ class PaymentsPage extends Page
     {
         $user = Auth::user();
         $studentId = $user && $user->student ? $user->student->id : null;
+        
+        if ($studentId) {
+            Cache::forget('student_' . $studentId . '_fees');
+            Cache::forget('student_' . $studentId . '_balance');
+        }
+        
         $student = $studentId ? Student::query()->find($studentId) : null;
         $outstandingBalance = $studentId
             ? (float) StudentCourseFee::query()->where('student_id', $studentId)->sum('outstanding_balance')
