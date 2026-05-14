@@ -159,7 +159,7 @@ class PaymentController extends Controller
 
     private function portalPaymentsUrl(): string
     {
-        return PaymentsPage::getUrl('portal');
+        return PaymentsPage::getUrl([]);
     }
 
     public function downloadInvoice(Invoice $invoice): BinaryFileResponse
