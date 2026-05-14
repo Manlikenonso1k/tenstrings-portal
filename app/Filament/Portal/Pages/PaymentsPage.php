@@ -19,7 +19,7 @@ class PaymentsPage extends Page
 
     protected static ?string $navigationLabel = 'PAYMENTS';
 
-    protected static ?string $view = 'filament.portal.pages.payments-page';
+    protected static string $view = 'filament.portal.pages.payments-page';
 
     protected function getViewData(): array
     {
