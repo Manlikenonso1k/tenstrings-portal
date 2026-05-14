@@ -55,7 +55,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => in_array($this->role, ['super_admin', 'admin'], true),
+            'admin' => in_array($this->role, ['super_admin', 'admin', 'accounts_clerk'], true),
             'portal' => $this->role === 'student',
             'instructor' => in_array($this->role, ['super_admin', 'instructor'], true),
             default => false,
@@ -77,6 +77,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function isAdmin(): bool
     {
         return in_array($this->role, ['super_admin', 'admin'], true);
+    }
+
+    public function isAccountsClerk(): bool
+    {
+        return $this->role === 'accounts_clerk';
     }
 
     public function isInstructor(): bool

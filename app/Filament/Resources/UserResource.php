@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class UserResource extends Resource
 {
@@ -28,19 +29,25 @@ class UserResource extends Resource
             Forms\Components\TextInput::make('phone')->tel()->maxLength(30),
             Forms\Components\Select::make('role')
                 ->required()
-                ->options(fn () => auth()->user()?->isSuperAdmin()
+                ->options(function () {
+                    /** @var User|null $authUser */
+                    $authUser = Auth::user();
+
+                    return $authUser?->isSuperAdmin()
                     ? [
                         'super_admin' => 'Super Admin',
                         'admin' => 'Admin',
+                        'accounts_clerk' => 'Accounts Clerk',
                         'instructor' => 'Instructor',
                         'student' => 'Student',
                     ]
                     : [
                         'admin' => 'Admin',
+                        'accounts_clerk' => 'Accounts Clerk',
                         'instructor' => 'Instructor',
                         'student' => 'Student',
-                    ]
-                ),
+                    ];
+                }),
             Forms\Components\TextInput::make('password')
                 ->password()
                 ->dehydrated(fn ($state) => filled($state))
@@ -85,17 +92,24 @@ class UserResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isSuperAdmin() ?? false;
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        return $authUser?->isSuperAdmin() ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->isSuperAdmin() ?? false;
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        return $authUser?->isSuperAdmin() ?? false;
     }
 
     public static function canDelete($record): bool
     {
-        $authUser = auth()->user();
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
 
         if (! $authUser || ! $authUser->isSuperAdmin()) {
             return false;

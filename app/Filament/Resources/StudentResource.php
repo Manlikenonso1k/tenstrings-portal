@@ -372,7 +372,7 @@ class StudentResource extends Resource
 
     public static function canCreate(): bool
     {
-        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true);
     }
 
     public static function shouldRegisterNavigation(): bool
@@ -383,7 +383,7 @@ class StudentResource extends Resource
     public static function canAccess(): bool
     {
         return Filament::getCurrentPanel()?->getId() === 'admin'
-            && in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
+            && in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true);
     }
 
     public static function canEdit($record): bool

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class CourseResource extends Resource
 {
@@ -67,11 +68,11 @@ class CourseResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'instructor', 'student'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk', 'instructor', 'student'], true);
     }
 
     public static function canCreate(): bool
     {
-        return in_array(auth()->user()?->role, ['super_admin', 'admin'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
     }
 }

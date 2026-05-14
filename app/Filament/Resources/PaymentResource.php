@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class PaymentResource extends Resource
@@ -71,7 +72,7 @@ class PaymentResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'student'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk', 'student'], true);
     }
 
     public static function validatePaymentDoesNotExceedBalance(array $data): void

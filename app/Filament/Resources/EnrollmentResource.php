@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class EnrollmentResource extends Resource
@@ -107,12 +108,12 @@ class EnrollmentResource extends Resource
 
     public static function canAccess(): bool
     {
-        return in_array(auth()->user()?->role, ['super_admin', 'admin', 'instructor', 'student'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk', 'instructor', 'student'], true);
     }
 
     public static function canCreate(): bool
     {
-        return in_array(auth()->user()?->role, ['super_admin', 'admin'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
     }
 
     public static function validateMaxTwoCourses(int $studentId, array $courseIds, ?int $ignoreEnrollmentId = null): void
