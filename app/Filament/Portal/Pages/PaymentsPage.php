@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentsPage extends Page
 {
-    protected static $navigationIcon = 'heroicon-o-banknotes';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
-    protected static $navigationSort = 3;
+    protected static ?int $navigationSort = 3;
 
-    protected static $navigationLabel = 'PAYMENTS';
+    protected static ?string $navigationLabel = 'PAYMENTS';
 
-    protected static $view = 'filament.portal.pages.payments-page';
+    protected static ?string $view = 'filament.portal.pages.payments-page';
 
     protected function getViewData(): array
     {
