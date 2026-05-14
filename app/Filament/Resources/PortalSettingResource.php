@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PortalSettingResource extends Resource
 {
@@ -30,6 +31,14 @@ class PortalSettingResource extends Resource
                 ->required()
                 ->numeric()
                 ->minValue(1),
+            Forms\Components\Toggle::make('paystack_enabled')
+                ->label('Enable Paystack Titan')
+                ->helperText('Disable this to hide the Paystack Titan payment option in the student portal.')
+                ->default(false),
+            Forms\Components\Toggle::make('tgipay_enabled')
+                ->label('Enable TGIPAY')
+                ->helperText('Disable this to hide the TGIPAY payment option in the student portal.')
+                ->default(true),
         ]);
     }
 
@@ -39,6 +48,12 @@ class PortalSettingResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('matric_pattern')->wrap(),
                 Tables\Columns\TextColumn::make('next_sequence'),
+                Tables\Columns\IconColumn::make('paystack_enabled')
+                    ->label('Paystack')
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('tgipay_enabled')
+                    ->label('TGIPAY')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('updated_at')->since(),
             ])
             ->actions([
@@ -57,16 +72,25 @@ class PortalSettingResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->isSuperAdmin() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user?->isSuperAdmin() ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return (auth()->user()?->isSuperAdmin() ?? false) && PortalSetting::query()->count() === 0;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return ($user?->isSuperAdmin() ?? false) && PortalSetting::query()->count() === 0;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->isSuperAdmin() ?? false;
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user?->isSuperAdmin() ?? false;
     }
 }

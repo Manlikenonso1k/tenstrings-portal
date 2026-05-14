@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\PaymentAdvice;
+use App\Models\PortalSetting;
 use App\Models\Student;
 use App\Services\Payments\Gateways\TgiPayGateway;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,10 @@ class TgiPayController extends Controller
         if (! $student) {
             return $this->errorJson('Unauthorized', 403);
         }
+
+            if (! PortalSetting::current()->gatewayEnabled('tgipay')) {
+                return back()->withErrors(['payment' => 'TGIPAY is currently disabled by the administrator.']);
+            }
 
         $advice = PaymentAdvice::query()
             ->with('course')

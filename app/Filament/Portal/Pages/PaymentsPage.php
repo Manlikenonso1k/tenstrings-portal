@@ -4,6 +4,7 @@ namespace App\Filament\Portal\Pages;
 
 use App\Models\Payment;
 use App\Models\PaymentAdvice;
+use App\Models\PortalSetting;
 use App\Models\Student;
 use App\Models\StudentCourseFee;
 use Filament\Pages\Page;
@@ -26,10 +27,13 @@ class PaymentsPage extends Page
         $outstandingBalance = $studentId
             ? (float) StudentCourseFee::query()->where('student_id', $studentId)->sum('outstanding_balance')
             : 0.0;
+        $settings = PortalSetting::current();
 
         return [
             'student' => $student,
             'outstandingBalance' => $outstandingBalance,
+            'paystackEnabled' => $settings->gatewayEnabled('paystack-titan'),
+            'tgipayEnabled' => $settings->gatewayEnabled('tgipay'),
             'pendingAdvice' => $studentId
                 ? PaymentAdvice::query()
                     ->with('course')

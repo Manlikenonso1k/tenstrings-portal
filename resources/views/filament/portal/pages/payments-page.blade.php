@@ -43,35 +43,45 @@
             <div class="text-xs text-gray-500">View current generated advice</div>
         </a>
 
-        <a
-            href="{{ $pendingAdvice ? route('fees.pay.step', 'paystack-titan') : route('fees.generate') }}"
-            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70 pointer-events-none' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
-        >
-            <img alt="Pay Online" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
-            <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Paystack Titan</div>
-            <div class="text-xs text-gray-500">
-                @if ($pendingAdvice)
-                    Continue to amount step
-                @else
-                    Generate a pending advice to enable payment
-                @endif
-            </div>
-        </a>
+        @if ($paystackEnabled)
+            <a
+                href="{{ $pendingAdvice ? route('fees.pay.step', 'paystack-titan') : route('fees.generate') }}"
+                class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70 pointer-events-none' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
+            >
+                <img alt="Pay Online" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
+                <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">Paystack Titan</div>
+                <div class="text-xs text-gray-500">
+                    @if ($pendingAdvice)
+                        Continue to amount step
+                    @else
+                        Generate a pending advice to enable payment
+                    @endif
+                </div>
+            </a>
+        @endif
 
-        <a
-            href="{{ $pendingAdvice ? route('fees.pay.step', 'tgipay') : route('fees.generate') }}"
-            class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70 pointer-events-none' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
-        >
-            <img alt="TGIPAY" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
-            <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">TGIPAY</div>
-            <div class="text-xs text-gray-500">
-                @if ($pendingAdvice)
-                    Continue to amount step
-                @else
-                    Generate a pending advice to enable payment
-                @endif
+        @if ($tgipayEnabled)
+            <a
+                href="{{ $pendingAdvice ? route('fees.pay.step', 'tgipay') : route('fees.generate') }}"
+                class="{{ $pendingAdvice ? 'bg-white cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-70 pointer-events-none' }} rounded-md h-full border-2 p-6 transform duration-200 {{ $pendingAdvice ? 'hover:border-primary-500 hover:scale-[1.02]' : '' }} pb-2"
+            >
+                <img alt="TGIPAY" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/credit-card.svg') }}">
+                <div class="font-medium text-sm pt-2 pb-1 capitalize md:text-lg">TGIPAY</div>
+                <div class="text-xs text-gray-500">
+                    @if ($pendingAdvice)
+                        Continue to amount step
+                    @else
+                        Generate a pending advice to enable payment
+                    @endif
+                </div>
+            </a>
+        @endif
+
+        @if (! $paystackEnabled && ! $tgipayEnabled)
+            <div class="rounded-md h-full border-2 p-6 bg-gray-50 text-gray-500 md:col-span-2 lg:col-span-2">
+                Both payment gateways are currently disabled by the administrator.
             </div>
-        </a>
+        @endif
 
         <a href="{{ route('fees.receipts') }}" class="bg-white rounded-md cursor-pointer h-full border-2 p-6 transform duration-200 hover:border-primary-500 hover:scale-[1.02] pb-2">
             <img alt="Print Receipt" class="rounded-full h-16 w-16" src="{{ asset('assets/icons/printer.svg') }}">

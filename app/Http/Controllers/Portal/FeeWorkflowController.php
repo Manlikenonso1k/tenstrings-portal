@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Portal;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\PaymentAdvice;
+use App\Models\PortalSetting;
 use App\Models\StudentCourseFee;
 use App\Services\Payments\FeeCalculationService;
 use App\Services\Payments\PaymentService;
@@ -76,7 +77,14 @@ class FeeWorkflowController extends Controller
             $outstandingBalance = (float) $pendingAdvice->amount;
         }
 
+        if (! $this->paymentGatewayEnabled($gateway)) {
+            return back()->withErrors([
+                'payment' => $this->gatewayLabel($gateway) . ' is currently disabled by the administrator.',
+            ]);
+        }
+
         $isTgiPay = in_array(strtolower($gateway), ['tgipay', 'tgi-pay', 'tgi_pay'], true);
+        $settings = PortalSetting::current();
 
         return view('fees.pay-step', [
             'student' => $student,
@@ -87,6 +95,8 @@ class FeeWorkflowController extends Controller
             'defaultAmount' => (float) $pendingAdvice->amount,
             'isTgiPay' => $isTgiPay,
             'submitRoute' => $isTgiPay ? route('tgipay.initiate') : route('fees.pay.submit', $gateway),
+            'paystackEnabled' => $settings->gatewayEnabled('paystack-titan'),
+            'tgipayEnabled' => $settings->gatewayEnabled('tgipay'),
         ]);
     }
 
@@ -175,6 +185,12 @@ class FeeWorkflowController extends Controller
             'amount' => ['required', 'numeric', 'min:1'],
         ]);
 
+        if (! $this->paymentGatewayEnabled($gateway)) {
+            return back()->withErrors([
+                'payment' => $this->gatewayLabel($gateway) . ' is currently disabled by the administrator.',
+            ]);
+        }
+
         $pendingAdvice = PaymentAdvice::query()
             ->with('course')
             ->where('student_id', $student->id)
@@ -262,9 +278,13 @@ class FeeWorkflowController extends Controller
             ->latest('id')
             ->first();
 
+        $settings = PortalSetting::current();
+
         return view('fees.current-advice', [
             'student' => $student,
             'advice' => $advice,
+            'paystackEnabled' => $settings->gatewayEnabled('paystack-titan'),
+            'tgipayEnabled' => $settings->gatewayEnabled('tgipay'),
         ]);
     }
 
@@ -310,5 +330,10 @@ class FeeWorkflowController extends Controller
             'tgipay', 'tgi-pay', 'tgi_pay' => 'TGIPAY',
             default => ucfirst(str_replace(['-', '_'], ' ', $gateway)),
         };
+    }
+
+    private function paymentGatewayEnabled(string $gateway): bool
+    {
+        return PortalSetting::current()->gatewayEnabled($gateway);
     }
 }

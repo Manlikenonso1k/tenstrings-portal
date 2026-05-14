@@ -358,10 +358,20 @@
                     </div>
 
                     <div class="actions">
-                        <a href="{{ route('fees.pay.step', 'paystack-titan') }}" class="btn btn-primary">Pay with Paystack Titan</a>
-                        <a href="{{ route('fees.pay.step', 'tgipay') }}" class="btn btn-dark">Pay with TGIPAY</a>
+                        @if ($paystackEnabled)
+                            <a href="{{ route('fees.pay.step', 'paystack-titan') }}" class="btn btn-primary">Pay with Paystack Titan</a>
+                        @endif
+                        @if ($tgipayEnabled)
+                            <a href="{{ route('fees.pay.step', 'tgipay') }}" class="btn btn-dark">Pay with TGIPAY</a>
+                        @endif
                         <button onclick="window.print()" class="btn btn-outline" type="button">Print Advice</button>
                     </div>
+
+                    @if (! $paystackEnabled && ! $tgipayEnabled)
+                        <div class="notice" style="margin-top:18px;background:rgba(255,247,237,0.95);border-color:#fed7aa;color:#9a3412;">
+                            Payment is currently unavailable because all gateways are disabled by the administrator.
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
