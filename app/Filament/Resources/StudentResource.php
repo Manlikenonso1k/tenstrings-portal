@@ -22,6 +22,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Throwable;
@@ -323,6 +324,99 @@ class StudentResource extends Resource
                             Notification::make()
                                 ->title('Email failed')
                                 ->body('Unable to send matric email right now.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Tables\Actions\Action::make('reset_payment')
+                    ->label('Reset Payment')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->visible(function (): bool {
+                        $user = Auth::user();
+                        $settings = \App\Models\PortalSetting::current();
+                        return ($user && $user->isSuperAdmin()) && $settings->allow_payment_reset;
+                    })
+                    ->form([
+                        Forms\Components\Select::make('course_id')
+                            ->label('Select Course')
+                            ->options(function (Student $record): array {
+                                $payments = Payment::query()
+                                    ->where('student_id', $record->id)
+                                    ->whereIn('status', ['success', 'processing'])
+                                    ->distinct('course_id')
+                                    ->pluck('course_id')
+                                    ->toArray();
+                                return \App\Support\CourseCatalog::courseOptions() + $payments;
+                            })
+                            ->required(),
+                    ])
+                    ->action(function (Student $record, array $data): void {
+                        try {
+                            $courseId = (int) $data['course_id'];
+                            $user = Auth::user();
+
+                            DB::transaction(function () use ($record, $courseId, $user): void {
+                                Payment::query()
+                                    ->where('student_id', $record->id)
+                                    ->where('course_id', $courseId)
+                                    ->whereIn('status', ['success', 'processing'])
+                                    ->update([
+                                        'status' => 'pending',
+                                        'payment_status' => 'pending',
+                                        'amount_paid' => 0,
+                                        'receipt_number' => null,
+                                        'processed_at' => null,
+                                    ]);
+
+                                \App\Models\StudentCourseFee::query()
+                                    ->where('student_id', $record->id)
+                                    ->where('course_id', $courseId)
+                                    ->update([
+                                        'amount_paid' => 0,
+                                        'outstanding_balance' => DB::raw('total_course_fee'),
+                                        'status' => 'pending',
+                                    ]);
+
+                                $totalPaid = \App\Models\StudentCourseFee::query()
+                                    ->where('student_id', $record->id)
+                                    ->sum('amount_paid');
+
+                                $totalOutstanding = \App\Models\StudentCourseFee::query()
+                                    ->where('student_id', $record->id)
+                                    ->sum('outstanding_balance');
+
+                                Student::query()
+                                    ->where('id', $record->id)
+                                    ->update([
+                                        'fees_paid' => $totalPaid,
+                                        'balance_due' => $totalOutstanding,
+                                    ]);
+
+                                activity()
+                                    ->causedBy($user)
+                                    ->performedOn($record)
+                                    ->log('payment_reset', [
+                                        'student_id' => $record->id,
+                                        'course_id' => $courseId,
+                                        'reset_by' => $user->id,
+                                    ]);
+                            });
+
+                            Notification::make()
+                                ->title('Payment reset')
+                                ->body('Payment for course ' . $courseId . ' has been reset successfully.')
+                                ->success()
+                                ->send();
+                        } catch (Throwable $exception) {
+                            Log::error('Failed to reset student payment.', [
+                                'student_id' => $record->id,
+                                'error' => $exception->getMessage(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Reset failed')
+                                ->body('Unable to reset payment right now.')
                                 ->danger()
                                 ->send();
                         }
