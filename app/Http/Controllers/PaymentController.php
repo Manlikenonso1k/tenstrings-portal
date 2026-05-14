@@ -16,10 +16,16 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PaymentController extends Controller
 {
+    private $paymentService;
+
+    private $documentService;
+
     public function __construct(
-        private readonly PaymentService $paymentService,
-        private readonly DocumentService $documentService,
+        PaymentService $paymentService,
+        DocumentService $documentService
     ) {
+        $this->paymentService = $paymentService;
+        $this->documentService = $documentService;
     }
 
     public function initialize(Request $request, string $gateway): JsonResponse
@@ -56,7 +62,8 @@ class PaymentController extends Controller
 
     public function payOutstanding(Request $request): RedirectResponse
     {
-        $student = $request->user()?->student;
+        $user = $request->user();
+        $student = $user && $user->student ? $user->student : null;
 
         if (! $student) {
             abort(403);
@@ -98,7 +105,7 @@ class PaymentController extends Controller
             'student_id' => (int) $student->id,
             'amount' => $amount,
             'invoice_amount' => $outstanding,
-            'course_id' => $primaryFee?->course_id,
+            'course_id' => $primaryFee ? $primaryFee->course_id : null,
             'callback_url' => route('portal.payments.callback'),
         ]);
 
@@ -129,7 +136,8 @@ class PaymentController extends Controller
             $payment = Payment::query()->where('reference', $reference)->first();
 
             if ($payment && strtolower((string) $payment->gateway) === 'tgipay') {
-                $student = $request->user()?->student;
+                $user = $request->user();
+                $student = $user && $user->student ? $user->student : null;
 
                 $this->paymentService->reconcileTgiPayPayment($reference, [
                     'student_id' => $payment->student_id ?: ($student ? $student->id : null),
@@ -151,7 +159,7 @@ class PaymentController extends Controller
 
     private function portalPaymentsUrl(): string
     {
-        return PaymentsPage::getUrl(panel: 'portal');
+        return PaymentsPage::getUrl('portal');
     }
 
     public function downloadInvoice(Invoice $invoice): BinaryFileResponse
@@ -183,8 +191,8 @@ class PaymentController extends Controller
         abort_unless($payment->status === 'success', 404);
 
         $user = $request->user();
-        $isOwner = $user?->student && (int) $user->student->id === (int) $payment->student_id;
-        $isAdmin = in_array($user?->role, ['super_admin', 'admin'], true);
+        $isOwner = $user && $user->student && (int) $user->student->id === (int) $payment->student_id;
+        $isAdmin = in_array($user ? $user->role : null, ['super_admin', 'admin'], true);
 
         abort_unless($isOwner || $isAdmin, 403);
 
