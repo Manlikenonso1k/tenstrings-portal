@@ -120,8 +120,31 @@ class PaymentController extends Controller
         return redirect()->away($authorizationUrl);
     }
 
-    public function callback(): RedirectResponse
+    public function callback(Request $request): RedirectResponse
     {
+        $reference = (string) $request->query('ref', '');
+        $status = (string) $request->query('status', '');
+
+        if ($reference !== '') {
+            $payment = Payment::query()->where('reference', $reference)->first();
+
+            if ($payment && strtolower((string) $payment->gateway) === 'tgipay') {
+                $student = $request->user()?->student;
+
+                $this->paymentService->reconcileTgiPayPayment($reference, [
+                    'student_id' => $payment->student_id ?: ($student ? $student->id : null),
+                    'course_id' => $payment->course_id,
+                    'invoice_id' => $payment->invoice_id,
+                    'amount' => (float) $payment->amount,
+                    'customer_email' => (string) ($student ? $student->email : ''),
+                    'metadata' => (array) $payment->metadata,
+                ], $status);
+
+                return redirect($this->portalPaymentsUrl())
+                    ->with('status', 'TGIPAY payment submitted. We are confirming the final status now.');
+            }
+        }
+
         return redirect($this->portalPaymentsUrl())
             ->with('status', 'Payment submitted. Confirmation will update automatically after webhook processing.');
     }

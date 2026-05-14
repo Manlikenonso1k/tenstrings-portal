@@ -7,6 +7,7 @@ use App\Models\PaymentAdvice;
 use App\Models\PortalSetting;
 use App\Models\Student;
 use App\Services\Payments\Gateways\TgiPayGateway;
+use App\Services\Payments\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,9 +15,16 @@ use Illuminate\Support\Facades\Log;
 
 class TgiPayController extends Controller
 {
+    private $tgiPayGateway;
+
+    private $paymentService;
+
     public function __construct(
-        private readonly TgiPayGateway $tgiPayGateway,
+        TgiPayGateway $tgiPayGateway,
+        PaymentService $paymentService
     ) {
+        $this->tgiPayGateway = $tgiPayGateway;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -27,13 +35,14 @@ class TgiPayController extends Controller
      * 2. GET to retrieve the payment URL
      * 3. Redirect student to the payment URL
      */
-    public function initiatePayment(Request $request): RedirectResponse|JsonResponse
+    public function initiatePayment(Request $request)
     {
         $validated = $request->validate([
             'advice_id' => ['required', 'integer', 'exists:payment_advices,id'],
         ]);
 
-        $student = $request->user()?->student;
+        $user = $request->user();
+        $student = $user && $user->student ? $user->student : null;
 
         if (! $student) {
             return $this->errorJson('Unauthorized', 403);
@@ -93,9 +102,20 @@ class TgiPayController extends Controller
             ]);
 
             // Step 3: Initiate payment with TGIPAY
-            $nameParts = explode(' ', trim($student->name ?? ''), 2);
-            $firstName = $nameParts[0] ?? '';
-            $lastName = $nameParts[1] ?? $firstName;
+            $firstName = trim((string) ($student->first_name ?? ''));
+            $lastName = trim((string) ($student->last_name ?? ''));
+
+            if ($firstName === '' && $lastName === '') {
+                $nameParts = preg_split(
+                    '/\s+/',
+                    trim((string) ($student->name ?? '')),
+                    2,
+                    PREG_SPLIT_NO_EMPTY
+                ) ?: [];
+
+                $firstName = (string) ($nameParts[0] ?? '');
+                $lastName = (string) ($nameParts[1] ?? ($nameParts[0] ?? ''));
+            }
 
             $initResponse = $this->tgiPayGateway->initializePayment([
                 'customer_first_name' => $firstName,
@@ -104,6 +124,7 @@ class TgiPayController extends Controller
                 'amount' => (float) $advice->amount,
                 'reference' => $reference,
                 'trace_id' => $traceId,
+                'callback_url' => route('portal.payments.callback'),
             ]);
 
             if (! $initResponse['ok']) {
@@ -187,23 +208,6 @@ class TgiPayController extends Controller
         }
 
         try {
-            // Verify payment with TGIPAY
-            $verifyResponse = $this->tgiPayGateway->verifyPayment($reference, $traceId);
-            $verifiedStatus = strtolower((string) data_get($verifyResponse, 'body.data.paymentStatus', data_get($verifyResponse, 'body.data.status', $status)));
-            $finalStatus = match ($verifiedStatus) {
-                'success', 'successful', 'completed', 'paid' => 'success',
-                'failed', 'cancelled', 'canceled' => 'failed',
-                default => 'processing',
-            };
-
-            Log::info('TGIPAY payment callback received', [
-                'reference' => $reference,
-                'status' => $status,
-                'verified_status' => $verifiedStatus,
-                'verify_ok' => $verifyResponse['ok'],
-            ]);
-
-            // Find and update the Payment record
             $payment = Payment::query()
                 ->where('reference', $reference)
                 ->where('gateway', 'tgipay')
@@ -218,22 +222,25 @@ class TgiPayController extends Controller
                     ->with('error', 'Payment record not found.');
             }
 
+            $reconciliation = $this->paymentService->reconcileTgiPayPayment($reference, [
+                'student_id' => $payment->student_id,
+                'course_id' => $payment->course_id,
+                'invoice_id' => $payment->invoice_id,
+                'amount' => (float) $payment->amount,
+                'customer_email' => (string) ($payment->student ? $payment->student->email : ''),
+                'metadata' => (array) $payment->metadata,
+            ], $status);
+
+            $finalStatus = (string) ($reconciliation['status'] ?? 'processing');
+
+            Log::info('TGIPAY payment callback received', [
+                'reference' => $reference,
+                'status' => $status,
+                'resolved_status' => $finalStatus,
+                'processed' => (bool) ($reconciliation['processed'] ?? false),
+            ]);
+
             if ($finalStatus === 'success') {
-                $payment->update([
-                    'status' => 'success',
-                    'payment_status' => 'paid',
-                    'amount_paid' => $payment->amount,
-                    'gateway_response' => $verifyResponse['body'] ?? [],
-                    'processed_at' => now(),
-                ]);
-
-                // Update PaymentAdvice status if it exists
-                if (isset($payment->metadata['advice_id'])) {
-                    PaymentAdvice::query()
-                        ->where('id', (int) $payment->metadata['advice_id'])
-                        ->update(['status' => 'paid', 'paid_at' => now()]);
-                }
-
                 Log::info('TGIPAY payment marked as successful', [
                     'reference' => $reference,
                     'student_id' => $payment->student_id,
@@ -244,13 +251,6 @@ class TgiPayController extends Controller
             }
 
             if ($finalStatus === 'failed') {
-                $payment->update([
-                    'status' => 'failed',
-                    'payment_status' => 'failed',
-                    'gateway_response' => $verifyResponse['body'] ?? [],
-                    'processed_at' => now(),
-                ]);
-
                 Log::info('TGIPAY payment marked as failed', [
                     'reference' => $reference,
                     'student_id' => $payment->student_id,
@@ -263,7 +263,6 @@ class TgiPayController extends Controller
             $payment->update([
                 'status' => 'processing',
                 'payment_status' => 'pending',
-                'gateway_response' => $verifyResponse['body'] ?? [],
                 'processed_at' => now(),
             ]);
 

@@ -16,11 +16,20 @@ use RuntimeException;
 
 class PaymentService
 {
+    private $quarterResolver;
+
+    private $documentService;
+
+    private $db;
+
     public function __construct(
-        private readonly QuarterResolver $quarterResolver,
-        private readonly DocumentService $documentService,
-        private readonly DatabaseManager $db,
+        QuarterResolver $quarterResolver,
+        DocumentService $documentService,
+        DatabaseManager $db
     ) {
+        $this->quarterResolver = $quarterResolver;
+        $this->documentService = $documentService;
+        $this->db = $db;
     }
 
     public function initializePayment(string $gateway, array $data): array
@@ -68,8 +77,7 @@ class PaymentService
                 'student_id' => $student->id,
                 'invoice_id' => $invoice->id,
                 'course_id' => $data['course_id'] ?? null,
-                ...((array) ($data['metadata'] ?? [])),
-            ],
+            ] + (array) ($data['metadata'] ?? []),
         ]);
 
         $gatewayClient = $this->gateway($gateway);
@@ -85,8 +93,7 @@ class PaymentService
                 'invoice_id' => $invoice->id,
                 'quarter_name' => $quarter,
                 'course_id' => $data['course_id'] ?? null,
-                ...((array) ($data['metadata'] ?? [])),
-            ],
+            ] + (array) ($data['metadata'] ?? []),
             'callback_url' => $data['callback_url'] ?? null,
         ]);
 
@@ -122,6 +129,43 @@ class PaymentService
         return $response;
     }
 
+    public function reconcileTgiPayPayment(string $reference, array $context = [], string $fallbackStatus = ''): array
+    {
+        $response = $this->gateway('tgipay')->verifyPayment($reference);
+        $resolvedStatus = $this->resolveTgiPayStatus($response['body'] ?? [], $fallbackStatus);
+
+        $reconciliation = [
+            'reference' => $reference,
+            'status' => $resolvedStatus,
+            'processed' => false,
+            'gateway_response' => $response,
+        ];
+
+        if (! in_array($resolvedStatus, ['success', 'failed'], true)) {
+            return $reconciliation;
+        }
+
+        $normalizedPayload = [
+            'status' => $resolvedStatus,
+            'ref' => $reference,
+            'amount' => $this->resolveTgiPayAmount($response['body'] ?? [], (float) ($context['amount'] ?? 0)),
+            'currency' => (string) data_get($response, 'body.data.currency', data_get($response, 'body.currency', 'NGN')),
+            'customer_email' => (string) data_get($response, 'body.data.customerEmail', (string) ($context['customer_email'] ?? '')),
+            'student_id' => $context['student_id'] ?? null,
+            'course_id' => $context['course_id'] ?? null,
+            'invoice_id' => $context['invoice_id'] ?? null,
+            'metadata' => array_merge((array) ($context['metadata'] ?? []), array('source' => 'tgipay-status-check')),
+            'gateway_response' => $response['body'] ?? [],
+        ];
+
+        $processed = $this->handleWebhook('tgipay', $normalizedPayload);
+
+        return array_merge($reconciliation, array(
+            'processed' => true,
+            'webhook_result' => $processed,
+        ));
+    }
+
     public function handleWebhook(string $gateway, array $payload): array
     {
         $normalized = $this->gateway($gateway)->handleWebhook($payload);
@@ -148,10 +192,12 @@ class PaymentService
                 }
 
                 $student = $studentId ? Student::query()->find($studentId) : null;
+                $userId = $student ? $student->user_id : null;
+                $resolvedStudentId = $student ? $student->id : $studentId;
 
                 $payment = Payment::query()->create([
-                    'user_id' => $student?->user_id,
-                    'student_id' => $student?->id,
+                    'user_id' => $userId,
+                    'student_id' => $resolvedStudentId,
                     'invoice_id' => $normalized['invoice_id'] ?? null,
                     'course_id' => $normalized['course_id'] ?? data_get($normalized, 'metadata.course_id'),
                     'gateway' => $gateway,
@@ -240,22 +286,86 @@ class PaymentService
         return $invoice;
     }
 
-    public function gateway(string $gateway): PaystackTitanGateway|TgiPayGateway
+    public function gateway(string $gateway)
     {
-        return match (strtolower($gateway)) {
-            'paystack', 'paystack_titan', 'paystack-titan' => app(PaystackTitanGateway::class),
-            'tgipay', 'tgi-pay', 'tgi_pay' => app(TgiPayGateway::class),
-            default => throw new RuntimeException('Unsupported gateway: ' . $gateway),
-        };
+        $gateway = strtolower($gateway);
+
+        if (in_array($gateway, ['paystack', 'paystack_titan', 'paystack-titan'], true)) {
+            return app(PaystackTitanGateway::class);
+        }
+
+        if (in_array($gateway, ['tgipay', 'tgi-pay', 'tgi_pay'], true)) {
+            return app(TgiPayGateway::class);
+        }
+
+        throw new RuntimeException('Unsupported gateway: ' . $gateway);
     }
 
     private function legacyStatus(string $status): string
     {
-        return match ($status) {
-            'success' => 'paid',
-            'failed' => 'pending',
-            default => 'pending',
-        };
+        if ($status === 'success') {
+            return 'paid';
+        }
+
+        if ($status === 'failed') {
+            return 'pending';
+        }
+
+        return 'pending';
+    }
+
+    private function resolveTgiPayStatus(array $responseBody, string $fallbackStatus = ''): string
+    {
+        $candidates = [
+            data_get($responseBody, 'data.paymentStatus'),
+            data_get($responseBody, 'data.payment_status'),
+            data_get($responseBody, 'data.transactionStatus'),
+            data_get($responseBody, 'data.transaction_status'),
+            data_get($responseBody, 'data.status'),
+            data_get($responseBody, 'status'),
+            $fallbackStatus,
+        ];
+
+        foreach ($candidates as $candidate) {
+            $status = strtolower(trim((string) $candidate));
+
+            if ($status === '') {
+                continue;
+            }
+
+            if (in_array($status, ['success', 'successful', 'completed', 'paid', 'approved', 'settled'], true)) {
+                return 'success';
+            }
+
+            if (in_array($status, ['failed', 'cancelled', 'canceled', 'declined', 'reversed', 'rejected'], true)) {
+                return 'failed';
+            }
+
+            return 'processing';
+        }
+
+        return 'processing';
+    }
+
+    private function resolveTgiPayAmount(array $responseBody, float $fallbackAmount = 0.0): float
+    {
+        $candidates = [
+            data_get($responseBody, 'data.amount'),
+            data_get($responseBody, 'data.transactionAmount'),
+            data_get($responseBody, 'data.totalAmount'),
+            data_get($responseBody, 'amount'),
+            $fallbackAmount,
+        ];
+
+        foreach ($candidates as $candidate) {
+            if ($candidate === null || $candidate === '') {
+                continue;
+            }
+
+            return (float) $candidate;
+        }
+
+        return 0.0;
     }
 
     private function syncCourseFeeAndStudentSnapshot(Payment $payment): void
