@@ -56,6 +56,7 @@ class PaymentsPage extends Page
             'outstandingBalance' => $outstandingBalance,
             'paystackEnabled' => $settings->gatewayEnabled('paystack-titan'),
             'tgipayEnabled' => $settings->gatewayEnabled('tgipay'),
+            'allowPaymentReset' => $settings->allow_payment_reset && ($user && $user->isSuperAdmin()),
             'pendingAdvice' => $studentId
                 ? PaymentAdvice::query()
                     ->with('course')

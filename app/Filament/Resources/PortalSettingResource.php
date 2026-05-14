@@ -39,6 +39,10 @@ class PortalSettingResource extends Resource
                 ->label('Enable TGIPAY')
                 ->helperText('Disable this to hide the TGIPAY payment option in the student portal.')
                 ->default(true),
+            Forms\Components\Toggle::make('allow_payment_reset')
+                ->label('Allow Payment Reset (Testing)')
+                ->helperText('Enable this to allow super admins to reset student payments for testing purposes. Disable in production.')
+                ->default(false),
         ]);
     }
 
@@ -53,6 +57,9 @@ class PortalSettingResource extends Resource
                     ->boolean(),
                 Tables\Columns\IconColumn::make('tgipay_enabled')
                     ->label('TGIPAY')
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('allow_payment_reset')
+                    ->label('Payment Reset')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('updated_at')->since(),
             ])

@@ -81,6 +81,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/portal/payments/{payment}/receipt', [PaymentController::class, 'downloadStudentReceipt'])
         ->name('portal.payments.receipt');
 
+    Route::post('/portal/payments/reset', [PaymentController::class, 'resetStudentPayment'])
+        ->name('portal.payments.reset');
+
     Route::get('/payments/{gateway}/verify/{reference}', [PaymentController::class, 'verify'])
         ->name('payments.verify');
 

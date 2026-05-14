@@ -130,6 +130,13 @@
                             <td class="p-2">
                                 @if (($payment->status ?? null) === 'success')
                                     <a href="{{ route('portal.payments.receipt', $payment) }}" target="_blank" class="text-primary-600 hover:underline">Print Receipt</a>
+                                @elseif ($allowPaymentReset && ($payment->status ?? null) === 'success')
+                                    <form method="POST" action="{{ route('portal.payments.reset') }}" class="inline" onsubmit="return confirm('Are you sure? This will reset the payment for testing.');">
+                                        @csrf
+                                        <input type="hidden" name="student_id" value="{{ $student->id }}">
+                                        <input type="hidden" name="course_id" value="{{ $payment->course_id }}">
+                                        <button type="submit" class="text-orange-600 hover:underline">Reset Payment</button>
+                                    </form>
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif

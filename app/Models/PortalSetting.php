@@ -14,11 +14,13 @@ class PortalSetting extends Model
         'next_sequence',
         'paystack_enabled',
         'tgipay_enabled',
+        'allow_payment_reset',
     ];
 
     protected $casts = [
         'paystack_enabled' => 'boolean',
         'tgipay_enabled' => 'boolean',
+        'allow_payment_reset' => 'boolean',
     ];
 
     public static function current(): self
@@ -28,15 +30,19 @@ class PortalSetting extends Model
             'next_sequence' => 1,
             'paystack_enabled' => false,
             'tgipay_enabled' => true,
+            'allow_payment_reset' => false,
         ]);
     }
 
     public function gatewayEnabled(string $gateway): bool
     {
-        return match (strtolower($gateway)) {
-            'paystack', 'paystack-titan', 'paystack_titan' => (bool) $this->paystack_enabled,
-            'tgipay', 'tgi-pay', 'tgi_pay' => (bool) $this->tgipay_enabled,
-            default => false,
-        };
+        $gateway = strtolower($gateway);
+        if ($gateway === 'paystack' || $gateway === 'paystack-titan' || $gateway === 'paystack_titan') {
+            return (bool) $this->paystack_enabled;
+        }
+        if ($gateway === 'tgipay' || $gateway === 'tgi-pay' || $gateway === 'tgi_pay') {
+            return (bool) $this->tgipay_enabled;
+        }
+        return false;
     }
 }

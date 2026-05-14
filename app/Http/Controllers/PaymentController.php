@@ -5,12 +5,17 @@ namespace App\Http\Controllers;
 use App\Filament\Portal\Pages\PaymentsPage;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\PortalSetting;
+use App\Models\Student;
 use App\Models\StudentCourseFee;
 use App\Services\Payments\DocumentService;
 use App\Services\Payments\PaymentService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -204,4 +209,76 @@ class PaymentController extends Controller
 
         return response()->download(Storage::disk('local')->path($path), 'receipt_' . ($payment->receipt_number ?: $payment->reference) . '.pdf');
     }
+
+    public function resetStudentPayment(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        if (!($user && $user->isSuperAdmin())) {
+            return redirect()->back()->withErrors(['authorization' => 'Only super admins can reset payments.']);
+        }
+
+        $settings = PortalSetting::current();
+        if (!$settings->allow_payment_reset) {
+            return redirect()->back()->withErrors(['payment_reset' => 'Payment reset is disabled. Enable it in portal settings.']);
+        }
+
+        $studentId = $request->integer('student_id');
+        $courseId = $request->integer('course_id');
+
+        try {
+            $student = Student::query()->findOrFail($studentId);
+
+            DB::transaction(function () use ($studentId, $courseId, $student, $user): void {
+                Payment::query()
+                    ->where('student_id', $studentId)
+                    ->where('course_id', $courseId)
+                    ->whereIn('status', ['success', 'processing'])
+                    ->update([
+                        'status' => 'pending',
+                        'payment_status' => 'pending',
+                        'amount_paid' => 0,
+                        'receipt_number' => null,
+                        'processed_at' => null,
+                    ]);
+
+                StudentCourseFee::query()
+                    ->where('student_id', $studentId)
+                    ->where('course_id', $courseId)
+                    ->update([
+                        'amount_paid' => 0,
+                        'outstanding_balance' => DB::raw('total_course_fee'),
+                        'status' => 'pending',
+                    ]);
+
+                $totalPaid = StudentCourseFee::query()
+                    ->where('student_id', $studentId)
+                    ->sum('amount_paid');
+
+                $totalOutstanding = StudentCourseFee::query()
+                    ->where('student_id', $studentId)
+                    ->sum('outstanding_balance');
+
+                Student::query()
+                    ->where('id', $studentId)
+                    ->update([
+                        'fees_paid' => $totalPaid,
+                        'balance_due' => $totalOutstanding,
+                    ]);
+
+                activity()
+                    ->causedBy($user)
+                    ->performedOn($student)
+                    ->log('payment_reset', [
+                        'student_id' => $studentId,
+                        'course_id' => $courseId,
+                        'reset_by' => $user->id,
+                    ]);
+            });
+
+            return redirect()->back()->with('status', "Payment for student " . $student->user->name . " (Course " . $courseId . ") has been reset successfully.");
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Failed to reset payment: ' . $e->getMessage()]);
+        }
+    }
 }
+
