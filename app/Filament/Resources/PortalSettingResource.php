@@ -17,7 +17,7 @@ class PortalSettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'System Settings';
+    protected static ?string $navigationGroup = 'Payment Management';
 
     protected static ?string $navigationLabel = 'Portal Settings';
 
