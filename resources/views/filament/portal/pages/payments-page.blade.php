@@ -90,6 +90,7 @@
         </a>
     </div>
 
+    {{-- Outstanding Balance & Quick Pay 
     <x-filament::section>
         <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
@@ -114,7 +115,7 @@
             </form>
         </div>
     </x-filament::section>
-
+    --}}
     <x-filament::section>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
