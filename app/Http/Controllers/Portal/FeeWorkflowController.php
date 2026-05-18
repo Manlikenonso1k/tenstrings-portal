@@ -293,7 +293,7 @@ class FeeWorkflowController extends Controller
         return $this->submitPayment($request, 'paystack-titan');
     }
 
-    public function receipts(Request $request): View
+    public function receipts(Request $request): View|RedirectResponse
     {
         $student = $request->user()?->student;
 
@@ -306,6 +306,11 @@ class FeeWorkflowController extends Controller
             ->where('status', 'success')
             ->latest('processed_at')
             ->get();
+
+        if ($payments->isEmpty()) {
+            return redirect(\App\Filament\Portal\Pages\PaymentsPage::getUrl(panel: 'portal'))
+                ->with('status', 'You do not have any paid receipt yet. Complete a successful payment to download a receipt.');
+        }
 
         return view('fees.receipts', [
             'payments' => $payments,
