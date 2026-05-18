@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Filament\Portal\Pages\PaymentsPage;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PortalSetting;
@@ -164,7 +163,7 @@ class PaymentController extends Controller
 
     private function portalPaymentsUrl(): string
     {
-        return PaymentsPage::getUrl(['panel' => 'portal']);
+        return route('filament.portal.pages.payments-page');
     }
 
     public function downloadInvoice(Invoice $invoice): BinaryFileResponse
