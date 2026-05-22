@@ -196,9 +196,10 @@ class PaymentController extends Controller
 
         $user = $request->user();
         $isOwner = $user && $user->student && (int) $user->student->id === (int) $payment->student_id;
-        $isAdmin = in_array($user ? $user->role : null, ['super_admin', 'admin'], true);
+        // allow super_admin, admin and accounts_clerk to download student receipts
+        $isAdminOrClerk = in_array($user ? $user->role : null, ['super_admin', 'admin', 'accounts_clerk'], true);
 
-        abort_unless($isOwner || $isAdmin, 403);
+        abort_unless($isOwner || $isAdminOrClerk, 403);
 
         $path = (string) data_get($payment->metadata, 'receipt_path', '');
 
