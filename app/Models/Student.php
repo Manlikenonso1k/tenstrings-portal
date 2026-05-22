@@ -129,6 +129,11 @@ class Student extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    public function getFullNameAttribute(): string
+    {
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

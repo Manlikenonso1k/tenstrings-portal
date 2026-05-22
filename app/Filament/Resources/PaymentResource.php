@@ -50,10 +50,11 @@ class PaymentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('payment_number')->searchable(),
+                Tables\Columns\TextColumn::make('student.full_name')->label('Student')->searchable(['student.first_name', 'student.last_name', 'student.student_number'])->sortable(),
                 Tables\Columns\TextColumn::make('student.student_number')->label('Student ID')->searchable(),
                 Tables\Columns\TextColumn::make('course.name')->searchable(),
                 Tables\Columns\TextColumn::make('amount_paid')->money('NGN'),
-                Tables\Columns\TextColumn::make('payment_date')->date(),
+                Tables\Columns\TextColumn::make('payment_date')->date()->sortable(),
                 Tables\Columns\BadgeColumn::make('payment_status'),
             ])
             ->actions([
