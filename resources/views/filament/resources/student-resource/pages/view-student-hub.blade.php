@@ -102,4 +102,47 @@
         </a>
 
     </div>
+
+    @if(in_array(auth()->user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true))
+        <x-filament::section>
+            <h3 class="text-sm font-semibold mb-2">Payments</h3>
+            @php
+                $payments = $this->record->payments()->latest()->get();
+            @endphp
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="text-left p-2">Payment ID</th>
+                            <th class="text-left p-2">Receipt No.</th>
+                            <th class="text-left p-2">Date</th>
+                            <th class="text-left p-2">Amount</th>
+                            <th class="text-left p-2">Status</th>
+                            <th class="text-left p-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($payments as $payment)
+                            <tr class="border-t">
+                                <td class="p-2">{{ $payment->payment_number }}</td>
+                                <td class="p-2">{{ $payment->receipt_number ?: 'Pending' }}</td>
+                                <td class="p-2">{{ optional($payment->processed_at ?: $payment->payment_date)?->format('Y-m-d H:i') }}</td>
+                                <td class="p-2">₦{{ number_format((float) ($payment->amount_paid ?: $payment->amount), 2) }}</td>
+                                <td class="p-2">{{ strtoupper((string) ($payment->status ?? $payment->payment_status)) }}</td>
+                                <td class="p-2 space-x-2">
+                                    @if(($payment->status ?? null) === 'success')
+                                        <a href="{{ route('portal.payments.receipt', $payment) }}" class="text-primary-600 hover:underline" target="_blank">Download Receipt</a>
+                                    @endif
+                                    <a href="{{ \App\Filament\Resources\PaymentResource\Pages\EditPayment::getUrl(['record' => $payment->id]) }}" class="text-gray-600 hover:underline">View Details</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="p-2 text-gray-500">No payments yet.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </x-filament::section>
+    @endif
+
 </x-filament-panels::page>
