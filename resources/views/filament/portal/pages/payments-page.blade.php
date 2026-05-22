@@ -116,6 +116,7 @@
         </div>
     </x-filament::section>
     --}}
+@if(auth()->user()?->isAdmin() || auth()->user()?->isAccountsClerk())
     <x-filament::section>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -143,4 +144,7 @@
             </table>
         </div>
     </x-filament::section>
+@else
+    {{-- Payments table hidden for student portal users --}}
+@endif
 </x-filament-panels::page>
