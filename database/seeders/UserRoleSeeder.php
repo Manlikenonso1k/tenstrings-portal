@@ -21,7 +21,7 @@ class UserRoleSeeder extends Seeder
                 'name' => 'Super Admin',
                 'phone' => '+2348000000099',
                 'role' => 'super_admin',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'email_verified_at' => now(),
             ]
         );
@@ -32,7 +32,7 @@ class UserRoleSeeder extends Seeder
                 'name' => 'System Admin',
                 'phone' => '+2348000000000',
                 'role' => 'admin',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'email_verified_at' => now(),
             ]
         );
@@ -43,7 +43,7 @@ class UserRoleSeeder extends Seeder
                 'name' => 'Lead Instructor',
                 'phone' => '+2348000000001',
                 'role' => 'instructor',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'email_verified_at' => now(),
             ]
         );
@@ -66,7 +66,7 @@ class UserRoleSeeder extends Seeder
                 'name' => 'Sample Student',
                 'phone' => '+2348000000002',
                 'role' => 'student',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'email_verified_at' => now(),
             ]
         );

@@ -134,6 +134,31 @@ class Student extends Model
         return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
     }
 
+    /**
+     * Calculate the effective course fee for this student, factoring in
+     * any branch-level markup if the student is at a luxury branch.
+     *
+     * Returns 0.0 if the course or branch record cannot be resolved.
+     */
+    public function getComputedCourseFeeAttribute(): float
+    {
+        $course = Course::query()
+            ->where('name', $this->selected_course_name)
+            ->first();
+
+        if (! $course instanceof Course) {
+            return 0.0;
+        }
+
+        $branch = Branch::findByStudentBranch((string) ($this->branch ?? ''));
+
+        if ($branch instanceof Branch) {
+            return $branch->effectiveFeeFor($course);
+        }
+
+        return (float) $course->course_fee;
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

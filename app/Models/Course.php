@@ -50,4 +50,13 @@ class Course extends Model
     {
         return $this->hasMany(CourseModule::class)->orderBy('order');
     }
+
+    /**
+     * Alias for course_fee, used by the Branch markup calculation
+     * and the CSV importer so intent is clear at the call site.
+     */
+    public function getBaseFeeAttribute(): float
+    {
+        return (float) $this->course_fee;
+    }
 }

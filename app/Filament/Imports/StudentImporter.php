@@ -2,6 +2,7 @@
 
 namespace App\Filament\Imports;
 
+use App\Models\Branch;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Payment;
@@ -221,16 +222,36 @@ class StudentImporter extends Importer
             ])->save();
         }
 
-        $feesPaid = (float) ($this->data['fees_paid'] ?? 0);
-        $balanceDue = (float) ($this->data['balance_due'] ?? 0);
-        $hostelFee = (float) ($this->data['hostel_fee'] ?? 0);
-        $totalBalance = (float) ($this->data['total_balance'] ?? 0);
-        $year = isset($this->data['year']) ? (int) $this->data['year'] : null;
-        $startDate = Carbon::parse((string) ($this->data['start_date'] ?? now()->toDateString()));
+        $feesPaid    = (float) ($this->data['fees_paid'] ?? 0);
+        $hostelFee   = (float) ($this->data['hostel_fee'] ?? 0);
+        $year        = isset($this->data['year']) ? (int) $this->data['year'] : null;
+        $startDate   = Carbon::parse((string) ($this->data['start_date'] ?? now()->toDateString()));
 
         if ($year !== null && $year >= 1990 && $year <= 2100) {
             $startDate = $startDate->setYear($year);
         }
+
+        // ---------------------------------------------------------------
+        // Dynamic fee calculation — derive balance from the course's
+        // base fee + any branch markup, rather than trusting CSV values.
+        // ---------------------------------------------------------------
+        $course = Course::query()->where('name', $courseName)->first();
+        $branch = Branch::findByStudentBranch((string) ($this->data['branch'] ?? 'AGEGE BRANCH'));
+
+        if ($course instanceof Course) {
+            $totalBalance = $branch instanceof Branch
+                ? $branch->effectiveFeeFor($course)
+                : (float) $course->course_fee;
+        } else {
+            // Course not found in DB — fall back to CSV-provided total or fees_paid
+            $totalBalance = (float) ($this->data['total_balance'] ?? $feesPaid);
+        }
+
+        $balanceDue = max(0.0, round($totalBalance - $feesPaid, 2));
+
+        // Write the computed values back so syncFinancialRecords() uses them
+        $this->data['balance_due']   = $balanceDue;
+        $this->data['total_balance'] = $totalBalance;
 
         $this->record->forceFill([
             'email' => $email,
