@@ -42,6 +42,11 @@ return [
         'webhook_secret' => env('PAYSTACK_WEBHOOK_SECRET', env('PAYSTACK_SECRET_KEY')),
     ],
 
+    'evolution' => [
+        'url' => env('EVOLUTION_API_URL'),
+        'token' => env('EVOLUTION_API_TOKEN'),
+    ],
+
     'tgipay' => [
         'integration_key' => env('TGIPAY_INTEGRATION_KEY'),
         'base_url' => env('TGIPAY_BASE_URL', 'https://integration-service.tgipay.com/integration/api/v1'),
