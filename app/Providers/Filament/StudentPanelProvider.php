@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Portal\Pages\Auth\StudentLogin;
 use App\Filament\Portal\Pages\AccommodationPage;
 use App\Filament\Portal\Pages\CourseRegistrationPage;
+use App\Filament\Portal\Pages\CoursesPage;
 use App\Filament\Portal\Pages\DashboardPage;
 use App\Filament\Portal\Pages\PaymentsPage;
 use App\Filament\Portal\Pages\ResultsPage;
@@ -57,6 +58,7 @@ class StudentPanelProvider extends PanelProvider
                 StudentDocumentsPage::class,
                 StudentPasswordPage::class,
                 PaymentsPage::class,
+                CoursesPage::class,
                 CourseRegistrationPage::class,
                 ResultsPage::class,
                 AccommodationPage::class,

@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(function (Request $request) {
             return '/portal/login';
         });
+
+        $middleware->alias([
+            'lesson.module.unlocked' => \App\Http\Middleware\EnsureLessonModuleIsUnlocked::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

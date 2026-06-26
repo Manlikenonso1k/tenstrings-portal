@@ -37,7 +37,14 @@ return [
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
+            'driver'   => 'session',
+            'provider' => 'users',
+        ],
+
+        // Sanctum token guard for the mobile API.
+        // This is completely isolated from Filament's 'web' session guard.
+        'sanctum' => [
+            'driver'   => 'sanctum',
             'provider' => 'users',
         ],
     ],

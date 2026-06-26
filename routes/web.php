@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\StudentRegistrationController;
+use App\Http\Controllers\Course\LessonController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\FeeWorkflowController;
 use App\Http\Controllers\Student\StudentPdfController;
@@ -95,6 +96,17 @@ Route::middleware('auth')->group(function () {
         ->name('documents.receipts.download')
         ->middleware('signed');
 });
+
+Route::middleware(['auth'])
+    ->scopeBindings()
+    ->group(function () {
+        Route::get('/courses/{course}', [LessonController::class, 'index'])
+            ->name('courses.index');
+
+        Route::get('/courses/{course}/modules/{module}/lessons/{lesson}', [LessonController::class, 'show'])
+            ->middleware('lesson.module.unlocked')
+            ->name('courses.lessons.show');
+    });
 
 Route::post('/webhooks/{gateway}', [WebhookController::class, 'handle'])
     ->name('payments.webhook')

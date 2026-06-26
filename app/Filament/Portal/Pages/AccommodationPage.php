@@ -8,7 +8,7 @@ class AccommodationPage extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     protected static ?string $navigationLabel = 'ACCOMMODATION';
 

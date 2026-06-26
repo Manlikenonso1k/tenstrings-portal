@@ -20,7 +20,7 @@ class CourseRegistrationPage extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'COURSE REGISTRATION';
 
