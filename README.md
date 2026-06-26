@@ -42,6 +42,13 @@ The portal provides a fully stateless, token-based API (`routes/api.php`) protec
 5. Run `php artisan migrate` (Sanctum migrations are included)
 6. Start the server: `php artisan serve` or `npm run dev`
 
+## Recent Updates & Key Improvements
+
+- **Dynamic Branch Pricing (Luxury Centers)**: Added `is_luxury_branch` and `markup_percentage` logic to `Branch` models. The system now automatically calculates marked-up prices (e.g. 20% markup for Ajah) for applicable courses, while intelligently exempting specific premium programs like the "Advanced Diploma" series.
+- **Course Pricing Updates**: Updated the course catalog and seeder to reflect the latest 2026 pricing for all Certificates, Diplomas, and Advanced Diplomas.
+- **Admin Authentication Fix**: Resolved an "overhashing" bug in the `UserRoleSeeder` where `Hash::make()` was used alongside a model-level cast, preventing default admin logins.
+- **Robust CSV Import & Duplicate Handling**: The `StudentImporter` now features strict anti-duplication logic. During an import, the system securely identifies existing students by resolving against `student_number`, then `email`, and finally by matching `first_name`, `last_name`, and `phone`. Instead of throwing errors or creating duplicates, matched records are seamlessly updated with the latest financial snapshot.
+
 ## Production Deployment Notes
 
 When deploying updates to production, especially changes involving the API and auth guards, run:
