@@ -1,0 +1,11 @@
+digraph Routes {
+  rankdir=LR;
+  graph [fontname="Segoe UI"];
+  node [shape=box, style="rounded,filled", fillcolor="#F8FAFC", color="#CBD5E1", fontname="Segoe UI", fontsize=10];
+  edge [color="#64748B", fontname="Segoe UI", fontsize=9];
+  "Client" [shape=oval, fillcolor="#DBEAFE", color="#93C5FD"];
+  "route__" [label="GET /
+(unnamed)
+Closure"];
+  "Client" -> "route__";
+}
