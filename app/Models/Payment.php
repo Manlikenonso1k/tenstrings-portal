@@ -32,6 +32,7 @@ class Payment extends Model
         'receipt_number',
         'payment_status',
         'notes',
+        'receipt_evidence_path',
     ];
 
     protected $casts = [

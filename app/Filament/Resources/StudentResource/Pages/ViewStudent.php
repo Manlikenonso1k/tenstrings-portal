@@ -3,17 +3,25 @@
 namespace App\Filament\Resources\StudentResource\Pages;
 
 use App\Filament\Resources\StudentResource;
+use App\Models\Course;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\StudentCourseFee;
 use App\Models\User;
 use App\Services\Payments\PaymentService;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Throwable;
 
 class ViewStudent extends ViewRecord
 {
@@ -106,6 +114,136 @@ class ViewStudent extends ViewRecord
                         ->success()
                         ->send();
                 }),
+
+            // ── Record Manual Payment (Admin only) ───────────────────────
+            Actions\Action::make('record_payment')
+                ->label('Record Payment')
+                ->icon('heroicon-o-banknotes')
+                ->color('success')
+                ->visible(fn (): bool => in_array(Auth::user()?->role, ['super_admin', 'admin'], true))
+                ->form([
+                    Select::make('course_id')
+                        ->label('Course')
+                        ->options(function (): array {
+                            // Show courses from the student's course-fee records first,
+                            // then fall back to the student's selected course.
+                            $fees = StudentCourseFee::query()
+                                ->where('student_id', $this->record->id)
+                                ->with('course')
+                                ->get();
+
+                            if ($fees->isNotEmpty()) {
+                                return $fees
+                                    ->mapWithKeys(fn (StudentCourseFee $f) => [
+                                        $f->course_id => ($f->course->name ?? 'Course #' . $f->course_id)
+                                            . ' (Owes: ₦' . number_format((float) $f->outstanding_balance, 2) . ')',
+                                    ])
+                                    ->toArray();
+                            }
+
+                            // Fallback: resolve the student's selected course from the courses table
+                            $course = Course::query()
+                                ->where('name', $this->record->selected_course_name)
+                                ->first();
+
+                            if ($course) {
+                                return [$course->id => $course->name];
+                            }
+
+                            return [];
+                        })
+                        ->required()
+                        ->searchable(),
+
+                    TextInput::make('amount_paid')
+                        ->label('Amount Paid (NGN)')
+                        ->prefix('₦')
+                        ->numeric()
+                        ->required()
+                        ->minValue(1),
+
+                    FileUpload::make('receipt_evidence_path')
+                        ->label('Receipt Evidence (PDF)')
+                        ->disk('public_uploads')
+                        ->directory('payments/evidence')
+                        ->acceptedFileTypes(['application/pdf'])
+                        ->maxSize(5120) // 5 MB
+                        ->required(),
+
+                    Textarea::make('notes')
+                        ->label('Notes (optional)')
+                        ->maxLength(500),
+                ])
+                ->requiresConfirmation()
+                ->modalHeading('Record Manual Payment')
+                ->modalDescription('Please upload the PDF receipt and enter the exact amount paid. This action will update the student\'s fee balance.')
+                ->modalSubmitActionLabel('Record Payment')
+                ->action(function (array $data): void {
+                    try {
+                        DB::transaction(function () use ($data): void {
+                            $payment = Payment::query()->create([
+                                'student_id' => $this->record->id,
+                                'course_id' => (int) $data['course_id'],
+                                'user_id' => Auth::id(),
+                                'gateway' => 'manual',
+                                'reference' => 'MANUAL-' . strtoupper(bin2hex(random_bytes(6))),
+                                'amount' => (float) $data['amount_paid'],
+                                'amount_paid' => (float) $data['amount_paid'],
+                                'status' => 'success',
+                                'payment_status' => 'paid',
+                                'payment_method' => 'manual',
+                                'payment_date' => now(),
+                                'processed_at' => now(),
+                                'receipt_number' => 'REC-' . strtoupper(bin2hex(random_bytes(4))),
+                                'receipt_evidence_path' => $data['receipt_evidence_path'] ?? null,
+                                'notes' => $data['notes'] ?? null,
+                            ]);
+
+                            // The Payment model's `created` event already syncs StudentCourseFee.
+                            // Now refresh the student-level financial snapshot.
+                            $totals = StudentCourseFee::query()
+                                ->where('student_id', $this->record->id)
+                                ->selectRaw('COALESCE(SUM(total_course_fee), 0) as total_fee, COALESCE(SUM(amount_paid), 0) as paid, COALESCE(SUM(outstanding_balance), 0) as outstanding')
+                                ->first();
+
+                            $this->record->update([
+                                'total_balance' => (float) ($totals->total_fee ?? 0),
+                                'fees_paid' => (float) ($totals->paid ?? 0),
+                                'balance_due' => (float) ($totals->outstanding ?? 0),
+                            ]);
+
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->performedOn($this->record)
+                                ->withProperties([
+                                    'payment_id' => $payment->id,
+                                    'amount' => (float) $data['amount_paid'],
+                                    'course_id' => (int) $data['course_id'],
+                                    'receipt_evidence' => $data['receipt_evidence_path'] ?? null,
+                                ])
+                                ->log('manual_payment_recorded');
+                        });
+
+                        Notification::make()
+                            ->title('Payment recorded')
+                            ->body('₦' . number_format((float) $data['amount_paid'], 2) . ' has been recorded and the student balance updated.')
+                            ->success()
+                            ->send();
+
+                    } catch (Throwable $e) {
+                        Log::error('Manual payment recording failed.', [
+                            'student_id' => $this->record->id,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Payment recording failed')
+                            ->body('Could not record the payment. Please try again.')
+                            ->danger()
+                            ->send();
+                    }
+                }),
+
             Actions\Action::make('reset_student_password')
                 ->label('Reset Password')
                 ->icon('heroicon-o-key')
@@ -164,3 +302,4 @@ class ViewStudent extends ViewRecord
         ];
     }
 }
+
