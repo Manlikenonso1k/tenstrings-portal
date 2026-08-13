@@ -191,7 +191,7 @@ class ViewStudent extends ViewRecord
                                 'amount_paid' => (float) $data['amount_paid'],
                                 'status' => 'success',
                                 'payment_status' => 'paid',
-                                'payment_method' => 'manual',
+                                'payment_method' => 'transfer',
                                 'payment_date' => now(),
                                 'processed_at' => now(),
                                 'receipt_number' => 'REC-' . strtoupper(bin2hex(random_bytes(4))),
