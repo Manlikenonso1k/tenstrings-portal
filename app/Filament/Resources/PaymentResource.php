@@ -41,6 +41,13 @@ class PaymentResource extends Resource
                 'partial' => 'Partial',
                 'pending' => 'Pending',
             ])->required(),
+            Forms\Components\FileUpload::make('receipt_evidence_path')
+                ->label('Receipt Evidence (PDF)')
+                ->disk('public_uploads')
+                ->directory('payments/evidence')
+                ->acceptedFileTypes(['application/pdf'])
+                ->downloadable()
+                ->openable(),
             Forms\Components\Textarea::make('notes')->columnSpanFull(),
         ])->columns(2);
     }
@@ -59,6 +66,12 @@ class PaymentResource extends Resource
                 Tables\Columns\BadgeColumn::make('payment_status'),
             ])
             ->actions([
+                Tables\Actions\Action::make('view_evidence')
+                    ->label('View Evidence')
+                    ->icon('heroicon-o-document-text')
+                    ->url(fn (Payment $record): ?string => $record->receipt_evidence_path ? asset('uploads/' . ltrim($record->receipt_evidence_path, '/')) : null)
+                    ->visible(fn (Payment $record): bool => (bool) $record->receipt_evidence_path)
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
             ]);
     }

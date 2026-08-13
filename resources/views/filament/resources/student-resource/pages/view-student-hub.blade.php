@@ -133,6 +133,9 @@
                                     @if(($payment->status ?? null) === 'success')
                                         <a href="{{ route('portal.payments.receipt', $payment) }}" class="text-primary-600 hover:underline" target="_blank">Download Receipt</a>
                                     @endif
+                                    @if($payment->receipt_evidence_path)
+                                        <a href="{{ asset('uploads/' . ltrim($payment->receipt_evidence_path, '/')) }}" class="text-blue-600 hover:underline font-medium" target="_blank">View Evidence</a>
+                                    @endif
                                     <a href="{{ \App\Filament\Resources\PaymentResource\Pages\EditPayment::getUrl(['record' => $payment->id]) }}" class="text-gray-600 hover:underline">View Details</a>
                                 </td>
                             </tr>
