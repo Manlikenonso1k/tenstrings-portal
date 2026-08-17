@@ -54,7 +54,7 @@ class InstructorResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('reset-password')
                     ->label('Reset Password')
-                    ->icon('heroicon-o-arrow-circle-right')
+                    ->icon('heroicon-o-key')
                     ->color('warning')
                     ->action(function (Instructor $record, $livewireEvent) {
                         $record->password = Hash::make('temporary123');
