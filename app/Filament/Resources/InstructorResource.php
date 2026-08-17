@@ -67,9 +67,9 @@ class InstructorResource extends Resource
                             ->sendToDirectUrl();
                     })
                     ->requiresConfirmation()
-                    ->confirmButtonText('Reset Password')
-                    ->confirmButtonColor('danger')
-                    ->warning('This will reset the instructor password to: temporary123'),
+                    ->modalHeading('Reset Instructor Password')
+                    ->modalDescription('This will reset the instructor password to temporary123. The instructor must use this temporary password on next login.')
+                    ->modalSubmitActionLabel('Reset Password'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
