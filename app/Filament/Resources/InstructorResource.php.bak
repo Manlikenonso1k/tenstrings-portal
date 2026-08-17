@@ -6,11 +6,9 @@ use App\Filament\Resources\InstructorResource\Pages;
 use App\Models\Instructor;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Hash;
 
 class InstructorResource extends Resource
 {
@@ -52,24 +50,6 @@ class InstructorResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('reset-password')
-                    ->label('Reset Password')
-                    ->icon('heroicon-o-arrow-circle-right')
-                    ->color('warning')
-                    ->action(function (Instructor $record, $livewireEvent) {
-                        $record->password = Hash::make('temporary123');
-                        $record->save();
-
-                        Notification::make()
-                            ->title('Password Reset')
-                            ->body('The instructor password has been reset to: temporary123')
-                            ->success()
-                            ->sendToDirectUrl();
-                    })
-                    ->requiresConfirmation()
-                    ->confirmButtonText('Reset Password')
-                    ->confirmButtonColor('danger')
-                    ->warning('This will reset the instructor password to: temporary123'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
