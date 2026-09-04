@@ -46,9 +46,9 @@ class AjahInventoryImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('tenstrings_office_name')->label('TENSTRINGS OFFICE NAME')->requiredMapping()->rules(['required', 'string', 'max:255']),
-            ImportColumn::make('item_code')->label('ITEM CODE')->rules(['nullable', 'string', 'max:255']),
-            ImportColumn::make('item')->label('ITEM')->requiredMapping()->rules(['required', 'string', 'max:255']),
+            ImportColumn::make('tenstrings_office_name')->label('TENSTRINGS OFFICE NAME')->requiredMapping()->rules(['required', 'string', 'max:255'])->fillRecordUsing(fn (): null => null),
+            ImportColumn::make('item_code')->label('ITEM CODE')->rules(['nullable', 'string', 'max:255'])->fillRecordUsing(fn (): null => null),
+            ImportColumn::make('item')->label('ITEM')->requiredMapping()->rules(['required', 'string', 'max:255'])->fillRecordUsing(fn (): null => null),
         ];
     }
 
