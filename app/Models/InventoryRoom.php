@@ -24,6 +24,7 @@ class InventoryRoom extends Model
         'floor',
         'room_type',
         'description',
+        'image',
         'is_active',
         'last_audited_at',
     ];

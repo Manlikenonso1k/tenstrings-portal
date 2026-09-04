@@ -71,6 +71,11 @@ class InventoryItem extends Model
         return $this->hasMany(InventoryMovement::class)->latest('moved_at');
     }
 
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(InventoryTransfer::class, 'item_id')->latest('date');
+    }
+
     public function auditLines(): HasMany
     {
         return $this->hasMany(InventoryAuditLine::class);
