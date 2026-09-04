@@ -17,6 +17,12 @@ class AjahInventoryImporter extends Importer
 {
     protected static ?string $model = InventoryItem::class;
 
+    /** Import immediately; this inventory sheet is small and staff need the result before leaving the page. */
+    public function getJobConnection(): ?string
+    {
+        return 'sync';
+    }
+
     public static function getOptionsFormComponents(): array
     {
         return [
