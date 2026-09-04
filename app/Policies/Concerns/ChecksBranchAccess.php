@@ -13,7 +13,7 @@ trait ChecksBranchAccess
      */
     protected function sharesBranch(User $user, ?int $branchId): bool
     {
-        if ($user->can('inventory.view_all_branches')) {
+        if (! in_array($user->role, ['inventory_officer', 'branch_manager'], true) && ! $user->hasAnyRole(['inventory_officer', 'branch_manager']) && $user->can('inventory.view_all_branches')) {
             return true;
         }
 

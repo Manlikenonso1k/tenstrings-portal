@@ -34,7 +34,7 @@ class InventoryItemResource extends Resource
                 Forms\Components\TextInput::make('brand'), Forms\Components\TextInput::make('model'), Forms\Components\TextInput::make('serial_number'),
             ])->columns(2),
             Forms\Components\Section::make('Location')->schema([
-                Forms\Components\Select::make('branch_id')->relationship('branch', 'name')->required(),
+                Forms\Components\Select::make('branch_id')->relationship('branch', 'name')->required()->default(fn (): ?int => auth()->user()?->branch_id)->disabled(fn (): bool => ! (auth()->user()?->can('inventory.view_all_branches') ?? false))->dehydrated(),
                 Forms\Components\Select::make('inventory_room_id')->relationship('room', 'name')->searchable()->preload(),
                 Forms\Components\TextInput::make('quantity')->numeric()->minValue(0)->default(1)->required(),
                 Forms\Components\TextInput::make('unit')->default('unit')->required(),
@@ -63,7 +63,7 @@ class InventoryItemResource extends Resource
         ])->filters([
             Tables\Filters\SelectFilter::make('branch')->relationship('branch', 'name'), Tables\Filters\SelectFilter::make('room')->relationship('room', 'name'), Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
             Tables\Filters\SelectFilter::make('condition')->options(ItemCondition::options()), Tables\Filters\SelectFilter::make('status')->options(ItemStatus::options()),
-            Tables\Filters\TernaryFilter::make('needs_attention')->queries(true: fn (Builder $q) => $q->needsAttention()),
+            Tables\Filters\TernaryFilter::make('needs_attention')->queries(true: fn (Builder $q) => $q->needsAttention(), false: fn (Builder $q) => $q),
         ])->actions([Tables\Actions\EditAction::make()])->bulkActions([]);
     }
 

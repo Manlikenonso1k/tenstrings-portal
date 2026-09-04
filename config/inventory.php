@@ -71,7 +71,6 @@ return [
             'audit.create',
             'audit.update',
             'audit.complete',
-            'inventory.view_all_branches',
         ],
 
         // Same as the officer, minus cross-branch visibility: scoped to their
