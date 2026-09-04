@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('remark')->nullable();
             $table->timestamps();
 
-            $table->unique(['inventory_audit_id', 'inventory_item_id']);
+            $table->unique(['inventory_audit_id', 'inventory_item_id'], 'inv_audit_line_audit_item_uq');
         });
     }
 
