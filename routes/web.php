@@ -24,6 +24,7 @@ Route::get('/', function () {
 
     return redirect(match ($user?->role) {
         'student' => '/portal',
+        'inventory_officer', 'branch_manager', 'ceo' => '/inventory',
         'super_admin', 'admin', 'instructor' => '/admin',
         default => '/portal/login',
     });

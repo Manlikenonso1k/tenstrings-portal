@@ -1,0 +1,13 @@
+<?php
+namespace App\Filament\Inventory\Resources;
+use App\Enums\RoomType;
+use App\Filament\Inventory\Resources\InventoryRoomResource\Pages;
+use App\Models\InventoryRoom;
+use Filament\Forms; use Filament\Forms\Form; use Filament\Resources\Resource; use Filament\Tables; use Filament\Tables\Table;
+class InventoryRoomResource extends Resource {
+ protected static ?string $model = InventoryRoom::class; protected static ?string $navigationIcon = 'heroicon-o-building-office-2'; protected static ?string $navigationGroup = 'Inventory';
+ public static function canViewAny(): bool { return auth()->user()?->can('room.view') ?? false; } public static function canCreate(): bool { return auth()->user()?->can('room.create') ?? false; } public static function canEdit($record): bool { return auth()->user()?->can('update',$record) ?? false; } public static function canDelete($record): bool { return auth()->user()?->can('delete',$record) ?? false; }
+ public static function form(Form $form): Form { return $form->schema([Forms\Components\Select::make('branch_id')->relationship('branch','name')->required(),Forms\Components\TextInput::make('name')->required(),Forms\Components\TextInput::make('code')->required(),Forms\Components\TextInput::make('floor'),Forms\Components\Select::make('room_type')->options(RoomType::options())->required(),Forms\Components\Toggle::make('is_active')->default(true),Forms\Components\Textarea::make('description')->columnSpanFull()])->columns(2); }
+ public static function table(Table $table): Table { return $table->groups(['branch.name'])->columns([Tables\Columns\TextColumn::make('code')->searchable(),Tables\Columns\TextColumn::make('name')->searchable(),Tables\Columns\TextColumn::make('room_type')->badge(),Tables\Columns\TextColumn::make('items_count')->counts('items')->label('Items'),Tables\Columns\TextColumn::make('items_sum_quantity')->sum('items','quantity')->label('Quantity'),Tables\Columns\TextColumn::make('last_audited_at')->date()->color(fn (InventoryRoom $r) => $r->isAuditStale() ? 'warning' : null)])->actions([Tables\Actions\EditAction::make()])->bulkActions([]); }
+ public static function getPages(): array { return ['index'=>Pages\ListInventoryRooms::route('/'),'create'=>Pages\CreateInventoryRoom::route('/create'),'edit'=>Pages\EditInventoryRoom::route('/{record}/edit')]; }
+}

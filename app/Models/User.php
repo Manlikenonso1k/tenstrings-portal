@@ -7,15 +7,17 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +30,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'phone',
         'avatar_path',
         'role',
+        'branch_id',
         'password',
     ];
 
@@ -57,7 +60,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => in_array($this->role, ['super_admin', 'admin', 'accounts_clerk'], true),
+            'inventory' => $this->hasAnyRole(['super_admin', 'ceo', 'inventory_officer', 'branch_manager']) || in_array($this->role, ['super_admin', 'ceo', 'inventory_officer', 'branch_manager'], true),
+            'admin' => $this->hasAnyRole(['super_admin', 'ceo', 'admin', 'accountant']) || in_array($this->role, ['super_admin', 'ceo', 'admin', 'accountant', 'accounts_clerk'], true),
             'portal' => $this->role === 'student',
             'instructor' => in_array($this->role, ['super_admin', 'instructor'], true),
             default => false,
@@ -73,7 +77,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'super_admin';
+        return $this->role === 'super_admin' || $this->hasRole('super_admin');
     }
 
     public function isAdmin(): bool

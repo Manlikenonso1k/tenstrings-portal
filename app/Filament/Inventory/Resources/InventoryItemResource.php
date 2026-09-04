@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Filament\Inventory\Resources;
+
+use App\Enums\ItemCondition;
+use App\Enums\ItemStatus;
+use App\Filament\Inventory\Resources\InventoryItemResource\Pages;
+use App\Models\InventoryItem;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+class InventoryItemResource extends Resource
+{
+    protected static ?string $model = InventoryItem::class;
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static ?string $navigationGroup = 'Inventory';
+
+    public static function canViewAny(): bool { return auth()->user()?->can('item.view') ?? false; }
+    public static function canCreate(): bool { return auth()->user()?->can('item.create') ?? false; }
+    public static function canEdit($record): bool { return auth()->user()?->can('update', $record) ?? false; }
+    public static function canDelete($record): bool { return auth()->user()?->can('delete', $record) ?? false; }
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Section::make('Identification')->schema([
+                Forms\Components\TextInput::make('name')->required()->maxLength(255),
+                Forms\Components\TextInput::make('asset_tag')->helperText('Leave blank to generate automatically.'),
+                Forms\Components\Select::make('inventory_category_id')->relationship('category', 'name')->required(),
+                Forms\Components\TextInput::make('brand'), Forms\Components\TextInput::make('model'), Forms\Components\TextInput::make('serial_number'),
+            ])->columns(2),
+            Forms\Components\Section::make('Location')->schema([
+                Forms\Components\Select::make('branch_id')->relationship('branch', 'name')->required(),
+                Forms\Components\Select::make('inventory_room_id')->relationship('room', 'name')->searchable()->preload(),
+                Forms\Components\TextInput::make('quantity')->numeric()->minValue(0)->default(1)->required(),
+                Forms\Components\TextInput::make('unit')->default('unit')->required(),
+            ])->columns(2),
+            Forms\Components\Section::make('Condition & status')->schema([
+                Forms\Components\Select::make('condition')->options(ItemCondition::options())->default('good')->required(),
+                Forms\Components\Select::make('status')->options(ItemStatus::options())->default('in_use')->required(),
+                Forms\Components\DatePicker::make('last_verified_at'),
+            ])->columns(2),
+            Forms\Components\Section::make('Acquisition')->visible(fn (): bool => auth()->user()?->can('inventory.view_costs') ?? false)->schema([
+                Forms\Components\DatePicker::make('acquisition_date'), Forms\Components\TextInput::make('purchase_cost')->numeric()->prefix('?'), Forms\Components\TextInput::make('supplier'),
+            ])->columns(3),
+            Forms\Components\Section::make('Photo & notes')->schema([
+                Forms\Components\FileUpload::make('photo_path')->image()->imageEditor()->maxSize((int) config('inventory.photo_max_size'))->extraAttributes(['capture' => 'environment']),
+                Forms\Components\Textarea::make('notes')->columnSpanFull(),
+            ])->columns(2),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table->defaultGroup('room.name')->columns([
+            Tables\Columns\TextColumn::make('asset_tag')->copyable()->searchable(), Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
+            Tables\Columns\TextColumn::make('category.name')->label('Category'), Tables\Columns\TextColumn::make('room.name')->label('Room'), Tables\Columns\TextColumn::make('branch.name')->label('Branch'),
+            Tables\Columns\TextColumn::make('quantity'), Tables\Columns\TextColumn::make('condition')->badge(), Tables\Columns\TextColumn::make('status')->badge(), Tables\Columns\TextColumn::make('last_verified_at')->date(),
+        ])->filters([
+            Tables\Filters\SelectFilter::make('branch')->relationship('branch', 'name'), Tables\Filters\SelectFilter::make('room')->relationship('room', 'name'), Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
+            Tables\Filters\SelectFilter::make('condition')->options(ItemCondition::options()), Tables\Filters\SelectFilter::make('status')->options(ItemStatus::options()),
+            Tables\Filters\TernaryFilter::make('needs_attention')->queries(true: fn (Builder $q) => $q->needsAttention()),
+        ])->actions([Tables\Actions\EditAction::make()])->bulkActions([]);
+    }
+
+    public static function getPages(): array { return ['index' => Pages\ListInventoryItems::route('/'), 'create' => Pages\CreateInventoryItem::route('/create'), 'edit' => Pages\EditInventoryItem::route('/{record}/edit')]; }
+}
