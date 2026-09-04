@@ -59,7 +59,7 @@ class InventoryItemResource extends Resource
         return $table->defaultGroup('room.name')->columns([
             Tables\Columns\TextColumn::make('asset_tag')->copyable()->searchable(), Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
             Tables\Columns\TextColumn::make('category.name')->label('Category'), Tables\Columns\TextColumn::make('room.name')->label('Room'), Tables\Columns\TextColumn::make('branch.name')->label('Branch'),
-            Tables\Columns\TextColumn::make('quantity'), Tables\Columns\TextColumn::make('condition')->badge(), Tables\Columns\TextColumn::make('status')->badge(), Tables\Columns\TextColumn::make('last_verified_at')->date(),
+            Tables\Columns\ImageColumn::make('photo_path')->label('Photo')->disk(config('filesystems.default'))->square(), Tables\Columns\TextColumn::make('quantity'), Tables\Columns\TextColumn::make('condition')->badge(), Tables\Columns\TextColumn::make('status')->badge(), Tables\Columns\TextColumn::make('last_verified_at')->date(),
         ])->filters([
             Tables\Filters\SelectFilter::make('branch')->relationship('branch', 'name'), Tables\Filters\SelectFilter::make('room')->relationship('room', 'name'), Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
             Tables\Filters\SelectFilter::make('condition')->options(ItemCondition::options()), Tables\Filters\SelectFilter::make('status')->options(ItemStatus::options()),
