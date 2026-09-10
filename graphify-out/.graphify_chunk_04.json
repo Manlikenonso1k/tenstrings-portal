@@ -1,0 +1,72 @@
+{
+  "nodes": [
+    {
+      "id": "public_images_tenstrings_logo1_logo",
+      "label": "Tenstrings Music Institute Logo (Shield Mark)",
+      "file_type": "image",
+      "source_file": "C:\\Users\\Tenstrings Music Ins\\Documents\\tenstrings-portal\\public\\images\\tenstrings-logo1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_tenstrings_logo1_brand_identity",
+      "label": "Tenstrings Brand Identity (Navy Shield, Treble Clef, Serif Wordmark)",
+      "file_type": "image",
+      "source_file": "C:\\Users\\Tenstrings Music Ins\\Documents\\tenstrings-portal\\public\\images\\tenstrings-logo1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_images_tenstrings_logo1_portal_branding_asset",
+      "label": "Portal Public Branding Asset",
+      "file_type": "image",
+      "source_file": "C:\\Users\\Tenstrings Music Ins\\Documents\\tenstrings-portal\\public\\images\\tenstrings-logo1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "public_images_tenstrings_logo1_logo",
+      "target": "public_images_tenstrings_logo1_brand_identity",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\Tenstrings Music Ins\\Documents\\tenstrings-portal\\public\\images\\tenstrings-logo1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_tenstrings_logo1_logo",
+      "target": "public_images_tenstrings_logo1_portal_branding_asset",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\Tenstrings Music Ins\\Documents\\tenstrings-portal\\public\\images\\tenstrings-logo1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "public_images_tenstrings_logo1_brand_identity",
+      "target": "public_images_tenstrings_logo1_portal_branding_asset",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\Tenstrings Music Ins\\Documents\\tenstrings-portal\\public\\images\\tenstrings-logo1.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 34043,
+  "output_tokens": 0
+}
