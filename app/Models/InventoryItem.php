@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CheckoutStatus;
 use App\Enums\ItemCondition;
 use App\Enums\ItemStatus;
 use App\Models\Concerns\ScopedToBranch;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -32,6 +34,7 @@ class InventoryItem extends Model
         'unit',
         'condition',
         'status',
+        'status_before_checkout',
         'acquisition_date',
         'purchase_cost',
         'supplier',
@@ -45,6 +48,7 @@ class InventoryItem extends Model
     protected $casts = [
         'condition' => ItemCondition::class,
         'status' => ItemStatus::class,
+        'status_before_checkout' => ItemStatus::class,
         'quantity' => 'integer',
         'acquisition_date' => 'date',
         'purchase_cost' => 'decimal:2',
@@ -79,6 +83,47 @@ class InventoryItem extends Model
     public function auditLines(): HasMany
     {
         return $this->hasMany(InventoryAuditLine::class);
+    }
+
+    public function checkoutLines(): HasMany
+    {
+        return $this->hasMany(InventoryCheckoutItem::class);
+    }
+
+    /**
+     * Lines on checkouts that are still open and not yet fully returned.
+     */
+    public function openCheckoutLines(): HasMany
+    {
+        return $this->checkoutLines()
+            ->whereColumn('returned_quantity', '<', 'quantity')
+            ->whereHas('checkout', function (Builder $query): void {
+                $query->withoutGlobalScope('branch')
+                    ->whereNull('deleted_at')
+                    ->whereIn('status', CheckoutStatus::open());
+            });
+    }
+
+    /**
+     * How many units are currently out at events.
+     */
+    public function quantityOut(): int
+    {
+        return (int) $this->openCheckoutLines()
+            ->sum(DB::raw('quantity - returned_quantity'));
+    }
+
+    /**
+     * How many units may still be checked out.
+     */
+    public function availableQuantity(): int
+    {
+        return max(0, (int) $this->quantity - $this->quantityOut());
+    }
+
+    public function isBlockedFromCheckout(): bool
+    {
+        return in_array($this->status?->value, ItemStatus::blockedFromCheckout(), true);
     }
 
     public function creator(): BelongsTo
@@ -132,6 +177,7 @@ class InventoryItem extends Model
                 'quantity',
                 'condition',
                 'status',
+                'status_before_checkout',
                 'purchase_cost',
                 'last_verified_at',
             ])

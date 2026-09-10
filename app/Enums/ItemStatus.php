@@ -9,6 +9,7 @@ enum ItemStatus: string
     case UnderRepair = 'under_repair';
     case Disposed = 'disposed';
     case Missing = 'missing';
+    case CheckedOut = 'checked_out';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum ItemStatus: string
             self::UnderRepair => 'Under Repair',
             self::Disposed => 'Disposed',
             self::Missing => 'Missing',
+            self::CheckedOut => 'Checked out',
         };
     }
 
@@ -29,6 +31,7 @@ enum ItemStatus: string
             self::UnderRepair => 'warning',
             self::Disposed => 'danger',
             self::Missing => 'danger',
+            self::CheckedOut => 'warning',
         };
     }
 
@@ -40,6 +43,16 @@ enum ItemStatus: string
     public static function needingAttention(): array
     {
         return [self::UnderRepair->value, self::Missing->value];
+    }
+
+    /**
+     * Statuses that make an item ineligible to leave for an event.
+     *
+     * @return list<string>
+     */
+    public static function blockedFromCheckout(): array
+    {
+        return [self::UnderRepair->value, self::Disposed->value, self::Missing->value];
     }
 
     /** @return array<string, string> */

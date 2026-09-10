@@ -10,7 +10,7 @@ class InventoryPermissionSeeder extends Seeder {
   app(PermissionRegistrar::class)->forgetCachedPermissions();
   foreach (config('inventory.permissions') as $name) { Permission::findOrCreate($name, 'web'); }
   $roles = [
-   'ceo' => ['inventory.view','inventory.export','room.view','item.view','audit.view','inventory.view_all_branches','inventory.view_costs'],
+   'ceo' => ['inventory.view','inventory.export','room.view','item.view','audit.view','inventory_checkout.view','inventory.view_all_branches','inventory.view_costs'],
    'inventory_officer' => config('inventory.roles.inventory_officer'),
    'branch_manager' => config('inventory.roles.branch_manager'),
    'super_admin' => config('inventory.permissions'),

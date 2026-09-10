@@ -29,6 +29,16 @@ class InventoryRoomPolicy
         return $user->can('room.update') && $this->sharesBranch($user, $room->branch_id);
     }
 
+    /**
+     * Branch managers may replace a room's photo without holding full edit
+     * rights, so they cannot rename a room or move it to another branch by
+     * accident. Enforced here, not just by hiding the button.
+     */
+    public function updatePhoto(User $user, InventoryRoom $room): bool
+    {
+        return $user->can('inventory_room.update_photo') && $this->sharesBranch($user, $room->branch_id);
+    }
+
     public function delete(User $user, InventoryRoom $room): bool
     {
         return $user->can('room.delete') && $this->sharesBranch($user, $room->branch_id);

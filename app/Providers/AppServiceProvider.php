@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Models\InventoryAudit;
+use App\Models\InventoryCheckout;
 use App\Models\InventoryCategory;
 use App\Models\InventoryItem;
 use App\Models\InventoryRoom;
 use App\Observers\InventoryItemObserver;
 use App\Observers\InventoryRoomObserver;
 use App\Policies\InventoryAuditPolicy;
+use App\Policies\InventoryCheckoutPolicy;
 use App\Policies\InventoryCategoryPolicy;
 use App\Policies\InventoryItemPolicy;
 use App\Policies\InventoryRoomPolicy;
@@ -44,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(InventoryItem::class, InventoryItemPolicy::class);
         Gate::policy(InventoryCategory::class, InventoryCategoryPolicy::class);
         Gate::policy(InventoryAudit::class, InventoryAuditPolicy::class);
+        Gate::policy(InventoryCheckout::class, InventoryCheckoutPolicy::class);
         InventoryItem::observe(InventoryItemObserver::class);
         InventoryRoom::observe(InventoryRoomObserver::class);
 

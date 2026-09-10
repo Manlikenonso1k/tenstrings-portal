@@ -33,6 +33,10 @@ return [
         'audit.update',
         'audit.complete',
         'category.manage',
+        'inventory_room.update_photo',
+        'inventory_checkout.view',
+        'inventory_checkout.create',
+        'inventory_checkout.return',
         'inventory.view_all_branches',
         'inventory.view_costs',
     ],
@@ -71,6 +75,10 @@ return [
             'audit.create',
             'audit.update',
             'audit.complete',
+            'inventory_room.update_photo',
+            'inventory_checkout.view',
+            'inventory_checkout.create',
+            'inventory_checkout.return',
         ],
 
         // Same as the officer, minus cross-branch visibility: scoped to their
@@ -90,6 +98,10 @@ return [
             'audit.create',
             'audit.update',
             'audit.complete',
+            'inventory_room.update_photo',
+            'inventory_checkout.view',
+            'inventory_checkout.create',
+            'inventory_checkout.return',
         ],
 
     ],
@@ -124,5 +136,15 @@ return [
 
     // Max photo upload size in kilobytes.
     'photo_max_size' => 4096,
+
+    // Room photos are downscaled to this width server-side, with a thumbnail
+    // for the room grid.
+    'room_photo_width' => 1600,
+    'room_thumb_width' => 600,
+    'room_photo_max_size' => 5120,
+
+    // Minimum evidence photos per checkout / return line. Enforced in
+    // InventoryCheckoutService, not just in the form.
+    'checkout_photo_minimum' => 2,
 
 ];
