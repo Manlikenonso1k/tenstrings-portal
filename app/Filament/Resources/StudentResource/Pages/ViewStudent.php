@@ -120,7 +120,8 @@ class ViewStudent extends ViewRecord
                 ->label('Record Payment')
                 ->icon('heroicon-o-banknotes')
                 ->color('success')
-                ->visible(fn (): bool => in_array(Auth::user()?->role, ['super_admin', 'admin'], true))
+                ->visible(fn (): bool => in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true))
+                ->authorize('create', Payment::class)
                 ->form([
                     Select::make('course_id')
                         ->label('Course')

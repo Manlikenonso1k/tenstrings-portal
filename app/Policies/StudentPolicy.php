@@ -25,7 +25,7 @@ class StudentPolicy
 
     public function update(User $user, Student $student): bool
     {
-        return in_array($user->role, ['super_admin', 'admin'], true);
+        return in_array($user->role, ['super_admin', 'admin', 'accounts_clerk'], true);
     }
 
     public function delete(User $user, Student $student): bool

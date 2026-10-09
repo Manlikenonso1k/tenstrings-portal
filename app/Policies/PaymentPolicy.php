@@ -20,7 +20,7 @@ class PaymentPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['super_admin', 'admin'], true);
+        return in_array($user->role, ['super_admin', 'admin', 'accounts_clerk'], true);
     }
 
     public function update(User $user, Payment $payment): bool

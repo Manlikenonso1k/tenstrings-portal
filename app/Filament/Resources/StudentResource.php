@@ -446,7 +446,7 @@ class StudentResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return in_array(Auth::user()?->role, ['super_admin', 'admin'], true);
+        return in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true);
     }
 
     public static function canDelete($record): bool

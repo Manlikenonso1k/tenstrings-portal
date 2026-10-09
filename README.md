@@ -44,6 +44,7 @@ The portal provides a fully stateless, token-based API (`routes/api.php`) protec
 
 ## Recent Updates & Key Improvements
 
+- **Accounts Clerk Access**: Accounts clerks can record manual student payments from the student hub and edit a student's Identity & Passport (`/admin/students/{id}/identity`) and Core Information (`/admin/students/{id}/core-information`) pages. Payment and student deletion remain restricted to administrators.
 - **Dynamic Branch Pricing (Luxury Centers)**: Added `is_luxury_branch` and `markup_percentage` logic to `Branch` models. The system now automatically calculates marked-up prices (e.g. 20% markup for Ajah) for applicable courses, while intelligently exempting specific premium programs like the "Advanced Diploma" series.
 - **Course Pricing Updates**: Updated the course catalog and seeder to reflect the latest 2026 pricing for all Certificates, Diplomas, and Advanced Diplomas.
 - **Admin Authentication Fix**: Resolved an "overhashing" bug in the `UserRoleSeeder` where `Hash::make()` was used alongside a model-level cast, preventing default admin logins.
