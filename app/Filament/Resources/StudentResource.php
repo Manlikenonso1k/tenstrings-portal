@@ -24,7 +24,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Throwable;
 
 class StudentResource extends Resource
@@ -265,21 +267,44 @@ class StudentResource extends Resource
                         ->where('status', 'success')
                         ->exists())
                     ->openUrlInNewTab(),
-                Tables\Actions\Action::make('resend_matric_email')
-                    ->label('Resend Matric')
+                Tables\Actions\Action::make('resend_portal_credentials')
+                    ->label('Resend Credentials')
                     ->icon('heroicon-o-envelope')
-                    ->visible(fn () => in_array(Auth::user()?->role, ['super_admin', 'admin'], true))
+                    ->color('warning')
+                    ->visible(fn () => in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true))
+                    ->requiresConfirmation()
+                    ->modalHeading('Resend student portal credentials')
+                    ->modalDescription('A new temporary password will be generated and emailed to the student.')
+                    ->modalSubmitActionLabel('Reset password and send email')
                     ->action(function (Student $record): void {
+                        $user = $record->user;
+
+                        if (! $user) {
+                            Notification::make()
+                                ->title('Portal account not found')
+                                ->body('This student does not yet have a linked portal account.')
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
                         try {
-                            StudentMatricMailer::send($record);
+                            $plainPassword = Str::password(12);
+
+                            $user->forceFill([
+                                'password' => Hash::make($plainPassword),
+                            ])->save();
+
+                            StudentMatricMailer::sendWithCredentials($record, $plainPassword);
 
                             Notification::make()
-                                ->title('Matric email sent')
-                                ->body('Matric number has been emailed to ' . $record->email)
+                                ->title('Portal credentials sent')
+                                ->body('A new portal password has been emailed to ' . $record->email)
                                 ->success()
                                 ->send();
                         } catch (Throwable $exception) {
-                            Log::warning('Failed to resend student matric email.', [
+                            Log::warning('Failed to resend student portal credentials.', [
                                 'student_id' => $record->id,
                                 'email' => $record->email,
                                 'error' => $exception->getMessage(),
@@ -287,7 +312,7 @@ class StudentResource extends Resource
 
                             Notification::make()
                                 ->title('Email failed')
-                                ->body('Unable to send matric email right now.')
+                                ->body('Unable to send portal credentials right now.')
                                 ->danger()
                                 ->send();
                         }

@@ -4,7 +4,13 @@ namespace App\Filament\Resources\StudentResource\Pages;
 
 use App\Filament\Resources\StudentResource;
 use App\Services\Payments\QuarterResolver;
+use App\Support\StudentMatricMailer;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Throwable;
 
 class CreateStudent extends CreateRecord
 {
@@ -88,5 +94,49 @@ class CreateStudent extends CreateRecord
             'fees_paid' => (float) ($totals->paid ?? 0),
             'balance_due' => (float) ($totals->outstanding ?? 0),
         ]);
+
+        $this->sendPortalCredentials($student);
+    }
+
+    private function sendPortalCredentials(\App\Models\Student $student): void
+    {
+        $user = $student->user;
+
+        if (! $user) {
+            Log::warning('Student portal credentials could not be sent because no user account is linked.', [
+                'student_id' => $student->id,
+                'email' => $student->email,
+            ]);
+
+            return;
+        }
+
+        $plainPassword = Str::password(12);
+
+        try {
+            $user->forceFill([
+                'password' => Hash::make($plainPassword),
+            ])->save();
+
+            StudentMatricMailer::sendWithCredentials($student, $plainPassword);
+
+            Notification::make()
+                ->title('Student portal credentials sent')
+                ->body('Login details have been emailed to ' . $student->email)
+                ->success()
+                ->send();
+        } catch (Throwable $exception) {
+            Log::warning('Student portal credentials could not be sent after creation.', [
+                'student_id' => $student->id,
+                'email' => $student->email,
+                'error' => $exception->getMessage(),
+            ]);
+
+            Notification::make()
+                ->title('Student created, but email was not sent')
+                ->body('Use Resend Credentials from the student list after checking the email setup.')
+                ->warning()
+                ->send();
+        }
     }
 }
