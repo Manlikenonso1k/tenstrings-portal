@@ -5,6 +5,7 @@ namespace App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource;
 use App\Models\Course;
 use App\Models\Invoice;
+use App\Models\HostelPayment;
 use App\Models\Payment;
 use App\Models\StudentCourseFee;
 use App\Models\User;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class ViewStudent extends ViewRecord
@@ -245,6 +247,113 @@ class ViewStudent extends ViewRecord
                     }
                 }),
 
+            Actions\Action::make('record_hostel_payment')
+                ->label('Record Hostel Payment')
+                ->icon('heroicon-o-home-modern')
+                ->color('success')
+                ->visible(fn (): bool => in_array(Auth::user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true))
+                ->authorize('create', HostelPayment::class)
+                ->form([
+                    TextInput::make('amount')
+                        ->label('Amount Paid (NGN)')
+                        ->prefix('₦')
+                        ->numeric()
+                        ->required()
+                        ->minValue(1),
+                    Select::make('payment_method')
+                        ->label('Payment Method')
+                        ->options([
+                            'cash' => 'Cash',
+                            'card' => 'Card',
+                            'transfer' => 'Transfer',
+                            'cheque' => 'Cheque',
+                        ])
+                        ->required(),
+                    \Filament\Forms\Components\DatePicker::make('payment_date')
+                        ->label('Payment Date')
+                        ->default(now())
+                        ->required(),
+                    FileUpload::make('receipt_evidence_path')
+                        ->label('Receipt Evidence (optional)')
+                        ->disk('public_uploads')
+                        ->directory('hostel-payments/evidence')
+                        ->acceptedFileTypes(['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'])
+                        ->maxSize(5120),
+                    Textarea::make('notes')
+                        ->label('Notes (optional)')
+                        ->maxLength(500),
+                ])
+                ->requiresConfirmation()
+                ->modalHeading('Record Hostel Payment')
+                ->modalDescription('The payment is added to the student hostel ledger and cannot exceed the outstanding hostel balance.')
+                ->modalSubmitActionLabel('Record Hostel Payment')
+                ->action(function (array $data): void {
+                    try {
+                        DB::transaction(function () use ($data): void {
+                            $student = $this->record->newQuery()
+                                ->lockForUpdate()
+                                ->findOrFail($this->record->getKey());
+
+                            $paid = (float) $student->hostelPayments()
+                                ->where('status', 'paid')
+                                ->sum('amount');
+                            $outstanding = max(0, (float) $student->hostel_fee - $paid);
+                            $amount = (float) $data['amount'];
+
+                            if ($outstanding <= 0) {
+                                throw ValidationException::withMessages([
+                                    'amount' => 'This student has no outstanding hostel balance.',
+                                ]);
+                            }
+
+                            if ($amount > $outstanding) {
+                                throw ValidationException::withMessages([
+                                    'amount' => 'The hostel payment cannot exceed the outstanding balance of ₦' . number_format($outstanding, 2) . '.',
+                                ]);
+                            }
+
+                            $payment = HostelPayment::query()->create([
+                                'student_id' => $student->id,
+                                'recorded_by' => Auth::id(),
+                                'amount' => $amount,
+                                'payment_date' => $data['payment_date'],
+                                'payment_method' => $data['payment_method'],
+                                'status' => 'paid',
+                                'receipt_number' => 'HREC-' . strtoupper(bin2hex(random_bytes(4))),
+                                'receipt_evidence_path' => $data['receipt_evidence_path'] ?? null,
+                                'notes' => $data['notes'] ?? null,
+                            ]);
+
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->performedOn($student)
+                                ->withProperties([
+                                    'hostel_payment_id' => $payment->id,
+                                    'amount' => $amount,
+                                ])
+                                ->log('hostel_payment_recorded');
+                        });
+
+                        Notification::make()
+                            ->title('Hostel payment recorded')
+                            ->body('₦' . number_format((float) $data['amount'], 2) . ' has been added to the hostel payment ledger.')
+                            ->success()
+                            ->send();
+                    } catch (ValidationException $exception) {
+                        throw $exception;
+                    } catch (Throwable $exception) {
+                        Log::error('Hostel payment recording failed.', [
+                            'student_id' => $this->record->id,
+                            'error' => $exception->getMessage(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Hostel payment failed')
+                            ->body('Could not record the hostel payment. Please try again.')
+                            ->danger()
+                            ->send();
+                    }
+                }),
             Actions\Action::make('reset_student_password')
                 ->label('Reset Password')
                 ->icon('heroicon-o-key')

@@ -100,7 +100,12 @@ class StudentResource extends Resource
                             ->required()
                             ->disabled(fn (Get $get): bool => CourseCatalog::hasSingleDuration($get('selected_course_name')))
                             ->dehydrated(),
-                        Forms\Components\DatePicker::make('start_date')
+                        Forms\Components\TextInput::make('hostel_fee')
+                            ->label('Total Hostel Fee (NGN)')
+                            ->numeric()
+                            ->prefix('₦')
+                            ->minValue(0)
+                            ->default(0),                        Forms\Components\DatePicker::make('start_date')
                             ->required()
                             ->default(now()->toDateString()),
                         Forms\Components\Hidden::make('selected_course_code')

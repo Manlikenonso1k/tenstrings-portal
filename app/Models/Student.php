@@ -124,6 +124,10 @@ class Student extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function hostelPayments()
+    {
+        return $this->hasMany(HostelPayment::class);
+    }
     public function invoices()
     {
         return $this->hasMany(Invoice::class);

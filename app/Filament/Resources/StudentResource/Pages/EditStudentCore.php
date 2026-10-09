@@ -42,7 +42,12 @@ class EditStudentCore extends EditRecord
                 ])
                 ->required(),
             Forms\Components\DatePicker::make('date_of_birth')->label('Date of Birth'),
-            Forms\Components\Select::make('status')
+            Forms\Components\TextInput::make('hostel_fee')
+                ->label('Total Hostel Fee (NGN)')
+                ->numeric()
+                ->prefix('₦')
+                ->minValue(0)
+                ->default(0),            Forms\Components\Select::make('status')
                 ->options([
                     'active' => 'Active',
                     'inactive' => 'Inactive',

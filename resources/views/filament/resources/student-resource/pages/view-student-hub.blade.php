@@ -148,4 +148,69 @@
         </x-filament::section>
     @endif
 
+    @if(in_array(auth()->user()?->role, ['super_admin', 'admin', 'accounts_clerk'], true))
+        @php
+            $hostelFee = (float) ($this->record->hostel_fee ?? 0);
+            $hostelPayments = $this->record->hostelPayments()->latest('payment_date')->latest('id')->get();
+            $hostelPaid = (float) $hostelPayments->where('status', 'paid')->sum('amount');
+            $hostelBalance = max(0, $hostelFee - $hostelPaid);
+        @endphp
+
+        <x-filament::section>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h3 class="text-sm font-semibold">Hostel Payments</h3>
+                <span class="text-xs text-gray-500">Set the total hostel fee in Core Information before recording payments.</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
+                    <p class="text-xs text-gray-500">Hostel Fee</p>
+                    <p class="font-semibold">₦{{ number_format($hostelFee, 2) }}</p>
+                </div>
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
+                    <p class="text-xs text-gray-500">Paid</p>
+                    <p class="font-semibold text-success-600">₦{{ number_format($hostelPaid, 2) }}</p>
+                </div>
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
+                    <p class="text-xs text-gray-500">Balance</p>
+                    <p class="font-semibold {{ $hostelBalance > 0 ? 'text-danger-600' : 'text-success-600' }}">₦{{ number_format($hostelBalance, 2) }}</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="text-left p-2">Payment No.</th>
+                            <th class="text-left p-2">Date</th>
+                            <th class="text-left p-2">Method</th>
+                            <th class="text-left p-2">Amount</th>
+                            <th class="text-left p-2">Receipt</th>
+                            <th class="text-left p-2">Evidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($hostelPayments as $hostelPayment)
+                            <tr class="border-t">
+                                <td class="p-2">{{ $hostelPayment->payment_number }}</td>
+                                <td class="p-2">{{ optional($hostelPayment->payment_date)->format('Y-m-d') }}</td>
+                                <td class="p-2">{{ ucfirst($hostelPayment->payment_method) }}</td>
+                                <td class="p-2">₦{{ number_format((float) $hostelPayment->amount, 2) }}</td>
+                                <td class="p-2">{{ $hostelPayment->receipt_number }}</td>
+                                <td class="p-2">
+                                    @if($hostelPayment->receipt_evidence_path)
+                                        <a href="{{ asset('uploads/' . ltrim($hostelPayment->receipt_evidence_path, '/')) }}" class="text-primary-600 hover:underline" target="_blank">View Evidence</a>
+                                    @else
+                                        <span class="text-gray-500">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="p-2 text-gray-500">No hostel payments recorded.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </x-filament::section>
+    @endif
 </x-filament-panels::page>
