@@ -1,0 +1,18 @@
+# Build artifacts and vendored bundles. These are compiled output, not source:
+# minified Filament/Vite JS alone accounted for 60% of the graph's nodes, with
+# names like _a() and Bc() that tell an agent nothing.
+public/js/
+public/css/
+public/build/
+public/vendor/
+public/hot
+
+# Dependencies
+vendor/
+node_modules/
+
+# Runtime and generated state
+storage/
+bootstrap/cache/
+graphify-out/
+database/*.sqlite*
