@@ -360,10 +360,10 @@
     "semantic_hash": "9bebd627ea44a2034f41f9410c2cb54a"
   },
   "app/Filament/Resources/ActivityLogResource.php": {
-    "mtime": 1791550250.4969976,
-    "seen": 1791557997.6697545,
-    "ast_hash": "8677c34ed84effb57637db45c3081d4a",
-    "semantic_hash": ""
+    "mtime": 1779111240.533441,
+    "seen": 1791536255.5149012,
+    "ast_hash": "bdfe2495d76af8e703c6d3517dd9a2a7",
+    "semantic_hash": "bdfe2495d76af8e703c6d3517dd9a2a7"
   },
   "app/Filament/Resources/ActivityLogResource/Pages/ListActivityLogs.php": {
     "mtime": 1779111240.5344381,
@@ -570,10 +570,10 @@
     "semantic_hash": "c8f0d7762a60dff7e214f2836162da05"
   },
   "app/Filament/Resources/PaymentResource.php": {
-    "mtime": 1791550669.6399415,
-    "seen": 1791557997.6700041,
-    "ast_hash": "c47c5719b229d0952705509ef632149b",
-    "semantic_hash": ""
+    "mtime": 1786631622.9917107,
+    "seen": 1791536255.514944,
+    "ast_hash": "f28baa431d6542b6236aed2fec497154",
+    "semantic_hash": "f28baa431d6542b6236aed2fec497154"
   },
   "app/Filament/Resources/PaymentResource/Pages/CreatePayment.php": {
     "mtime": 1779111240.5972703,
@@ -582,10 +582,10 @@
     "semantic_hash": "89c9064bcad5cc495eeb5e415b3acf15"
   },
   "app/Filament/Resources/PaymentResource/Pages/EditPayment.php": {
-    "mtime": 1791550669.640943,
-    "seen": 1791557997.6700141,
-    "ast_hash": "6b84784e9466813086a8e0df03b54136",
-    "semantic_hash": ""
+    "mtime": 1779111240.5982673,
+    "seen": 1791536255.5149462,
+    "ast_hash": "61e5b16027b5fb6b5cc515dfb4c1a77c",
+    "semantic_hash": "61e5b16027b5fb6b5cc515dfb4c1a77c"
   },
   "app/Filament/Resources/PaymentResource/Pages/ListPayments.php": {
     "mtime": 1779111240.6082406,
@@ -618,16 +618,16 @@
     "semantic_hash": "0061227d042dd23d2d0b5f7554812a80"
   },
   "app/Filament/Resources/StudentResource.php": {
-    "mtime": 1791548354.2704036,
-    "seen": 1791557997.6700444,
-    "ast_hash": "7652d0c40d44dd7a07457fc5e901755a",
-    "semantic_hash": ""
+    "mtime": 1779629600.7472484,
+    "seen": 1791536255.514954,
+    "ast_hash": "26d4f5d24da97ce415b368d1f43b79c7",
+    "semantic_hash": "26d4f5d24da97ce415b368d1f43b79c7"
   },
   "app/Filament/Resources/StudentResource/Pages/CreateStudent.php": {
-    "mtime": 1791548026.3682244,
-    "seen": 1791557997.670049,
-    "ast_hash": "bf2f7aa3ccba81df2160eb8ff3cff16c",
-    "semantic_hash": ""
+    "mtime": 1779111240.61223,
+    "seen": 1791536255.514955,
+    "ast_hash": "66f9a91c0c34b6438843c578d6c608c0",
+    "semantic_hash": "66f9a91c0c34b6438843c578d6c608c0"
   },
   "app/Filament/Resources/StudentResource/Pages/EditStudent.php": {
     "mtime": 1779111240.61223,
@@ -636,10 +636,10 @@
     "semantic_hash": "bf53ae45067921463b2582af0f7172ec"
   },
   "app/Filament/Resources/StudentResource/Pages/EditStudentCore.php": {
-    "mtime": 1791548354.2684,
-    "seen": 1791557997.6700583,
-    "ast_hash": "9ad9f1d854d8ccd20ac429149f036e15",
-    "semantic_hash": ""
+    "mtime": 1779111240.613227,
+    "seen": 1791536255.5149577,
+    "ast_hash": "c48a5bceda6face27ff7e0e7a2255352",
+    "semantic_hash": "c48a5bceda6face27ff7e0e7a2255352"
   },
   "app/Filament/Resources/StudentResource/Pages/EditStudentDocuments.php": {
     "mtime": 1779111240.613227,
@@ -660,10 +660,10 @@
     "semantic_hash": "f6c1a6b0c59b6d4cc0940ebb57e35f56"
   },
   "app/Filament/Resources/StudentResource/Pages/ViewStudent.php": {
-    "mtime": 1791548393.0827904,
-    "seen": 1791557997.6700785,
-    "ast_hash": "e938a6baae816d8bb17eb5997f087e6f",
-    "semantic_hash": ""
+    "mtime": 1786631349.1885333,
+    "seen": 1791536255.5149622,
+    "ast_hash": "103053863f796c6888ea7e6655222497",
+    "semantic_hash": "103053863f796c6888ea7e6655222497"
   },
   "app/Filament/Resources/StudentResource/Pages/ViewStudentAcademic.php": {
     "mtime": 1779111240.6152217,
@@ -1086,10 +1086,10 @@
     "semantic_hash": "0f6289397e59814057157bbb14adc6c6"
   },
   "app/Models/Payment.php": {
-    "mtime": 1791551805.4612732,
-    "seen": 1791557997.6705291,
-    "ast_hash": "e7676e8df40268087e491009d8d93e38",
-    "semantic_hash": ""
+    "mtime": 1786630629.8354805,
+    "seen": 1791536255.515049,
+    "ast_hash": "0eb6e86e38e2f8d50048d72d3b163bc4",
+    "semantic_hash": "0eb6e86e38e2f8d50048d72d3b163bc4"
   },
   "app/Models/PaymentAdvice.php": {
     "mtime": 1779111240.6620963,
@@ -1104,10 +1104,10 @@
     "semantic_hash": "c5e5a07b8ce5dff27d3fd3c3184355d0"
   },
   "app/Models/Student.php": {
-    "mtime": 1791550013.6378548,
-    "seen": 1791557997.6705508,
-    "ast_hash": "8434ae15fcb31b8937c1fb32f6ddb6dc",
-    "semantic_hash": ""
+    "mtime": 1782492266.4411838,
+    "seen": 1791536255.5150523,
+    "ast_hash": "0aa3d0cdaa9f8ece5ed86655697e5013",
+    "semantic_hash": "0aa3d0cdaa9f8ece5ed86655697e5013"
   },
   "app/Models/StudentCourseFee.php": {
     "mtime": 1779111240.663094,
@@ -1206,16 +1206,16 @@
     "semantic_hash": "f81f50984914cfe47e0dcfe53e3793ae"
   },
   "app/Policies/PaymentPolicy.php": {
-    "mtime": 1791543693.833323,
-    "seen": 1791557997.670704,
-    "ast_hash": "e0e5989e64e4e3b0ea283772291419fd",
-    "semantic_hash": ""
+    "mtime": 1779111240.6670845,
+    "seen": 1791536255.5150712,
+    "ast_hash": "0aa29136da9187fda24309f3fd15e39b",
+    "semantic_hash": "0aa29136da9187fda24309f3fd15e39b"
   },
   "app/Policies/StudentPolicy.php": {
-    "mtime": 1791543693.8853216,
-    "seen": 1791557997.6707108,
-    "ast_hash": "c403d7461301be4639955630413f9a1c",
-    "semantic_hash": ""
+    "mtime": 1779111240.6670845,
+    "seen": 1791536255.5150726,
+    "ast_hash": "08d8853a6f36df0639f30235793213a4",
+    "semantic_hash": "08d8853a6f36df0639f30235793213a4"
   },
   "app/Providers/AppServiceProvider.php": {
     "mtime": 1789039812.7479863,
@@ -1956,22 +1956,22 @@
     "semantic_hash": "f575bba2a84b061a5ca2f1f417b2f9cb"
   },
   "resources/views/filament/resources/student-resource/pages/edit-student-core.blade.php": {
-    "mtime": 1791545894.8242035,
-    "seen": 1791557997.671364,
-    "ast_hash": "e15f587f5f0e8c536d8080caeb0f91c6",
-    "semantic_hash": ""
+    "mtime": 1779111240.876523,
+    "seen": 1791536255.515216,
+    "ast_hash": "c2518fa35ddad9da673daf5266f5d4b9",
+    "semantic_hash": "c2518fa35ddad9da673daf5266f5d4b9"
   },
   "resources/views/filament/resources/student-resource/pages/edit-student-documents.blade.php": {
-    "mtime": 1791545894.8242035,
-    "seen": 1791557997.671368,
-    "ast_hash": "ca98fada0d7a7e9e14164d3834bff58a",
-    "semantic_hash": ""
+    "mtime": 1779111240.876523,
+    "seen": 1791536255.515217,
+    "ast_hash": "c53b4834bccc5ae13bb788156099839f",
+    "semantic_hash": "c53b4834bccc5ae13bb788156099839f"
   },
   "resources/views/filament/resources/student-resource/pages/edit-student-identity.blade.php": {
-    "mtime": 1791545894.8222015,
-    "seen": 1791557997.6713715,
-    "ast_hash": "d1e5075f3de8234c2ede0a54cba4f3db",
-    "semantic_hash": ""
+    "mtime": 1779111240.876523,
+    "seen": 1791536255.5152183,
+    "ast_hash": "51006a65fe1c2ec9e40c9f6fdae5f463",
+    "semantic_hash": "51006a65fe1c2ec9e40c9f6fdae5f463"
   },
   "resources/views/filament/resources/student-resource/pages/view-student-academic.blade.php": {
     "mtime": 1779111240.8775203,
@@ -1980,10 +1980,10 @@
     "semantic_hash": "a030565469f7810a836fefd71f18a574"
   },
   "resources/views/filament/resources/student-resource/pages/view-student-hub.blade.php": {
-    "mtime": 1791548426.0600505,
-    "seen": 1791557997.671378,
-    "ast_hash": "2a34cd01892cc551d2d966910cca6b86",
-    "semantic_hash": ""
+    "mtime": 1786631591.0302444,
+    "seen": 1791536255.5152204,
+    "ast_hash": "6774643fed863306e253fd5d069ef706",
+    "semantic_hash": "6774643fed863306e253fd5d069ef706"
   },
   "resources/views/filament/widgets/active-import-tracker.blade.php": {
     "mtime": 1779111240.8785179,
@@ -2118,10 +2118,10 @@
     "semantic_hash": "60c40741a9c5b915a5e5542cfb23bc25"
   },
   "README.md": {
-    "mtime": 1791543942.767654,
-    "seen": 1791557997.6715379,
-    "ast_hash": "94a5c02976c13930849f4c6ba5dd4bc7",
-    "semantic_hash": ""
+    "mtime": 1782497233.205169,
+    "seen": 1791536255.5152533,
+    "ast_hash": "be8002c65186e3846a5b3da05b3123e1",
+    "semantic_hash": "be8002c65186e3846a5b3da05b3123e1"
   },
   "docs/inventory-module-guide.md": {
     "mtime": 1788527234.4937356,
@@ -2266,101 +2266,5 @@
     "seen": 1791536255.5152793,
     "ast_hash": "924d899811e50af99e8650c4793a64f8",
     "semantic_hash": "924d899811e50af99e8650c4793a64f8"
-  },
-  ".claude/settings.json": {
-    "mtime": 1791536268.387269,
-    "seen": 1791557997.669355,
-    "ast_hash": "dea21c376c28ee7c01c1c5279be06a34",
-    "semantic_hash": ""
-  },
-  "app/Console/Commands/CorrectPaymentAmount.php": {
-    "mtime": 1791551450.2231529,
-    "seen": 1791557997.6693854,
-    "ast_hash": "08bdbce5873e1ee82da6361e1975ce0d",
-    "semantic_hash": ""
-  },
-  "app/Console/Commands/DeletePaymentAndReconcile.php": {
-    "mtime": 1791551826.566557,
-    "seen": 1791557997.6693892,
-    "ast_hash": "cd2613634eeb518af96850b7df88e434",
-    "semantic_hash": ""
-  },
-  "app/Models/HostelPayment.php": {
-    "mtime": 1791550250.4989765,
-    "seen": 1791557997.6704168,
-    "ast_hash": "b21754618f9eaaab0a4cd26e5268c7d1",
-    "semantic_hash": ""
-  },
-  "app/Policies/HostelPaymentPolicy.php": {
-    "mtime": 1791548327.3663423,
-    "seen": 1791557997.6706583,
-    "ast_hash": "deafbd363080eb217505fbb70431d6ce",
-    "semantic_hash": ""
-  },
-  "app/Services/Payments/PaymentEvidenceApprovalService.php": {
-    "mtime": 1791550615.5632763,
-    "seen": 1791557997.670801,
-    "ast_hash": "e85428d2a092da955b3cc5e6fbba88c1",
-    "semantic_hash": ""
-  },
-  "config/payment-evidence.php": {
-    "mtime": 1791550615.5608475,
-    "seen": 1791557997.6709461,
-    "ast_hash": "86f84ee10193324d984242da57d61ce0",
-    "semantic_hash": ""
-  },
-  "database/migrations/2026_10_09_000100_create_hostel_payments_table.php": {
-    "mtime": 1791548327.3653421,
-    "seen": 1791557997.6712174,
-    "ast_hash": "57a4568d6f9d866610fcb2e3ade29fbd",
-    "semantic_hash": ""
-  },
-  "tests/Feature/AccountsClerkAccessTest.php": {
-    "mtime": 1791543834.5698285,
-    "seen": 1791557997.6714525,
-    "ast_hash": "79ae719bb5f3ac519642decc22911558",
-    "semantic_hash": ""
-  },
-  "tests/Feature/HostelPaymentAccessTest.php": {
-    "mtime": 1791548472.3181334,
-    "seen": 1791557997.671471,
-    "ast_hash": "1ba5ce0221fa20cecc9611d22691717b",
-    "semantic_hash": ""
-  },
-  "tests/Feature/PaymentCorrectionCommandTest.php": {
-    "mtime": 1791551491.872334,
-    "seen": 1791557997.6715055,
-    "ast_hash": "66b2f2a18d974d58b58b45db71cac6aa",
-    "semantic_hash": ""
-  },
-  "tests/Feature/PaymentDeletionCommandTest.php": {
-    "mtime": 1791551860.8448796,
-    "seen": 1791557997.6715105,
-    "ast_hash": "c6ebf49ec70fab5238353c6ce24288d4",
-    "semantic_hash": ""
-  },
-  "tests/Feature/PaymentEvidenceApprovalTest.php": {
-    "mtime": 1791550736.5241504,
-    "seen": 1791557997.6715167,
-    "ast_hash": "a42017a9073de92c5d605dd7bcf7df87",
-    "semantic_hash": ""
-  },
-  "tests/Feature/StudentActivityLogTest.php": {
-    "mtime": 1791550180.310303,
-    "seen": 1791557997.6715205,
-    "ast_hash": "26ce5aeaae635533c65f4cdcc8856707",
-    "semantic_hash": ""
-  },
-  "CLAUDE.md": {
-    "mtime": 1791536313.49361,
-    "seen": 1791557997.6715345,
-    "ast_hash": "71807dd22e9196e6ad1e6de1ababd48a",
-    "semantic_hash": ""
-  },
-  "output.md": {
-    "mtime": 1791552290.588625,
-    "seen": 1791557997.671549,
-    "ast_hash": "54ea12e0cc83747885061fa8a29462f3",
-    "semantic_hash": ""
   }
 }
