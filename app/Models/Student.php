@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Student extends Model
@@ -167,16 +168,15 @@ class Student extends Model
     {
         return LogOptions::defaults()
             ->useLogName('students')
-            ->logOnly([
-                'first_name',
-                'last_name',
-                'email',
-                'branch',
-                'fees_paid',
-                'balance_due',
-                'total_balance',
-                'status',
-            ])
-            ->logOnlyDirty();
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        $activity->properties = ($activity->properties ?? collect())
+            ->put('student_name', $this->full_name)
+            ->put('student_number', $this->student_number);
     }
 }

@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class HostelPayment extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'student_id',
@@ -26,6 +30,28 @@ class HostelPayment extends Model
         'amount' => 'decimal:2',
         'payment_date' => 'date',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('hostel_payments')
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        $student = $this->student;
+
+        if (! $student) {
+            return;
+        }
+
+        $activity->properties = ($activity->properties ?? collect())
+            ->put('student_name', $student->full_name)
+            ->put('student_number', $student->student_number);
+    }
 
     protected static function booted(): void
     {

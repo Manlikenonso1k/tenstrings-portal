@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Payment extends Model
@@ -95,6 +96,19 @@ class Payment extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        $student = $this->student;
+
+        if (! $student) {
+            return;
+        }
+
+        $activity->properties = ($activity->properties ?? collect())
+            ->put('student_name', $student->full_name)
+            ->put('student_number', $student->student_number);
     }
 
     public function getActivitylogOptions(): LogOptions

@@ -3,9 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ActivityLogResource\Pages;
+use App\Models\Student;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -38,6 +40,11 @@ class ActivityLogResource extends Resource
                     ->label('Who')
                     ->placeholder('System')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('student')
+                    ->label('Student')
+                    ->state(fn (Activity $record): string => self::studentLabel($record))
+                    ->placeholder('—')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('What')
                     ->searchable(),
@@ -54,6 +61,37 @@ class ActivityLogResource extends Resource
                     ->sortable(),
             ])
             ->filters([
+                Tables\Filters\Filter::make('student_search')
+                    ->label('Student')
+                    ->form([
+                        TextInput::make('student_search')
+                            ->label('Student name or matric number')
+                            ->placeholder('e.g. Ada Okafor or 202610CRS-0001001'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $search = trim((string) ($data['student_search'] ?? ''));
+
+                        if ($search === '') {
+                            return $query;
+                        }
+
+                        $studentIds = Student::query()
+                            ->where('student_number', 'like', '%' . $search . '%')
+                            ->orWhere('first_name', 'like', '%' . $search . '%')
+                            ->orWhere('last_name', 'like', '%' . $search . '%')
+                            ->pluck('id');
+
+                        return $query->where(function (Builder $activityQuery) use ($search, $studentIds): void {
+                            $activityQuery
+                                ->where(function (Builder $subjectQuery) use ($studentIds): void {
+                                    $subjectQuery
+                                        ->where('subject_type', Student::class)
+                                        ->whereIn('subject_id', $studentIds);
+                                })
+                                ->orWhere('properties->student_name', 'like', '%' . $search . '%')
+                                ->orWhere('properties->student_number', 'like', '%' . $search . '%');
+                        });
+                    }),
                 Tables\Filters\Filter::make('actor_role')
                     ->label('Actor Role')
                     ->form([
@@ -177,5 +215,17 @@ class ActivityLogResource extends Resource
     public static function canDelete($record): bool
     {
         return false;
+    }
+
+    private static function studentLabel(Activity $activity): string
+    {
+        if ($activity->subject instanceof Student) {
+            return trim($activity->subject->full_name . ' · ' . $activity->subject->student_number);
+        }
+
+        $name = (string) $activity->getExtraProperty('student_name', '');
+        $number = (string) $activity->getExtraProperty('student_number', '');
+
+        return trim($name . ($name !== '' && $number !== '' ? ' · ' : '') . $number);
     }
 }
