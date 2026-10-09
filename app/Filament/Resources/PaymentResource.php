@@ -25,23 +25,24 @@ class PaymentResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('student_id')->relationship('student', 'student_number')->searchable()->preload()->required(),
-            Forms\Components\Select::make('course_id')->relationship('course', 'name')->searchable()->preload(),
-            Forms\Components\TextInput::make('amount_paid')->numeric()->required()->minValue(0.01),
-            Forms\Components\DatePicker::make('payment_date')->required()->default(now()),
-            Forms\Components\Select::make('payment_method')->options([
+            Forms\Components\Select::make('student_id')->disabled(fn (string $operation): bool => $operation === 'edit')->relationship('student', 'student_number')->searchable()->preload()->required(),
+            Forms\Components\Select::make('course_id')->disabled(fn (string $operation): bool => $operation === 'edit')->relationship('course', 'name')->searchable()->preload(),
+            Forms\Components\TextInput::make('amount_paid')->disabled(fn (string $operation): bool => $operation === 'edit')->numeric()->required()->minValue(0.01),
+            Forms\Components\DatePicker::make('payment_date')->disabled(fn (string $operation): bool => $operation === 'edit')->required()->default(now()),
+            Forms\Components\Select::make('payment_method')->disabled(fn (string $operation): bool => $operation === 'edit')->options([
                 'cash' => 'Cash',
                 'card' => 'Card',
                 'transfer' => 'Transfer',
                 'cheque' => 'Cheque',
             ])->required(),
-            Forms\Components\TextInput::make('receipt_number')->maxLength(255),
-            Forms\Components\Select::make('payment_status')->options([
+            Forms\Components\TextInput::make('receipt_number')->disabled(fn (string $operation): bool => $operation === 'edit')->maxLength(255),
+            Forms\Components\Select::make('payment_status')->disabled(fn (string $operation): bool => $operation === 'edit')->options([
                 'paid' => 'Paid',
                 'partial' => 'Partial',
                 'pending' => 'Pending',
             ])->required(),
             Forms\Components\FileUpload::make('receipt_evidence_path')
+                ->disabled(fn (string $operation): bool => $operation === 'edit')
                 ->label('Receipt Evidence (PDF)')
                 ->disk('public_uploads')
                 ->directory('payments/evidence')
