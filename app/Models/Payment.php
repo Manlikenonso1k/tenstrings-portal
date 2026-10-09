@@ -76,6 +76,53 @@ class Payment extends Model
                 $fee->save();
             });
         });
+
+        static::deleted(function (Payment $payment): void {
+            if (! $payment->course_id) {
+                return;
+            }
+
+            DB::transaction(function () use ($payment): void {
+                $student = Student::query()->lockForUpdate()->find($payment->student_id);
+
+                if (! $student) {
+                    return;
+                }
+
+                $fee = StudentCourseFee::query()
+                    ->where('student_id', $student->id)
+                    ->where('course_id', $payment->course_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($fee) {
+                    $paid = (float) static::query()
+                        ->where('student_id', $student->id)
+                        ->where('course_id', $payment->course_id)
+                        ->where('status', 'success')
+                        ->sum('amount_paid');
+
+                    $fee->forceFill([
+                        'amount_paid' => $paid,
+                        'outstanding_balance' => max(0, (float) $fee->total_course_fee - $paid),
+                        'status' => $paid >= (float) $fee->total_course_fee
+                            ? 'paid'
+                            : ($paid > 0 ? 'partial' : 'pending'),
+                    ])->saveQuietly();
+                }
+
+                $totals = StudentCourseFee::query()
+                    ->where('student_id', $student->id)
+                    ->selectRaw('COALESCE(SUM(total_course_fee), 0) as total_fee, COALESCE(SUM(amount_paid), 0) as paid, COALESCE(SUM(outstanding_balance), 0) as outstanding')
+                    ->first();
+
+                $student->forceFill([
+                    'total_balance' => (float) $totals->total_fee,
+                    'fees_paid' => (float) $totals->paid,
+                    'balance_due' => (float) $totals->outstanding,
+                ])->saveQuietly();
+            });
+        });
     }
 
     public function student()
