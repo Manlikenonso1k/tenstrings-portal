@@ -374,37 +374,51 @@ class ViewStudent extends ViewRecord
                         ->minLength(8),
                 ])
                 ->action(function (array $data): void {
-                    $user = $this->record->user;
+                    $password = (string) $data['new_password'];
+                    $email = strtolower(trim((string) $this->record->email));
+
+                    // Reset the row the login path will actually look up, not
+                    // whatever students.user_id happens to point at. Students
+                    // sign in by matric number, which resolves to
+                    // students.email, and the CSV importer's placeholder
+                    // addresses make those two disagree constantly — resetting
+                    // the wrong row is why this silently did nothing.
+                    $user = $this->record->loginUser();
 
                     if (! $user) {
-                        $email = strtolower(trim((string) $this->record->email));
+                        if ($email === '') {
+                            Notification::make()
+                                ->title('Password not reset')
+                                ->body('This student has no email address and no linked login account, so there is nothing to reset. Add an email first.')
+                                ->danger()
+                                ->send();
 
-                        if ($email !== '') {
-                            $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
+                            return;
                         }
 
-                        if (! $user) {
-                            $user = User::query()->create([
-                                'name' => trim(($this->record->first_name ?? '') . ' ' . ($this->record->last_name ?? '')),
-                                'email' => $email,
-                                'phone' => (string) ($this->record->phone ?? 'N/A'),
-                                'role' => 'student',
-                                'password' => Hash::make((string) $data['new_password']),
-                            ]);
-                        }
-
-                        $this->record->forceFill([
-                            'user_id' => $user->id,
-                        ])->save();
+                        $user = User::query()->create([
+                            'name' => trim(($this->record->first_name ?? '') . ' ' . ($this->record->last_name ?? '')),
+                            'email' => $email,
+                            'phone' => (string) ($this->record->phone ?? 'N/A'),
+                            'role' => 'student',
+                            // User::$casts hashes this once. Passing an
+                            // already-hashed value here is what double-hashed
+                            // the seeded admins previously.
+                            'password' => $password,
+                        ]);
+                    } else {
+                        $user->forceFill(['password' => $password])->save();
                     }
 
-                    $user->forceFill([
-                        'password' => Hash::make((string) $data['new_password']),
-                    ])->save();
+                    // Heal the drift so the relation, the admin UI and login
+                    // all agree on one account from here on.
+                    if ((int) $this->record->user_id !== (int) $user->getKey()) {
+                        $this->record->forceFill(['user_id' => $user->getKey()])->save();
+                    }
 
                     Notification::make()
                         ->title('Password reset successful')
-                        ->body('Student login password has been updated.')
+                        ->body('Student login password has been updated. They sign in with matric number ' . ($this->record->student_number ?: '—') . '.')
                         ->success()
                         ->send();
                 }),

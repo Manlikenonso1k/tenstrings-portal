@@ -88,6 +88,31 @@ class Student extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * The user row StudentLogin actually authenticates against.
+     *
+     * Students sign in with their matric number, which
+     * StudentLogin::getCredentialsFromFormData resolves to `students.email`.
+     * That is not always the row `students.user_id` points at — the CSV
+     * importer mints placeholder addresses via ensureImportEmail(), so the two
+     * drift apart routinely. Anything that changes credentials has to act on
+     * the row the login path will look up, or the change silently does nothing.
+     */
+    public function loginUser(): ?User
+    {
+        $email = strtolower(trim((string) $this->email));
+
+        if ($email !== '') {
+            $match = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
+
+            if ($match instanceof User) {
+                return $match;
+            }
+        }
+
+        return $this->user;
+    }
+
     public function scopeMainIntakeMonths(Builder $query): Builder
     {
         $driver = DB::connection()->getDriverName();

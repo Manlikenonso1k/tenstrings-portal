@@ -26,8 +26,14 @@ class StudentLogin extends Login
 
         $student = Student::query()->where('student_number', $input)->first();
 
+        // Resolve through Student::loginUser() so this agrees with the admin
+        // password-reset action. Falling back to the linked user's email also
+        // lets a student sign in when students.email is blank or points at no
+        // account, which previously just failed.
+        $email = $student?->loginUser()?->email ?? $student?->email;
+
         return [
-            'email' => $student?->email ?? $input,
+            'email' => filled($email) ? $email : $input,
             'password' => $data['password'],
         ];
     }
